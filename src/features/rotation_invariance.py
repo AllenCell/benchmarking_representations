@@ -4,7 +4,7 @@ from tqdm import tqdm
 import pandas as pd
 import torch.nn.functional as F
 from scipy.spatial.transform import Rotation as R
-from .reconstruct import model_pass
+from src.models.predict_model import model_pass
 
 
 def rotation_image_batch_z(batch, z_angle):
