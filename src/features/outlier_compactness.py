@@ -63,6 +63,8 @@ def outlier_detection(this_mo):
         ]
         this_mo2["outlier"] = "Yes"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
+    elif "edge_flag" in this_mo.columns:
+        this_mo['outlier'] = this_mo['edge_flag']
 
     this_mo["outlier_numeric"] = pd.factorize(this_mo["outlier"])[0]
     assert this_mo["outlier_numeric"].isna().any() == False

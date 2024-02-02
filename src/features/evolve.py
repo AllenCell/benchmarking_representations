@@ -19,8 +19,6 @@ def model_pass_reconstruct(z, model, device, init_x, final_x, loss_eval, key, fr
             init_x, eval=True, return_all=True, eval_override=True
         )
 
-        for i in mask_vis_list:
-            print(torch.unique(i, return_counts=True))
         x_vis_list2, mask_vis_list2, masks2, centers2, neighborhoods2 = model.network(
             final_x, eval=True, return_all=True, eval_override=True
         )
@@ -192,8 +190,8 @@ def get_evolution_dict(
 
             init_embed = np.squeeze(init_embed)
             final_embed = np.squeeze(final_embed)
-            # for fraction in np.linspace(0, 1, 11):
-            for fraction in [0.5]:
+            for fraction in np.linspace(0, 1, 11):
+            # for fraction in [0.5]:
                 if fraction not in [0, 1]:
                     intermediate_embed = (
                         init_embed + (final_embed - init_embed) * fraction
@@ -210,7 +208,6 @@ def get_evolution_dict(
                             fraction,
                             run_names[j],
                         )
-                        print(run_names[j], energy.item())
                         evolution_dict["model"].append(run_names[j])
                         evolution_dict["initial_ID"].append(initial_id)
                         evolution_dict["final_ID"].append(final_id)
@@ -229,6 +226,5 @@ def get_evolution_dict(
                         dist = np.sqrt(np.sum(dist, axis=1))
                         evolution_dict["closest_embedding_distance"].append(dist.min())
                     except:
-                        print('exception', j)
                         continue
     return pd.DataFrame(evolution_dict)
