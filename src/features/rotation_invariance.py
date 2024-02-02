@@ -7,14 +7,20 @@ from scipy.spatial.transform import Rotation as R
 from src.models.predict_model import model_pass
 
 
-def rotation_image_batch_z(batch, z_angle):
+def rotation_image_batch_z(batch, z_angle, squeeze_2d=False):
+    in_x = batch["image"]
+    if len(in_x.shape) == 4:
+        in_x = torch.unsqueeze(in_x, dim=1)
     r = R.from_rotvec(np.array([0, 0, np.deg2rad(z_angle)]))
     mat = r.as_matrix()
-    in_x = batch["image"]
+
     disp = torch.tensor(0).expand(len(in_x), 3, 1).type_as(in_x)
-    A = torch.cat((torch.tensor(mat).unsqueeze(dim=0), disp), dim=2)
+    mat = torch.tensor(mat).unsqueeze(dim=0).repeat(disp.shape[0],1,1)
+    A = torch.cat((mat, disp), dim=2)
     grid = F.affine_grid(A, in_x.size(), align_corners=False).type_as(in_x)
     y = F.grid_sample(in_x - 0, grid, align_corners=False)
+    if squeeze_2d:
+        y = torch.squeeze(y, dim=1)
     return y.numpy()
 
 
@@ -33,7 +39,7 @@ def rotation_pc_batch_z(batch, z_angle):
     return this_input_rot
 
 
-def get_equiv_dict(all_models, data_list, device, this_loss, keys):
+def get_equiv_dict(all_models, data_list, device, this_loss, keys, max_batches=20):
     eq_dict = {"model": [], "loss": [], "value": [], "id": [], "theta": [], 'value2': []}
 
     all_thetas = [
@@ -51,13 +57,14 @@ def get_equiv_dict(all_models, data_list, device, this_loss, keys):
             this_key = keys[jm]
             this_model = this_model.eval()
 
-            for i in tqdm(this_data.test_dataloader()):
-                for i_ind in range(i[this_key].shape[0]):
+            for batch_ind, i in enumerate(tqdm(this_data.test_dataloader())):
+                if batch_ind > max_batches:
+                    break
+                else:
                     for jl, theta in enumerate(
                         all_thetas
                     ):
-                        this_id = i["cell_id"][i_ind]
-
+                        this_ids = i["cell_id"]
                         if this_key == "pcloud":
                             this_input_rot = rotation_pc_batch_z(i, theta)
                         else:
@@ -84,6 +91,6 @@ def get_equiv_dict(all_models, data_list, device, this_loss, keys):
                         eq_dict["loss"].append(loss)
                         eq_dict["value"].append(norm_diff)
                         eq_dict["value2"].append(norm_diff2)
-                        eq_dict["id"].append(this_id)
+                        eq_dict["id"].append(str(this_ids))
                         eq_dict["theta"].append(theta)
     return pd.DataFrame(eq_dict)

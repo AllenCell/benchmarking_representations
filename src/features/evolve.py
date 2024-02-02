@@ -1,5 +1,5 @@
 import torch
-from .utils import sample_points
+from src.models.utils import sample_points
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
@@ -11,14 +11,20 @@ def model_pass_reconstruct(z, model, device, init_x, final_x, loss_eval, key, fr
     if key == "pcloud":
         init_x = init_x[:, :, :3]
         final_x = final_x[:, :, :3]
+    init_x = torch.tensor(init_x).to(device)
+    final_x = torch.tensor(final_x).to(device)
 
     if hasattr(model, "network"):
         x_vis_list, mask_vis_list, masks, centers, neighborhoods = model.network(
-            init_x, eval=True, return_all=True
+            init_x, eval=True, return_all=True, eval_override=True
         )
+
+        for i in mask_vis_list:
+            print(torch.unique(i, return_counts=True))
         x_vis_list2, mask_vis_list2, masks2, centers2, neighborhoods2 = model.network(
-            final_x, eval=True, return_all=True
+            final_x, eval=True, return_all=True, eval_override=True
         )
+
         interpolated_x_vis_list = []
         interpolated_centers = []
         interpolated_neighbors = []
@@ -54,8 +60,6 @@ def model_pass_reconstruct(z, model, device, init_x, final_x, loss_eval, key, fr
             interpolated_neighbors.append(
                 torch.lerp(neighborhoods[i], neighborhoods2[i], fraction)
             )
-        #     print([i.shape for i in x_vis_list])
-        #     print([i.shape for i in x_vis_list2])
         if sum_orig_diff >= 0:
             this_centers = interpolated_centers
             this_neighbors = interpolated_neighbors
@@ -70,8 +74,6 @@ def model_pass_reconstruct(z, model, device, init_x, final_x, loss_eval, key, fr
             this_masks_vis_list = mask_vis_list2
         if len(np.unique(this_masks[-2].detach().cpu().numpy())) == 1:
             this_masks[-2] = this_masks[-2].fill_(True)
-        # print([np.unique(i.detach().cpu().numpy()) for i in this_masks])
-        # print([np.unique(this_masks[-2].detach().cpu().numpy())])
 
         rec, gt = model.network.reconstruct(
             this_centers,
@@ -81,10 +83,6 @@ def model_pass_reconstruct(z, model, device, init_x, final_x, loss_eval, key, fr
             this_masks_vis_list,
         )
         loss = model.loss(rec, gt).mean()
-        # except:
-        #     import ipdb
-        #     ipdb.set_trace()
-
         return loss
     elif hasattr(model, "backbone"):
         _, backward_indexes1, patch_size1 = model.backbone.encoder(init_x.contiguous())
@@ -123,7 +121,11 @@ def get_evolution_dict(
     df,
     keys,
 ):
-    df = df.loc[df['CellId'].isin(all_model_ids)]
+    sets = []
+    for i in all_model_ids:
+        sets.append(set(i))
+    u = set.intersection(*sets)
+    df = df.loc[df['CellId'].isin(list(u))]
     evolution_dict = {
         "initial_ID": [],
         "final_ID": [],
@@ -134,80 +136,99 @@ def get_evolution_dict(
     }
     # keys = ["pcloud", "pcloud", "pcloud", "image", "image", "image"]
 
-    cell_cycle = [
-        "G1",
-        "earlyS",
-        "earlyS-midS",
-        "midS",
-        "midS-lateS",
-        "lateS",
-        "lateS-G2",
-        "G2",
-    ]
-
-    for cell_cycle_ind in tqdm(range(len(cell_cycle) - 1), total=len(cell_cycle) - 1):
+    initial_ids = []
+    final_ids = []
+    if "cell_stage_fine" in df.columns.tolist():
+        cell_cycle = [
+            "G1",
+            "earlyS",
+            "earlyS-midS",
+            "midS",
+            "midS-lateS",
+            "lateS",
+            "lateS-G2",
+            "G2",
+        ]
+        for cell_cycle_ind in tqdm(range(len(cell_cycle) - 1), total=len(cell_cycle) - 1):
+            for _ in range(1):
+                initial_id = (
+                    df.loc[df["cell_stage_fine"].isin([cell_cycle[cell_cycle_ind]])]
+                    .sample(n=1)["CellId"]
+                    .iloc[0]
+                )
+                final_id = (
+                    df.loc[df["cell_stage_fine"].isin([cell_cycle[cell_cycle_ind + 1]])]
+                    .sample(n=1)["CellId"]
+                    .iloc[0]
+                )
+                initial_ids.append(initial_id)
+                final_ids.append(final_id)
+    else:
         for _ in range(1):
             initial_id = (
-                df.loc[df["cell_stage_fine"].isin([cell_cycle[cell_cycle_ind]])]
-                .sample(n=1)["CellId"]
+                df.sample(n=1)["CellId"]
                 .iloc[0]
             )
             final_id = (
-                df.loc[df["cell_stage_fine"].isin([cell_cycle[cell_cycle_ind + 1]])]
-                .sample(n=1)["CellId"]
+                df.sample(n=1)["CellId"]
                 .iloc[0]
             )
-            for j in range(len(all_models)):
-                print(run_names[j])
-                # if run_names[j] == '2048_ed_m2ae':
-                this_model_inputs = all_model_inputs[j]
-                init = all_embeds2[j].shape[0] * j
-                fin = all_embeds2[j].shape[0] * (j + 1)
-                this_ids = all_model_ids[init:fin]
-                init_ind = this_ids.index(initial_id)
-                init_embed = all_embeds2[j][init_ind]
-                final_ind = this_ids.index(final_id)
-                final_embed = all_embeds2[j][final_ind]
-                init_input = this_model_inputs[init_ind]
-                final_input = this_model_inputs[final_ind]
+            initial_ids.append(initial_id)
+            final_ids.append(final_id)
 
-                init_embed = np.squeeze(init_embed)
-                final_embed = np.squeeze(final_embed)
-                for fraction in np.linspace(0, 1, 11):
-                # for fraction in [0.5]:
-                    if fraction not in [0, 1]:
-                        intermediate_embed = (
-                            init_embed + (final_embed - init_embed) * fraction
+
+    for initial_id, final_id in zip(initial_ids, final_ids):
+        for j in range(len(all_models)):
+            # if run_names[j] == '2048_ed_m2ae':
+            this_model_inputs = all_model_inputs[j]
+
+            this_ids = all_model_ids[j]
+            init_ind = this_ids.index(initial_id)
+            init_embed = all_embeds2[j][init_ind]
+            final_ind = this_ids.index(final_id)
+            final_embed = all_embeds2[j][final_ind]
+            init_input = np.expand_dims(this_model_inputs[init_ind], axis=0)
+            final_input = np.expand_dims(this_model_inputs[final_ind], axis=0)
+
+            init_embed = np.squeeze(init_embed)
+            final_embed = np.squeeze(final_embed)
+            # for fraction in np.linspace(0, 1, 11):
+            for fraction in [0.5]:
+                if fraction not in [0, 1]:
+                    intermediate_embed = (
+                        init_embed + (final_embed - init_embed) * fraction
+                    )
+                    try:
+                        energy = model_pass_reconstruct(
+                            intermediate_embed,
+                            all_models[j],
+                            device,
+                            init_input,
+                            final_input,
+                            this_loss,
+                            keys[j],
+                            fraction,
+                            run_names[j],
                         )
-                        try:
-                            energy = model_pass_reconstruct(
-                                intermediate_embed,
-                                all_models[j],
-                                device,
-                                init_input,
-                                final_input,
-                                this_loss,
-                                keys[j],
-                                fraction,
-                                run_names[j],
-                            )
-                            evolution_dict["model"].append(run_names[j])
-                            evolution_dict["initial_ID"].append(initial_id)
-                            evolution_dict["final_ID"].append(final_id)
-                            evolution_dict["fraction"].append(fraction)
-                            evolution_dict["energy"].append(energy.item())
-                            if len(intermediate_embed.shape) > 1:
-                                baseline_all = all_embeds2[j].mean(axis=1).squeeze().copy()
-                                intermediate_embed = intermediate_embed.mean(axis=0) 
-                                dist = (
-                                    baseline_all - np.expand_dims(intermediate_embed, axis=0)
-                                ) ** 2
-                            else:
-                                dist = (
-                                    all_embeds2[j] - np.expand_dims(intermediate_embed, axis=0)
-                                ) ** 2
-                            dist = np.sqrt(np.sum(dist, axis=1))
-                            evolution_dict["closest_embedding_distance"].append(dist.min())
-                        except:
-                            continue
+                        print(run_names[j], energy.item())
+                        evolution_dict["model"].append(run_names[j])
+                        evolution_dict["initial_ID"].append(initial_id)
+                        evolution_dict["final_ID"].append(final_id)
+                        evolution_dict["fraction"].append(fraction)
+                        evolution_dict["energy"].append(energy.item())
+                        if len(intermediate_embed.shape) > 1:
+                            baseline_all = all_embeds2[j].mean(axis=1).squeeze().copy()
+                            intermediate_embed = intermediate_embed.mean(axis=0) 
+                            dist = (
+                                baseline_all - np.expand_dims(intermediate_embed, axis=0)
+                            ) ** 2
+                        else:
+                            dist = (
+                                all_embeds2[j] - np.expand_dims(intermediate_embed, axis=0)
+                            ) ** 2
+                        dist = np.sqrt(np.sum(dist, axis=1))
+                        evolution_dict["closest_embedding_distance"].append(dist.min())
+                    except:
+                        print('exception', j)
+                        continue
     return pd.DataFrame(evolution_dict)
