@@ -17,10 +17,11 @@ def model_pass_reconstruct(
     final_x = torch.tensor(final_x).to(device)
 
     if hasattr(model, "network"):
+        rec_init, _ = model.network(init_x)
         x_vis_list, mask_vis_list, masks, centers, neighborhoods = model.network(
             init_x, eval=True, return_all=True, eval_override=True
         )
-
+        rec_final, _ = model.network(final_x)
         x_vis_list2, mask_vis_list2, masks2, centers2, neighborhoods2 = model.network(
             final_x, eval=True, return_all=True, eval_override=True
         )
@@ -101,8 +102,11 @@ def model_pass_reconstruct(
             this_masks,
             this_masks_vis_list,
         )
-        loss = model.loss(rec, gt).mean()
-        return loss
+        max_size = min([rec.shape[0], rec_init.shape[0], rec_final.shape[0]])
+        init_rcl = model.loss(rec[:max_size], rec_init[:max_size]).mean()
+        final_rcl = model.loss(rec[:max_size], rec_final[:max_size]).mean()
+        total_rcl = model.loss(rec_init[:max_size], rec_final[:max_size]).mean()
+        return (init_rcl + final_rcl)/total_rcl
     elif hasattr(model, "backbone"):
         _, backward_indexes1, patch_size1 = model.backbone.encoder(init_x.contiguous())
         _, backward_indexes2, patch_size2 = model.backbone.encoder(final_x.contiguous())
@@ -206,6 +210,7 @@ def get_evolution_dict(
         zip(initial_ids, final_ids), total=len(initial_ids)
     ):
         for j in range(len(all_models)):
+            print(j)
             this_model_inputs = all_model_inputs[j]
 
             this_ids = all_model_ids[j]
@@ -219,7 +224,7 @@ def get_evolution_dict(
             init_embed = np.squeeze(init_embed)
             final_embed = np.squeeze(final_embed)
             for fraction in np.linspace(0, 1, 11):
-                # for fraction in [0.5]:
+            # for fraction in [0.5]:
                 if fraction not in [0, 1]:
                     intermediate_embed = (
                         init_embed + (final_embed - init_embed) * fraction
@@ -236,7 +241,6 @@ def get_evolution_dict(
                             fraction,
                             run_names[j],
                         )
-                        print(init_input.shape, final_input.shape)
                         evolution_dict["model"].append(run_names[j])
                         evolution_dict["initial_ID"].append(initial_id)
                         evolution_dict["final_ID"].append(final_id)
@@ -254,10 +258,11 @@ def get_evolution_dict(
                         else:
                             dist = (
                                 all_embeds2[j][:, :embed_dim]
-                                - np.expand_dims(intermediate_embed, axis=0)
+                                - np.expand_dims(intermediate_embed, axis=0)[:,:embed_dim]
                             ) ** 2
                         dist = np.sqrt(np.sum(dist, axis=1))
                         evolution_dict["closest_embedding_distance"].append(dist.min())
                     except:
+                        print('exception', run_names[j])
                         continue
     return pd.DataFrame(evolution_dict)

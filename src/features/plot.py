@@ -6,12 +6,24 @@ import os
 
 
 def rename(this_df, rep_dict, rep_dict2):
+    """
+    Rename model names
+    rep_dict - rename initial names with nicer names
+    rep_dict2 - rename integer labels (if any) with nicer names
+    """
     this_df["model"] = this_df["model"].replace(rep_dict)
     this_df["model"] = this_df["model"].replace(rep_dict2)
     return this_df
 
 
 def min_max(df, feat, better_min=True, norm="std"):
+    """
+    Norm for model comparison
+    e.g std - zscore model scores
+    better_min - if lower is better, take negative 
+    returns dataframe where all features scores are comparable
+    and higher is always better
+    """
     if norm == "std":
         df[feat] = (df[feat] - df[feat].mean()) / (df[feat].std())
         if better_min:
@@ -30,6 +42,13 @@ def min_max(df, feat, better_min=True, norm="std"):
 
 
 def collect_outputs(path, dataset, order_names, norm, model_order):
+    """
+    path - location of csvs
+    dataset - name of dataset in csv names
+    order_names - if mapping between integers and models, give corresponding list
+    norm - std, minmax, other
+    model_order - list of model names (with nicer names) to compare, zscore and plot 
+    """
     run_names_orig = [
         "2048_dgcnn",
         "2048_ed_m2ae",
@@ -116,8 +135,6 @@ def collect_outputs(path, dataset, order_names, norm, model_order):
         df_emissions1,
         df_emissions2,
     ]
-    for i in df_list:
-        print(i["model"].unique())
     df = pd.concat(df_list, axis=0).reset_index(drop=True)
 
     rep_dict_var = {

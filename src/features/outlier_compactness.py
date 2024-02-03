@@ -8,7 +8,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import DBSCAN
 
 
-def get_embedding_metrics(all_ret, num_PCs=None):
+def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192):
     ret_dict_compactness = {
         "model": [],
         "compactness": [],
@@ -19,7 +19,7 @@ def get_embedding_metrics(all_ret, num_PCs=None):
     }
     for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
-        val, pca, val2 = compactness(this_mo, num_PCs)
+        val, pca, val2 = compactness(this_mo, num_PCs, max_embed_dim)
         percent_same = outlier_detection(this_mo)
         ret_dict_compactness["model"].append(model)
         ret_dict_compactness["compactness"].append(val2)
@@ -30,9 +30,13 @@ def get_embedding_metrics(all_ret, num_PCs=None):
     return ret_dict_compactness
 
 
-def compactness(this_mo, num_PCs):
+def compactness(this_mo, num_PCs, max_embed_dim):
+    """
+    Compactness if %explained variance by 5 PCs
+    fit PCA on embeddings of the same size set by max_embed_dim
+    """
     cols = [i for i in this_mo.columns if "mu" in i]
-    this_feats = this_mo[cols].dropna(axis=1).values
+    this_feats = this_mo[cols].iloc[:,:max_embed_dim].dropna(axis=1).values
     if num_PCs is None:
         num_PCs = this_feats.shape[1]
     pca = PCA(n_components=num_PCs)
