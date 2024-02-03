@@ -5,7 +5,9 @@ import pandas as pd
 import numpy as np
 
 
-def model_pass_reconstruct(z, model, device, init_x, final_x, loss_eval, key, fraction, run_name):
+def model_pass_reconstruct(
+    z, model, device, init_x, final_x, loss_eval, key, fraction, run_name
+):
     model = model.to(device)
     z = torch.tensor(z).to(device)
     if key == "pcloud":
@@ -32,25 +34,44 @@ def model_pass_reconstruct(z, model, device, init_x, final_x, loss_eval, key, fr
             orig_diff = diff
             sum_orig_diff += orig_diff
             if diff > 0:
-                x_vis_list2[i] = torch.nn.functional.pad(x_vis_list2[i], (0,0,np.abs(diff),0,0,0), 'constant', 0)
+                x_vis_list2[i] = torch.nn.functional.pad(
+                    x_vis_list2[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
+                )
             elif diff < 0:
-                x_vis_list[i] = torch.nn.functional.pad(x_vis_list[i], (0,0,np.abs(diff),0,0,0), 'constant', 0) 
+                x_vis_list[i] = torch.nn.functional.pad(
+                    x_vis_list[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
+                )
 
             diff = centers[i].shape[1] - centers2[i].shape[1]
             if diff > 0:
-                centers2[i] = torch.nn.functional.pad(centers2[i], (0,0,np.abs(diff),0,0,0), 'constant', 0)
+                centers2[i] = torch.nn.functional.pad(
+                    centers2[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
+                )
             elif diff < 0:
-                centers[i] = torch.nn.functional.pad(centers[i], (0,0,np.abs(diff),0,0,0), 'constant', 0) 
+                centers[i] = torch.nn.functional.pad(
+                    centers[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
+                )
 
             diff = neighborhoods[i].shape[1] - neighborhoods2[i].shape[1]
             if diff > 0:
-                neighborhoods2[i] = torch.nn.functional.pad(neighborhoods2[i], (0,0,np.abs(diff),0,0,0), 'constant', 0)
+                neighborhoods2[i] = torch.nn.functional.pad(
+                    neighborhoods2[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
+                )
             elif diff < 0:
-                neighborhoods[i] = torch.nn.functional.pad(neighborhoods[i], (0,0,np.abs(diff),0,0,0), 'constant', 0) 
+                neighborhoods[i] = torch.nn.functional.pad(
+                    neighborhoods[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
+                )
             diffs = []
-            diffs.append(torch.tensor(centers[i].shape) - torch.tensor(centers2[i].shape))
-            diffs.append(torch.tensor(neighborhoods[i].shape) - torch.tensor(neighborhoods2[i].shape))
-            diffs.append(torch.tensor(x_vis_list[i].shape) - torch.tensor(x_vis_list2[i].shape))
+            diffs.append(
+                torch.tensor(centers[i].shape) - torch.tensor(centers2[i].shape)
+            )
+            diffs.append(
+                torch.tensor(neighborhoods[i].shape)
+                - torch.tensor(neighborhoods2[i].shape)
+            )
+            diffs.append(
+                torch.tensor(x_vis_list[i].shape) - torch.tensor(x_vis_list2[i].shape)
+            )
             interpolated_x_vis_list.append(
                 torch.lerp(x_vis_list[i], x_vis_list2[i], fraction)
             )
@@ -85,7 +106,9 @@ def model_pass_reconstruct(z, model, device, init_x, final_x, loss_eval, key, fr
     elif hasattr(model, "backbone"):
         _, backward_indexes1, patch_size1 = model.backbone.encoder(init_x.contiguous())
         _, backward_indexes2, patch_size2 = model.backbone.encoder(final_x.contiguous())
-        xhat, mask = model.backbone.decoder(torch.unsqueeze(z, dim=1), backward_indexes1, patch_size1)
+        xhat, mask = model.backbone.decoder(
+            torch.unsqueeze(z, dim=1), backward_indexes1, patch_size1
+        )
         xhat = sample_points(xhat.detach().cpu().numpy())
         init_x = sample_points(init_x.detach().cpu().numpy())
         final_x = sample_points(final_x.detach().cpu().numpy())
@@ -119,11 +142,23 @@ def get_evolution_dict(
     df,
     keys,
 ):
+    """
+    all_models - list of models
+    all_model_inputs - list of model inputs
+    this_loss - point cloud loss to evaluate models on
+    all_embeds2 - list of embeddings from each model
+    all_model_ids - list of CellIDs associated with each item
+    run_names - list of run names corresponding to each model
+    device - gpu
+    df - original dataframe with other metadata
+    keys - list of keys to load appropriate batch element
+    """
+    embed_dim = min([i.shape[-1] for i in all_embeds2])
     sets = []
     for i in all_model_ids:
         sets.append(set(i))
     u = set.intersection(*sets)
-    df = df.loc[df['CellId'].isin(list(u))]
+    df = df.loc[df["CellId"].isin(list(u))]
     evolution_dict = {
         "initial_ID": [],
         "final_ID": [],
@@ -132,7 +167,6 @@ def get_evolution_dict(
         "model": [],
         "closest_embedding_distance": [],
     }
-    # keys = ["pcloud", "pcloud", "pcloud", "image", "image", "image"]
 
     initial_ids = []
     final_ids = []
@@ -147,7 +181,7 @@ def get_evolution_dict(
             "lateS-G2",
             "G2",
         ]
-        for cell_cycle_ind in tqdm(range(len(cell_cycle) - 1), total=len(cell_cycle) - 1):
+        for cell_cycle_ind in range(len(cell_cycle) - 1):
             for _ in range(1):
                 initial_id = (
                     df.loc[df["cell_stage_fine"].isin([cell_cycle[cell_cycle_ind]])]
@@ -163,21 +197,15 @@ def get_evolution_dict(
                 final_ids.append(final_id)
     else:
         for _ in range(1):
-            initial_id = (
-                df.sample(n=1)["CellId"]
-                .iloc[0]
-            )
-            final_id = (
-                df.sample(n=1)["CellId"]
-                .iloc[0]
-            )
+            initial_id = df.sample(n=1)["CellId"].iloc[0]
+            final_id = df.sample(n=1)["CellId"].iloc[0]
             initial_ids.append(initial_id)
             final_ids.append(final_id)
 
-
-    for initial_id, final_id in zip(initial_ids, final_ids):
+    for initial_id, final_id in tqdm(
+        zip(initial_ids, final_ids), total=len(initial_ids)
+    ):
         for j in range(len(all_models)):
-            # if run_names[j] == '2048_ed_m2ae':
             this_model_inputs = all_model_inputs[j]
 
             this_ids = all_model_ids[j]
@@ -191,7 +219,7 @@ def get_evolution_dict(
             init_embed = np.squeeze(init_embed)
             final_embed = np.squeeze(final_embed)
             for fraction in np.linspace(0, 1, 11):
-            # for fraction in [0.5]:
+                # for fraction in [0.5]:
                 if fraction not in [0, 1]:
                     intermediate_embed = (
                         init_embed + (final_embed - init_embed) * fraction
@@ -208,6 +236,7 @@ def get_evolution_dict(
                             fraction,
                             run_names[j],
                         )
+                        print(init_input.shape, final_input.shape)
                         evolution_dict["model"].append(run_names[j])
                         evolution_dict["initial_ID"].append(initial_id)
                         evolution_dict["final_ID"].append(final_id)
@@ -215,13 +244,17 @@ def get_evolution_dict(
                         evolution_dict["energy"].append(energy.item())
                         if len(intermediate_embed.shape) > 1:
                             baseline_all = all_embeds2[j].mean(axis=1).squeeze().copy()
-                            intermediate_embed = intermediate_embed.mean(axis=0) 
+                            intermediate_embed = intermediate_embed.mean(axis=0)
                             dist = (
-                                baseline_all - np.expand_dims(intermediate_embed, axis=0)
+                                baseline_all[:, :embed_dim]
+                                - np.expand_dims(intermediate_embed, axis=0)[
+                                    :, :embed_dim
+                                ]
                             ) ** 2
                         else:
                             dist = (
-                                all_embeds2[j] - np.expand_dims(intermediate_embed, axis=0)
+                                all_embeds2[j][:, :embed_dim]
+                                - np.expand_dims(intermediate_embed, axis=0)
                             ) ** 2
                         dist = np.sqrt(np.sum(dist, axis=1))
                         evolution_dict["closest_embedding_distance"].append(dist.min())

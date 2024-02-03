@@ -7,6 +7,7 @@ import pandas as pd
 import time
 from .utils import move, sample_points
 
+
 def vit_forward(model, image, device, this_loss, track_emissions, tracker, end):
     """
     Forward pass for vit with codecarbon tracking option
@@ -15,12 +16,14 @@ def vit_forward(model, image, device, this_loss, track_emissions, tracker, end):
     features, backward_indexes, patch_size = model.backbone.encoder(image)
     predicted_img, mask = model.backbone.decoder(features, backward_indexes, patch_size)
     features = features.reshape(image.shape[0], features.shape[0], -1)
-    input_x = torch.tensor(
-        sample_points(image.detach().cpu().numpy())
-    ).clone().to(device)
-    pred_x = torch.tensor(
-        sample_points(predicted_img.detach().cpu().numpy())
-    ).clone().to(device)
+    input_x = (
+        torch.tensor(sample_points(image.detach().cpu().numpy())).clone().to(device)
+    )
+    pred_x = (
+        torch.tensor(sample_points(predicted_img.detach().cpu().numpy()))
+        .clone()
+        .to(device)
+    )
     rcl_per_input_dimension = this_loss(
         pred_x.contiguous(), input_x.to(device).contiguous()
     )
@@ -34,7 +37,6 @@ def vit_forward(model, image, device, this_loss, track_emissions, tracker, end):
 
     if track_emissions:
         emissions: float = tracker.stop()
-        # emissions,emissions_rate,cpu_power,gpu_power,ram_power,cpu_energy,gpu_energy,ram_energy,energy_consumed = tracker.stop()
         emissions_df = pd.read_csv("./emissions.csv")
         return (
             predicted_img.detach().cpu().numpy(),
@@ -67,13 +69,13 @@ def m2ae_forward(model, pcloud, device, this_loss, track_emissions, tracker, end
     all_rec = []
     all_loss = []
     for ind in range(pcloud.shape[0]):
-        rec, gt = model.network(pcloud[ind:ind+1, :, :3].contiguous())
+        rec, gt = model.network(pcloud[ind : ind + 1, :, :3].contiguous())
         loss = model.loss(rec, gt).mean()
         all_rec.append(rec)
         all_loss.append(loss)
     all_rec = torch.cat(all_rec, axis=0)
     all_loss = torch.stack(all_loss, axis=0)
-    
+
     if track_emissions:
         emissions: float = tracker.stop()
         emissions_df = pd.read_csv("./emissions.csv")
@@ -92,6 +94,7 @@ def m2ae_forward(model, pcloud, device, this_loss, track_emissions, tracker, end
         x_vis_list,
     )
 
+
 def base_forward(model, batch, device, this_loss, track_emissions, tracker, end):
     """
     Forward pass for base cyto_dl models with codecarbon tracking options
@@ -100,11 +103,11 @@ def base_forward(model, batch, device, this_loss, track_emissions, tracker, end)
     if "pcloud" in batch.keys():
         if model.decoder["pcloud"].folding2[-1].out_features == 3:
             this_batch["pcloud"] = this_batch["pcloud"][:, :, :3]
-        embed_key = 'pcloud'
-        key = 'pcloud'
+        embed_key = "pcloud"
+        key = "pcloud"
     else:
         embed_key = "embedding"
-        key = 'image'
+        key = "image"
     xhat, z, z_params = model(
         move(this_batch, device), decode=True, inference=True, return_params=True
     )
@@ -164,11 +167,18 @@ def model_pass(batch, model, device, this_loss, track_emissions=False):
         end = time.time()
 
     if hasattr(model, "backbone"):
-        return vit_forward(model, batch['image'], device, this_loss, track_emissions, tracker, end)
+        return vit_forward(
+            model, batch["image"], device, this_loss, track_emissions, tracker, end
+        )
     if hasattr(model, "network"):
-        return m2ae_forward(model, batch['pcloud'], device, this_loss, track_emissions, tracker, end)
+        return m2ae_forward(
+            model, batch["pcloud"], device, this_loss, track_emissions, tracker, end
+        )
     else:
-        return base_forward(model, batch, device, this_loss, track_emissions, tracker, end)
+        return base_forward(
+            model, batch, device, this_loss, track_emissions, tracker, end
+        )
+
 
 def process_batch(
     model,
@@ -187,9 +197,9 @@ def process_batch(
     track,
 ):
     if "pcloud" in i.keys():
-        key = 'pcloud'
+        key = "pcloud"
     else:
-        key = 'image'
+        key = "image"
     model_outputs = model_pass(i, model, device, this_loss, track_emissions=track)
     emissions_df = pd.DataFrame()
     if len(model_outputs) > 4:
@@ -205,7 +215,7 @@ def process_batch(
     all_loss.append(loss)
     all_data_inputs.append(i[key])
     all_splits.append(i[key].shape[0] * [split])
-    all_data_ids.append(i['cell_id'])
+    all_data_ids.append(i["cell_id"])
     return (
         all_data_inputs,
         all_outputs,

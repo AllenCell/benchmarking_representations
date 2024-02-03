@@ -27,10 +27,10 @@ def sample_points(orig):
         outs = np.where(np.ones_like(raw) > 0)
         if len(outs) == 3:
             z, y, x = outs
-            sigma = (1,2,2)
+            sigma = (1, 2, 2)
         else:
             y, x = outs
-            sigma = (1,2)
+            sigma = (1, 2)
         probs = raw.copy()
         probs_orig = probs.copy()
 
@@ -46,7 +46,9 @@ def sample_points(orig):
         probs = np.exp(20 * probs) - 1
 
         probs = probs / probs.sum()
-        idxs = np.random.choice(np.arange(len(probs)), size=1024 * 2, replace=True, p=probs)
+        idxs = np.random.choice(
+            np.arange(len(probs)), size=1024 * 2, replace=True, p=probs
+        )
         x = x[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
         y = y[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
         if len(outs) == 3:

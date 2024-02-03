@@ -15,7 +15,7 @@ def rotation_image_batch_z(batch, z_angle, squeeze_2d=False):
     mat = r.as_matrix()
 
     disp = torch.tensor(0).expand(len(in_x), 3, 1).type_as(in_x)
-    mat = torch.tensor(mat).unsqueeze(dim=0).repeat(disp.shape[0],1,1)
+    mat = torch.tensor(mat).unsqueeze(dim=0).repeat(disp.shape[0], 1, 1)
     A = torch.cat((mat, disp), dim=2)
     grid = F.affine_grid(A, in_x.size(), align_corners=False).type_as(in_x)
     y = F.grid_sample(in_x - 0, grid, align_corners=False)
@@ -39,8 +39,26 @@ def rotation_pc_batch_z(batch, z_angle):
     return this_input_rot
 
 
-def get_equiv_dict(all_models, data_list, device, this_loss, keys, max_batches=20):
-    eq_dict = {"model": [], "loss": [], "value": [], "id": [], "theta": [], 'value2': []}
+def get_equiv_dict(
+    all_models, data_list, device, this_loss, keys, max_batches=20, max_embed_dim=192
+):
+    """
+    all_models - list of models
+    data_list - list of datamodules corresponding to models
+    device - gpu
+    this_loss - point cloud loss to evaluate models on
+    keys - list of keys to load appropriate batch element
+    max_batches - max number of batches to compute rot inv error
+    max_embed_dim - to be consistent across models, use same embedding size
+    """
+    eq_dict = {
+        "model": [],
+        "loss": [],
+        "value": [],
+        "id": [],
+        "theta": [],
+        "value2": [],
+    }
 
     all_thetas = [
         0,
@@ -61,9 +79,7 @@ def get_equiv_dict(all_models, data_list, device, this_loss, keys, max_batches=2
                 if batch_ind > max_batches:
                     break
                 else:
-                    for jl, theta in enumerate(
-                        all_thetas
-                    ):
+                    for jl, theta in enumerate(all_thetas):
                         this_ids = i["cell_id"]
                         if this_key == "pcloud":
                             this_input_rot = rotation_pc_batch_z(i, theta)
@@ -84,8 +100,12 @@ def get_equiv_dict(all_models, data_list, device, this_loss, keys, max_batches=2
                         if jl == 0:
                             baseline = z
 
+                        baseline = baseline[:, :max_embed_dim]
+                        z = z[:, :max_embed_dim]
                         norm_diff = np.linalg.norm(z - baseline)
-                        norm_diff2 = np.linalg.norm(z - baseline)/np.linalg.norm(baseline)
+                        norm_diff2 = np.linalg.norm(z - baseline) / np.linalg.norm(
+                            baseline
+                        )
 
                         eq_dict["model"].append(jm)
                         eq_dict["loss"].append(loss)

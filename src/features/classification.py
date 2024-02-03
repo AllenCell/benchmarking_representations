@@ -36,8 +36,11 @@ class proba_logreg(LogisticRegression):
 
 
 def get_classification(this_mo, target_col):
-
-    if target_col == 'cell_stage_fine':
+    """
+    Logistic regression given dataframe of embeddings
+    and target column name
+    """
+    if target_col == "cell_stage_fine":
         this_mo = this_mo.loc[
             ~this_mo["cell_stage_fine"].isin(
                 ["M1M2", "unclear", "M3", "M4M5", "M6M7_complete", "M6M7_single"]
@@ -53,16 +56,13 @@ def get_classification(this_mo, target_col):
         assert this_mo[f"{target_col}_numeric"].isna().any() == False
         target_col = f"{target_col}_numeric"
 
-
     class_weight = {}
     for i in this_mo[target_col].unique():
         n = this_mo.loc[this_mo[target_col] == i].shape[0]
-        class_weight[i] = this_mo.shape[0] / (
-            len(this_mo[target_col].unique()) * n
-        )
-    multi_class = 'multinomial'
+        class_weight[i] = this_mo.shape[0] / (len(this_mo[target_col].unique()) * n)
+    multi_class = "multinomial"
     if np.unique(this_mo[target_col]).shape[0] == 2:
-        multi_class = 'ovr'
+        multi_class = "ovr"
     cols = [i for i in this_mo.columns if "mu" in i]
 
     clf = proba_logreg(
@@ -88,9 +88,10 @@ def get_classification(this_mo, target_col):
         scoring=my_scorer,
         cv=StratifiedKFold(n_splits=5, random_state=2652124, shuffle=True),
     )
-    if multi_class == 'ovr':
+    if multi_class == "ovr":
         return k1, [1 for i in range(len(k1))], [1 for i in range(len(k1))]
     else:
+
         def top_2(y_true, y_pred, **kwargs):
             if np.unique(y_true).shape[0] == 2:
                 return top_k_accuracy_score(y_true, y_pred.argmax(axis=1), k=2)
