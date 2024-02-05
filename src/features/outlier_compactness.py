@@ -9,6 +9,7 @@ from sklearn.cluster import DBSCAN
 
 
 def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192):
+    all_ret = all_ret.loc[all_ret["split"] == "test"]
     ret_dict_compactness = {
         "model": [],
         "compactness": [],
@@ -21,6 +22,7 @@ def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
         val, pca, val2 = compactness(this_mo, num_PCs, max_embed_dim)
         percent_same = outlier_detection(this_mo)
+        print(val2, percent_same)
         ret_dict_compactness["model"].append(model)
         ret_dict_compactness["compactness"].append(val2)
         for i in range(len(percent_same)):
@@ -36,7 +38,7 @@ def compactness(this_mo, num_PCs, max_embed_dim):
     fit PCA on embeddings of the same size set by max_embed_dim
     """
     cols = [i for i in this_mo.columns if "mu" in i]
-    this_feats = this_mo[cols].iloc[:,:max_embed_dim].dropna(axis=1).values
+    this_feats = this_mo[cols].iloc[:, :max_embed_dim].dropna(axis=1).values
     if num_PCs is None:
         num_PCs = this_feats.shape[1]
     pca = PCA(n_components=num_PCs)
@@ -53,8 +55,8 @@ def outlier_detection(this_mo, outlier_label=0):
     Does this with n_clusters = 3, 4, 5
     Outlier must be 2 labels, 0 or 1
     outlier_label indicates if 0 is outlier or 1
-    Metric returned is percent of predicted cluster labels from outlier set that 
-    are the same, scaled by the size of that predicted cluster set relative to 
+    Metric returned is percent of predicted cluster labels from outlier set that
+    are the same, scaled by the size of that predicted cluster set relative to
     the total population
     """
     if "flag_comment" in this_mo.columns:
@@ -72,10 +74,10 @@ def outlier_detection(this_mo, outlier_label=0):
         this_mo2["outlier"] = "No"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
     elif "Anomaly" in this_mo.columns:
-        this_mo1 = this_mo.loc[this_mo["Anomaly"].isin(["none"])]
-        this_mo1["outlier"] = "No"
-        this_mo2 = this_mo.loc[~this_mo["Anomaly"].isin(["none"])]
-        this_mo2["outlier"] = "Yes"
+        this_mo1 = this_mo.loc[~this_mo["Anomaly"].isin(["none"])]
+        this_mo1["outlier"] = "Yes"
+        this_mo2 = this_mo.loc[this_mo["Anomaly"].isin(["none"])]
+        this_mo2["outlier"] = "No"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
     elif "meta_fov_position" in this_mo.columns:
         this_mo1 = this_mo.loc[this_mo["meta_fov_position"].isin(["edge"])]
@@ -86,6 +88,13 @@ def outlier_detection(this_mo, outlier_label=0):
         print("edge cell", this_mo["outlier"].value_counts())
 
     this_mo["outlier_numeric"] = pd.factorize(this_mo["outlier"])[0]
+    print(this_mo["outlier"].value_counts())
+    print(this_mo["outlier_numeric"].value_counts())
+    if this_mo.loc[this_mo["outlier_numeric"] == 0]["outlier"].iloc[0] == "Yes":
+        outlier_label = 0
+    else:
+        outlier_label = 1
+    print(outlier_label)
     assert this_mo["outlier_numeric"].isna().any() == False
     class_weight = {}
     for i in this_mo["outlier_numeric"].unique():
@@ -126,5 +135,6 @@ def outlier_detection(this_mo, outlier_label=0):
         percent_same = (common_cluster_size / this_pred.shape[0]) * (
             pred.shape[0] / total_common_cluster_size
         )
+        print(percent_same)
         all_percent_same.append(percent_same)
     return all_percent_same

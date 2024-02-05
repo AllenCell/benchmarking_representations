@@ -11,6 +11,13 @@ def move(batch, device):
     return batch
 
 
+def remove(batch):
+    for key in batch.keys():
+        if isinstance(batch[key], torch.Tensor):
+            batch[key] = batch[key].detach().cpu().numpy()
+    return batch
+
+
 def rescale_img(tmp):
     tmp = np.where(tmp >= 0, tmp, 0)
     return tmp
@@ -53,9 +60,10 @@ def sample_points(orig):
         y = y[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
         if len(outs) == 3:
             z = z[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp * 0.3
-            new_cents = np.stack([z, y, x], axis=1)
         else:
-            new_cents = np.stack([y, x], axis=1)
+            z = np.copy(x)
+            z.fill(0)
+        new_cents = np.stack([z, y, x], axis=1).astype(float)
         assert new_cents.shape[0] == num_points
         pcloud.append(new_cents)
     pcloud = np.stack(pcloud, axis=0)

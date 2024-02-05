@@ -20,7 +20,7 @@ def min_max(df, feat, better_min=True, norm="std"):
     """
     Norm for model comparison
     e.g std - zscore model scores
-    better_min - if lower is better, take negative 
+    better_min - if lower is better, take negative
     returns dataframe where all features scores are comparable
     and higher is always better
     """
@@ -47,7 +47,7 @@ def collect_outputs(path, dataset, order_names, norm, model_order):
     dataset - name of dataset in csv names
     order_names - if mapping between integers and models, give corresponding list
     norm - std, minmax, other
-    model_order - list of model names (with nicer names) to compare, zscore and plot 
+    model_order - list of model names (with nicer names) to compare, zscore and plot
     """
     run_names_orig = [
         "2048_dgcnn",

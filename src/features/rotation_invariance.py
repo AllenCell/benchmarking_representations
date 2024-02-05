@@ -40,7 +40,14 @@ def rotation_pc_batch_z(batch, z_angle):
 
 
 def get_equiv_dict(
-    all_models, data_list, device, this_loss, keys, max_batches=20, max_embed_dim=192
+    all_models,
+    data_list,
+    device,
+    this_loss,
+    keys,
+    max_batches=20,
+    max_embed_dim=192,
+    squeeze_2d=False,
 ):
     """
     all_models - list of models
@@ -84,7 +91,9 @@ def get_equiv_dict(
                         if this_key == "pcloud":
                             this_input_rot = rotation_pc_batch_z(i, theta)
                         else:
-                            this_input_rot = rotation_image_batch_z(i, theta)
+                            this_input_rot = rotation_image_batch_z(
+                                i, theta, squeeze_2d
+                            )
 
                         batch_input = {
                             this_key: torch.tensor(this_input_rot).to(device).float()
