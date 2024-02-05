@@ -118,6 +118,7 @@ def model_pass_reconstruct(
     fraction,
     save_path,
     this_id,
+    run_name,
 ):
     model = model.to(device)
     z = torch.tensor(z).float().to(device)
@@ -215,7 +216,9 @@ def model_pass_reconstruct(
         )
         if save_path:
             save_pcloud(
-                rec[0].detach().cpu().numpy(), save_path, f"{this_id}_{fraction}"
+                rec[0].detach().cpu().numpy(),
+                save_path,
+                f"{run_name}_{this_id}_{fraction}",
             )
         max_size = min([rec.shape[0], rec_init.shape[0], rec_final.shape[0]])
         init_rcl = model.loss(rec[:max_size], rec_init[:max_size]).mean()
@@ -231,7 +234,9 @@ def model_pass_reconstruct(
         xhat = sample_points(xhat.detach().cpu().numpy())
         if save_path:
             save_pcloud(
-                xhat[0].detach().cpu().numpy(), save_path, f"{this_id}_{fraction}"
+                xhat[0].detach().cpu().numpy(),
+                save_path,
+                f"{run_name}_{this_id}_{fraction}",
             )
         init_x = sample_points(init_x.detach().cpu().numpy())
         final_x = sample_points(final_x.detach().cpu().numpy())
@@ -253,7 +258,9 @@ def model_pass_reconstruct(
         # print(xhat.shape, xhat[0, 0])
         if save_path:
             save_pcloud(
-                xhat[0].detach().cpu().numpy(), save_path, f"{this_id}_{fraction}"
+                xhat[0].detach().cpu().numpy(),
+                save_path,
+                f"{run_name}_{this_id}_{fraction}",
             )
         init_rcl = loss_eval(xhat.contiguous(), init_x.contiguous()).mean()
         final_rcl = loss_eval(xhat.contiguous(), final_x.contiguous()).mean()
@@ -349,6 +356,7 @@ def get_evolution_dict(
                         fraction,
                         save_path,
                         initial_id,
+                        run_names[j],
                     )
                     evolution_dict["model"].append(run_names[j])
                     evolution_dict["initial_ID"].append(initial_id)

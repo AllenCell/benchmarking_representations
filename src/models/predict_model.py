@@ -279,3 +279,48 @@ def process_batch(
         all_emissions,
         all_x_vis_list,
     )
+
+
+def process_batch_embeddings(
+    model,
+    this_loss,
+    device,
+    i,
+    all_splits,
+    all_data_ids,
+    all_embeds,
+    all_loss,
+    split,
+    track,
+    emissions_path,
+):
+    if "pcloud" in i.keys():
+        key = "pcloud"
+    else:
+        key = "image"
+    model_outputs = model_pass(
+        i,
+        model,
+        device,
+        this_loss,
+        track_emissions=track,
+        emissions_path=emissions_path,
+    )
+    i = remove(i)
+    emissions_df = pd.DataFrame()
+    if len(model_outputs) > 4:
+        out, z, loss, x_vis_list, emissions_df, time = [*model_outputs]
+        emissions_df["inference_time"] = time
+    else:
+        out, z, loss, x_vis_list = [*model_outputs]
+
+    all_embeds.append(z)
+    all_loss.append(loss)
+    all_splits.append(i[key].shape[0] * [split])
+    all_data_ids.append(i["cell_id"])
+    return (
+        all_embeds,
+        all_data_ids,
+        all_splits,
+        all_loss,
+    )

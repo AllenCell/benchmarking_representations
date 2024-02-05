@@ -41,6 +41,7 @@ def rotation_pc_batch_z(batch, z_angle):
 
 def get_equiv_dict(
     all_models,
+    run_names,
     data_list,
     device,
     this_loss,
@@ -116,7 +117,7 @@ def get_equiv_dict(
                             baseline
                         )
 
-                        eq_dict["model"].append(jm)
+                        eq_dict["model"].append(run_names[jm])
                         eq_dict["loss"].append(loss)
                         eq_dict["value"].append(norm_diff)
                         eq_dict["value2"].append(norm_diff2)

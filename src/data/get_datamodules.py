@@ -51,19 +51,3 @@ def get_cellpainting_data():
             data.append(instantiate(config))
 
     return data
-
-
-def get_cellpainting_data_evolve():
-    config_list = [
-        "../data/configs/inference_cellpainting_configs_evolve/pointcloud_3.yaml",
-        "../data/configs/inference_cellpainting_configs_evolve/pointcloud_4.yaml",
-        "../data/configs/inference_cellpainting_configs_evolve/image_full.yaml",
-    ]
-
-    data = []
-    for config_path in config_list:
-        with open(config_path, "r") as stream:
-            config = yaml.safe_load(stream)
-            data.append(instantiate(config))
-
-    return data

@@ -9,7 +9,7 @@ from sklearn.cluster import DBSCAN
 
 
 def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192):
-    all_ret = all_ret.loc[all_ret["split"] == "test"]
+    # all_ret = all_ret.loc[all_ret["split"] == "test"]
     ret_dict_compactness = {
         "model": [],
         "compactness": [],
@@ -22,7 +22,6 @@ def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
         val, pca, val2 = compactness(this_mo, num_PCs, max_embed_dim)
         percent_same = outlier_detection(this_mo)
-        print(val2, percent_same)
         ret_dict_compactness["model"].append(model)
         ret_dict_compactness["compactness"].append(val2)
         for i in range(len(percent_same)):
@@ -85,16 +84,12 @@ def outlier_detection(this_mo, outlier_label=0):
         this_mo2 = this_mo.loc[~this_mo["meta_fov_position"].isin(["edge"])]
         this_mo2["outlier"] = "No"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
-        print("edge cell", this_mo["outlier"].value_counts())
 
     this_mo["outlier_numeric"] = pd.factorize(this_mo["outlier"])[0]
-    print(this_mo["outlier"].value_counts())
-    print(this_mo["outlier_numeric"].value_counts())
     if this_mo.loc[this_mo["outlier_numeric"] == 0]["outlier"].iloc[0] == "Yes":
         outlier_label = 0
     else:
         outlier_label = 1
-    print(outlier_label)
     assert this_mo["outlier_numeric"].isna().any() == False
     class_weight = {}
     for i in this_mo["outlier_numeric"].unique():

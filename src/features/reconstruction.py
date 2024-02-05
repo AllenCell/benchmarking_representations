@@ -8,6 +8,10 @@ from pathlib import Path
 
 
 def save_pcloud(xhat, path, name):
+    """
+    Save pointcloud xhat
+
+    """
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
     this_recon = pv.PolyData(xhat[:, :3])
