@@ -129,90 +129,26 @@ def model_pass_reconstruct(
     init_x = torch.tensor(init_x).to(device)
     final_x = torch.tensor(final_x).to(device)
     if hasattr(model, "network"):
-        rec_init, _ = model.network(init_x)
-        x_vis_list, mask_vis_list, masks, centers, neighborhoods = model.network(
+        rec_init, _, _ = model.network(init_x, vis=True)
+        x_vis, mask, neighborhoods, centers = model.network(
             init_x, eval=True, return_all=True, eval_override=True
         )
-        rec_final, _ = model.network(final_x)
-        x_vis_list2, mask_vis_list2, masks2, centers2, neighborhoods2 = model.network(
-            final_x, eval=True, return_all=True, eval_override=True
+        rec_final, _, _ = model.network(final_x, vis=True)
+        x_vis2, mask2, neighborhoods2, centers2 = model.network(
+            final_x,
+            eval=True,
+            return_all=True,
         )
+        interpolated_x_vis = torch.lerp(x_vis, x_vis2, fraction)
+        interpolated_centers = torch.lerp(centers, centers2, fraction)
+        interpolated_neighbors = torch.lerp(neighborhoods, neighborhoods2, fraction)
 
-        interpolated_x_vis_list = []
-        interpolated_centers = []
-        interpolated_neighbors = []
-        sum_orig_diff = 0
-        for i in range(len(x_vis_list)):
-            diff = x_vis_list[i].shape[1] - x_vis_list2[i].shape[1]
-            orig_diff = diff
-            sum_orig_diff += orig_diff
-            if diff > 0:
-                x_vis_list2[i] = torch.nn.functional.pad(
-                    x_vis_list2[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
-                )
-            elif diff < 0:
-                x_vis_list[i] = torch.nn.functional.pad(
-                    x_vis_list[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
-                )
-
-            diff = centers[i].shape[1] - centers2[i].shape[1]
-            if diff > 0:
-                centers2[i] = torch.nn.functional.pad(
-                    centers2[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
-                )
-            elif diff < 0:
-                centers[i] = torch.nn.functional.pad(
-                    centers[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
-                )
-
-            diff = neighborhoods[i].shape[1] - neighborhoods2[i].shape[1]
-            if diff > 0:
-                neighborhoods2[i] = torch.nn.functional.pad(
-                    neighborhoods2[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
-                )
-            elif diff < 0:
-                neighborhoods[i] = torch.nn.functional.pad(
-                    neighborhoods[i], (0, 0, np.abs(diff), 0, 0, 0), "constant", 0
-                )
-            diffs = []
-            diffs.append(
-                torch.tensor(centers[i].shape) - torch.tensor(centers2[i].shape)
-            )
-            diffs.append(
-                torch.tensor(neighborhoods[i].shape)
-                - torch.tensor(neighborhoods2[i].shape)
-            )
-            diffs.append(
-                torch.tensor(x_vis_list[i].shape) - torch.tensor(x_vis_list2[i].shape)
-            )
-            interpolated_x_vis_list.append(
-                torch.lerp(x_vis_list[i], x_vis_list2[i], fraction)
-            )
-            interpolated_centers.append(torch.lerp(centers[i], centers2[i], fraction))
-            interpolated_neighbors.append(
-                torch.lerp(neighborhoods[i], neighborhoods2[i], fraction)
-            )
-        if sum_orig_diff >= 0:
-            this_centers = interpolated_centers
-            this_neighbors = interpolated_neighbors
-            this_x_vis_list = interpolated_x_vis_list
-            this_masks = masks
-            this_masks_vis_list = mask_vis_list
-        else:
-            this_centers = interpolated_centers
-            this_neighbors = interpolated_neighbors
-            this_x_vis_list = interpolated_x_vis_list
-            this_masks = masks2
-            this_masks_vis_list = mask_vis_list2
-        if len(np.unique(this_masks[-2].detach().cpu().numpy())) == 1:
-            this_masks[-2] = this_masks[-2].fill_(True)
-
-        rec, gt = model.network.reconstruct(
-            this_centers,
-            this_neighbors,
-            this_x_vis_list,
-            this_masks,
-            this_masks_vis_list,
+        rec, gt, _ = model.network.reconstruct(
+            interpolated_x_vis,
+            interpolated_centers,
+            interpolated_neighbors,
+            mask,
+            vis=True,
         )
         if save_path:
             save_pcloud(

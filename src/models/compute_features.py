@@ -1,7 +1,3 @@
-import os
-
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-os.environ["CUDA_VISIBLE_DEVICES"] = "MIG-5c1d3311-7294-5551-9e4f-3535560f5f82"
 from pathlib import Path
 import pandas as pd
 from src.features.rotation_invariance import get_equiv_dict
@@ -11,9 +7,32 @@ from src.features.evolve import get_evolve_dataset
 from src.features.evolve import get_evolution_dict
 from src.models.save_embeddings import get_pc_loss
 
+DATASET_INFO = {
+    "pcna": {
+        "embedding_save_location": "./pcna_embeddings",
+        "orig_df": "/allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv",
+        "image_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
+    },
+    "variance": {
+        "embedding_save_location": "./variance_embeddings",
+        "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/variance_punctate/one_step/manifest.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest.parquet",
+    },
+    "cellpainting": {
+        "embedding_save_location": "./cellpainting_embeddings",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/singlecell_pointclouds/manifest_all_compound_mergeimage.parquet",
+        "image_path": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/single_cell_images/manifest_all_compound.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/singlecell_pointclouds/manifest_all_compound.parquet",
+    },
+}
 
-def get_pcna_embeddings(run_names):
-    path = Path("./pcna_embeddings")
+
+def get_embeddings(run_names, dataset):
+    embedding_save_location = DATASET_INFO[dataset]["embedding_save_location"]
+    df_path = DATASET_INFO[dataset]["orig_df"]
+    path = Path(embedding_save_location)
 
     all_df = []
     for i in run_names:
@@ -23,18 +42,20 @@ def get_pcna_embeddings(run_names):
 
     all_ret = pd.concat(all_df, axis=0).reset_index(drop=True)
 
-    df = pd.read_csv(
-        "/allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv"
-    )
+    if df_path.split(".")[-1] == "csv":
+        df = pd.read_csv(df_path)
+    else:
+        df = pd.read_parquet(df_path)
     all_ret = all_ret.merge(df, on="CellId")
     return all_ret, df
 
 
-def get_pcna_evolve_dataset(num_samples, keys):
-    image_path = "/allen/aics/modeling/ritvik/pcna/manifest.parquet"
-    pc_path = "/allen/aics/modeling/ritvik/pcna/manifest.parquet"
+def get_evolve_data_list(save_folder, num_samples, keys, dataset):
+    image_path = DATASET_INFO[dataset]["image_path"]
+    pc_path = DATASET_INFO[dataset]["pc_path"]
+
     data_evolve, _ = get_evolve_dataset(
-        "pcna", num_samples, pc_path, image_path, "./test_evolve_pcna"
+        dataset, num_samples, pc_path, image_path, save_folder
     )
     data_list = [data_evolve[2], data_evolve[2], data_evolve[1], data_evolve[0]]
     if keys[0] == "pcloud":
@@ -43,6 +64,7 @@ def get_pcna_evolve_dataset(num_samples, keys):
 
 
 def compute_features(
+    dataset: str = "pcna",
     save_folder: str = "./",
     data_list: list = [],
     all_models: list = [],
@@ -52,6 +74,7 @@ def compute_features(
     max_embed_dim: int = 256,
     class_label: str = "cell_stage_fine",
     num_evolve_samples: int = 1,
+    squeeze_2d: bool = False,
 ):
     """
     Compute all benchmarking metrics and save
@@ -73,11 +96,11 @@ def compute_features(
         keys,
         max_batches,
         max_embed_dim,
-        False,
+        squeeze_2d,
     )
     eq_dict.to_csv(path / "equiv.csv")
 
-    all_ret, df = get_pcna_embeddings(run_names)
+    all_ret, df = get_embeddings(run_names, dataset)
 
     print("Getting reconstruction")
     rec_df = all_ret.groupby(["model", "split"]).mean()
@@ -97,7 +120,9 @@ def compute_features(
     ret_dict_classification = get_classification_df(all_ret, class_label)
     ret_dict_classification.to_csv(path / "classification.csv")
 
-    data_evolve_list = get_pcna_evolve_dataset(num_evolve_samples, keys)
+    data_evolve_list = get_evolve_data_list(
+        save_folder, num_evolve_samples, keys, dataset
+    )
     print("Computing evolution")
     evolution_dict = get_evolution_dict(
         all_models,

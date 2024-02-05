@@ -99,6 +99,7 @@ def get_equiv_dict(
                         batch_input = {
                             this_key: torch.tensor(this_input_rot).to(device).float()
                         }
+
                         out, z, loss, _ = model_pass(
                             batch_input,
                             this_model,

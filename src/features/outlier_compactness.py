@@ -130,6 +130,5 @@ def outlier_detection(this_mo, outlier_label=0):
         percent_same = (common_cluster_size / this_pred.shape[0]) * (
             pred.shape[0] / total_common_cluster_size
         )
-        print(percent_same)
         all_percent_same.append(percent_same)
     return all_percent_same
