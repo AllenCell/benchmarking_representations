@@ -123,6 +123,7 @@ def model_pass_reconstruct(
     model = model.to(device)
     z = torch.tensor(z).float().to(device)
     fraction = round(fraction, 1)
+
     if key == "pcloud":
         init_x = init_x[:, :, :3]
         final_x = final_x[:, :, :3]
@@ -178,7 +179,7 @@ def model_pass_reconstruct(
         final_x = sample_points(final_x.detach().cpu().numpy())
         init_rcl = loss_eval(xhat.contiguous(), init_x.contiguous()).mean()
         final_rcl = loss_eval(xhat.contiguous(), final_x.contiguous()).mean()
-        total_rcl = loss_eval(xhat.contiguous(), init_x.contiguous()).mean()
+        total_rcl = loss_eval(final_x.contiguous(), init_x.contiguous()).mean()
         return (init_rcl + final_rcl) / total_rcl
     else:
         decoder = model.decoder[key]
@@ -198,9 +199,10 @@ def model_pass_reconstruct(
                 save_path,
                 f"{run_name}_{this_id}_{fraction}",
             )
+
         init_rcl = loss_eval(xhat.contiguous(), init_x.contiguous()).mean()
         final_rcl = loss_eval(xhat.contiguous(), final_x.contiguous()).mean()
-        total_rcl = loss_eval(xhat.contiguous(), init_x.contiguous()).mean()
+        total_rcl = loss_eval(final_x.contiguous(), init_x.contiguous()).mean()
         return (init_rcl + final_rcl) / total_rcl
 
 
