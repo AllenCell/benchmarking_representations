@@ -78,6 +78,7 @@ def compute_features(
     class_label: str = "cell_stage_fine",
     num_evolve_samples: int = 1,
     squeeze_2d: bool = False,
+    splits_list: list = ["train", "val", "test"],
 ):
     """
     Compute all benchmarking metrics and save
@@ -104,6 +105,7 @@ def compute_features(
     eq_dict.to_csv(path / "equiv.csv")
 
     all_ret, df = get_embeddings(run_names, dataset)
+    all_ret = all_ret.loc[all_ret["split"].isin(splits_list)].reset_index(drop=True)
 
     print("Getting reconstruction")
     rec_df = all_ret.groupby(["model", "split"]).mean()

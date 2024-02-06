@@ -4,9 +4,8 @@ import pandas as pd
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from sklearn.cluster import DBSCAN
 from sklearn.model_selection import (
-    RepeatedKFold,
+    StratifiedKFold,
     cross_validate,
 )
 from sklearn.linear_model import LogisticRegression
@@ -85,10 +84,6 @@ def outlier_detection(this_mo, outlier_label=0):
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
 
     this_mo["outlier_numeric"] = pd.factorize(this_mo["outlier"])[0]
-    if this_mo.loc[this_mo["outlier_numeric"] == 0]["outlier"].iloc[0] == "Yes":
-        outlier_label = 0
-    else:
-        outlier_label = 1
     assert this_mo["outlier_numeric"].isna().any() == False
     class_weight = {}
     for i in this_mo["outlier_numeric"].unique():
@@ -106,36 +101,20 @@ def outlier_detection(this_mo, outlier_label=0):
 
     assert this_mo["outlier_numeric"].isna().any() == False
 
-    # n_clusters = 2
-    # clf = AgglomerativeClustering(n_clusters=n_clusters)
-    # model = make_pipeline(StandardScaler(), clf)
-    # clustering = model.fit(this_mo[cols].dropna(axis=1).values)
-    # pred = clustering[1].labels_
-    # true = this_mo[target_col].values
-    # ari = adjusted_rand_score(true, pred)
-    # ris = rand_score(true, pred)
-    # ss = fowlkes_mallows_score(true, pred)
-
-    # clf = proba_logreg(
-    #     random_state=20,
-    #     class_weight=class_weight,
-    #     multi_class="ovr",
-    #     max_iter=3000,
-    # )
-
-    clf = LogisticRegression(class_weight=class_weight, max_iter=3000)
+    clf = LogisticRegression(
+        class_weight=class_weight, max_iter=3000, multi_class="ovr"
+    )
     model = make_pipeline(StandardScaler(), clf)
 
     cv_model = cross_validate(
         model,
         this_mo[cols].dropna(axis=1).values,
         this_mo[target_col].values,
-        cv=RepeatedKFold(n_splits=5, n_repeats=20, random_state=2652124),
+        cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=2652124),
         return_estimator=True,
         n_jobs=2,
         scoring=[
             "balanced_accuracy",
-            "f1",
             "precision",
         ],
         return_train_score=False,
