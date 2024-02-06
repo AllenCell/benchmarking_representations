@@ -3,17 +3,17 @@ import plotly.graph_objects as go
 import plotly.offline as pyo
 import seaborn as sns
 import os
+from pathlib import Path
 
 
-def rename(this_df, rep_dict, rep_dict2):
-    """
-    Rename model names
-    rep_dict - rename initial names with nicer names
-    rep_dict2 - rename integer labels (if any) with nicer names
-    """
-    this_df["model"] = this_df["model"].replace(rep_dict)
-    this_df["model"] = this_df["model"].replace(rep_dict2)
-    return this_df
+METRIC_DICT = {
+    "recon": {"metric": ["loss"], "min": [True]},
+    "classification": {"metric": ["top_1_acc"], "min": [False]},
+    "emissions": {"metric": ["emissions", "inference_time"], "min": [True, True]},
+    "evolve": {"metric": ["energy", "closest_embedding_distance"], "min": [True, True]},
+    "equiv": {"metric": ["value"], "min": [True]},
+    "compactness": {"metric": ["compactness", "percent_same"], "min": [False, False]},
+}
 
 
 def min_max(df, feat, better_min=True, norm="std"):
@@ -41,7 +41,7 @@ def min_max(df, feat, better_min=True, norm="std"):
     return df
 
 
-def collect_outputs(path, dataset, order_names, norm, model_order):
+def collect_outputs(path, norm, model_order=None):
     """
     path - location of csvs
     dataset - name of dataset in csv names
@@ -50,7 +50,7 @@ def collect_outputs(path, dataset, order_names, norm, model_order):
     model_order - list of model names (with nicer names) to compare, zscore and plot
     """
     run_names_orig = [
-        "2048_dgcnn",
+        "2048_ed_dgcnn",
         "2048_ed_m2ae",
         "2048_int_ed_vndgcnn",
         "classical_resize_image",
@@ -58,6 +58,7 @@ def collect_outputs(path, dataset, order_names, norm, model_order):
         "vit",
         "classical_image",
         "so2_image",
+        "2048_ed_mae",
     ]
     run_names = [
         "DGCNN",
@@ -68,81 +69,50 @@ def collect_outputs(path, dataset, order_names, norm, model_order):
         "ViT",
         "ImageAE",
         "SO2 ImageAE",
+        "Point MAE",
     ]
-    rep_dict2 = {i: j for i, j in zip(run_names_orig, run_names)}
+    rep_dict = {i: j for i, j in zip(run_names_orig, run_names)}
 
-    rep_dict = {i: j for i, j in zip(range(len(order_names)), order_names)}
+    df_list = []
+    for metric in [
+        "recon",
+        "classification",
+        "equiv",
+        "emissions",
+        "compactness",
+        "evolve",
+    ]:
+        this_df = pd.read_csv(path + f"{metric}.csv")
+        this_df["model"] = this_df["model"].replace(rep_dict)
+        if "split" in this_df.columns:
+            this_df = (
+                this_df.loc[this_df["split"] == "test"]
+                .groupby("model")
+                .mean()
+                .reset_index()
+            )
 
-    df_recon = pd.read_csv(path + f"{dataset}_recon.csv")
-    df_class = pd.read_csv(path + f"{dataset}_classification.csv")
-    df_inv = pd.read_csv(path + f"{dataset}_equiv.csv")
-    df_emissions = pd.read_csv(path + f"{dataset}_emissions.csv")
-    df_compact = pd.read_csv(path + f"{dataset}_compactness.csv")
-    df_evolve = pd.read_csv(path + f"{dataset}_evolution.csv")
+        this_df = this_df.groupby("model").mean().reset_index()
+        if model_order:
+            this_df = this_df.loc[this_df["model"].isin(model_order)]
+        this_metrics = METRIC_DICT[metric]["metric"]
+        this_minmax = METRIC_DICT[metric]["min"]
 
-    for this_df in [df_recon, df_class, df_inv, df_emissions, df_compact, df_evolve]:
-        this_df = rename(this_df, rep_dict, rep_dict2)
+        for i in range(len(this_metrics)):
+            this_df2 = min_max(this_df, this_metrics[i], this_minmax[i], norm)
+            this_df2 = pd.melt(
+                this_df2, id_vars=["model"], value_vars=[this_metrics[i]]
+            )
+            df_list.append(this_df2)
 
-    df_recon = (
-        df_recon.loc[df_recon["split"] == "test"].groupby("model").mean().reset_index()
-    )
-    df_evolve = df_evolve.groupby("model").mean().reset_index()
-    df_compact = df_compact.groupby("model").mean().reset_index()
-    df_emissions = df_emissions.groupby("model").mean().reset_index()
-    df_inv = df_inv.groupby("model").mean().reset_index()
-    df_class = df_class.groupby("model").mean().reset_index()
-
-    df_recon = df_recon.loc[df_recon["model"].isin(model_order)]
-    df_evolve = df_evolve.loc[df_evolve["model"].isin(model_order)]
-    df_compact = df_compact.loc[df_compact["model"].isin(model_order)]
-    df_emissions = df_emissions.loc[df_emissions["model"].isin(model_order)]
-    df_inv = df_inv.loc[df_inv["model"].isin(model_order)]
-    df_class = df_class.loc[df_class["model"].isin(model_order)]
-
-    df_recon = min_max(df_recon, "loss", True, norm)
-    df_class = min_max(df_class, "top_1_acc", False, norm)
-    df_compact = min_max(df_compact, "compactness", False, norm)
-    df_compact = min_max(df_compact, "percent_same", False, norm)
-    df_inv = min_max(df_inv, "value", True, norm)
-    df_evolve = min_max(df_evolve, "closest_embedding_distance", True, norm)
-    df_evolve = min_max(df_evolve, "energy", True, norm)
-    df_emissions = min_max(df_emissions, "emissions", True, norm)
-    df_emissions = min_max(df_emissions, "inference_time", True, norm)
-
-    df_recon = pd.melt(df_recon, id_vars=["model"], value_vars=["loss"])
-    df_class = pd.melt(df_class, id_vars=["model"], value_vars=["top_1_acc"])
-    df_compact1 = pd.melt(df_compact, id_vars=["model"], value_vars=["compactness"])
-    df_compact2 = pd.melt(df_compact, id_vars=["model"], value_vars=["percent_same"])
-    df_inv = pd.melt(df_inv, id_vars=["model"], value_vars=["value"])
-    df_inv["variable"] = "rotation_inv_error"
-    df_evolve1 = pd.melt(
-        df_evolve, id_vars=["model"], value_vars=["closest_embedding_distance"]
-    )
-    df_evolve2 = pd.melt(df_evolve, id_vars=["model"], value_vars=["energy"])
-    df_emissions1 = pd.melt(df_emissions, id_vars=["model"], value_vars=["emissions"])
-    df_emissions2 = pd.melt(
-        df_emissions, id_vars=["model"], value_vars=["inference_time"]
-    )
-
-    df_list = [
-        df_recon,
-        df_class,
-        df_compact1,
-        df_compact2,
-        df_inv,
-        df_evolve1,
-        df_evolve2,
-        df_emissions1,
-        df_emissions2,
-    ]
     df = pd.concat(df_list, axis=0).reset_index(drop=True)
 
     rep_dict_var = {
         "loss": "Reconstruction",
-        "top_1_acc": "Cell cycle classification",
+        "top_1_acc": "Classification",
         "compactness": "Compactness",
         "percent_same": "Outlier Detection",
-        "rotation_inv_error": "Rotation Invariance Error",
+        "value": "Rotation Invariance Error",
         "closest_embedding_distance": "Interpolation Embedding Distance",
         "energy": "Shape Evolution Energy",
         "emissions": "Emissions",
@@ -152,10 +122,24 @@ def collect_outputs(path, dataset, order_names, norm, model_order):
     return df
 
 
-def plot(df, models, title, colors_list=None):
-    categories = df["variable"].unique()
-    categories = [*categories, categories[0]]
+def plot(save_folder, df, models, title, colors_list=None):
+    path = Path(save_folder)
+    path.mkdir(parents=True, exist_ok=True)
 
+    # categories = df["variable"].unique()
+    # categories = [*categories, categories[0]]
+
+    gen_metrics = ["Reconstruction", "Shape Evolution Energy"]
+    emission_metrics = ["Emissions", "Inference Time"]
+    expressive_metrics = [
+        "Compactness",
+        "Outlier Detection",
+        "Classification",
+        "Rotation Invariance Error",
+        "Interpolation Embedding Distance",
+    ]
+    cat_order = gen_metrics + emission_metrics + expressive_metrics
+    categories = [*cat_order, cat_order[0]]
     pal = sns.color_palette("pastel")
     colors = pal.as_hex()
 
@@ -191,6 +175,4 @@ def plot(df, models, title, colors_list=None):
         ),
     )
 
-    if not os.path.exists("images"):
-        os.mkdir("images")
-    fig.write_image(f"images/{title}.png")
+    fig.write_image(path / f"{title}.png")

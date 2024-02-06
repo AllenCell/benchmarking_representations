@@ -36,6 +36,7 @@ def process_dataloader(
     all_splits,
     all_loss,
     debug,
+    device,
 ):
     for j, i in enumerate(tqdm(dataloader)):
         if (debug) and j > 1:
@@ -67,6 +68,8 @@ def save_embeddings(
     all_models: list = [],
     run_names: list = [],
     debug: bool = False,
+    split_list: list = ["train", "val", "test"],
+    device: str = "cuda:0",
 ):
     Path(save_folder).mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
@@ -84,45 +87,51 @@ def save_embeddings(
         all_splits = []
         this_data = data_list[j_ind]
         with torch.no_grad():
-            all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
-                this_data.train_dataloader(),
-                model,
-                loss_eval_pc,
-                track_emissions,
-                emissions_path,
-                "train",
-                all_embeds,
-                all_data_ids,
-                all_splits,
-                all_loss,
-                debug,
-            )
-            all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
-                this_data.val_dataloader(),
-                model,
-                loss_eval_pc,
-                track_emissions,
-                emissions_path,
-                "val",
-                all_embeds,
-                all_data_ids,
-                all_splits,
-                all_loss,
-                debug,
-            )
-            all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
-                this_data.test_dataloader(),
-                model,
-                loss_eval_pc,
-                track_emissions,
-                emissions_path,
-                "test",
-                all_embeds,
-                all_data_ids,
-                all_splits,
-                all_loss,
-                debug,
-            )
+            if "train" in split_list:
+                all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
+                    this_data.train_dataloader(),
+                    model,
+                    loss_eval_pc,
+                    track_emissions,
+                    emissions_path,
+                    "train",
+                    all_embeds,
+                    all_data_ids,
+                    all_splits,
+                    all_loss,
+                    debug,
+                    device,
+                )
+            if "val" in split_list:
+                all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
+                    this_data.val_dataloader(),
+                    model,
+                    loss_eval_pc,
+                    track_emissions,
+                    emissions_path,
+                    "val",
+                    all_embeds,
+                    all_data_ids,
+                    all_splits,
+                    all_loss,
+                    debug,
+                    device,
+                )
+            if "test" in split_list:
+                all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
+                    this_data.test_dataloader(),
+                    model,
+                    loss_eval_pc,
+                    track_emissions,
+                    emissions_path,
+                    "test",
+                    all_embeds,
+                    all_data_ids,
+                    all_splits,
+                    all_loss,
+                    debug,
+                    device,
+                )
 
             all_splits = [x for xs in all_splits for x in xs]
             all_data_ids = [x for xs in all_data_ids for x in xs]
@@ -148,6 +157,7 @@ def save_emissions(
     run_names: list = [],
     max_batches: int = 5,
     debug: bool = False,
+    device: str = "cuda:0",
 ):
     emissions_path = Path(emissions_path)
     emissions_path.mkdir(parents=True, exist_ok=True)
