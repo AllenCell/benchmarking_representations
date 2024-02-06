@@ -89,25 +89,25 @@ def compute_features(
     loss_eval_pc = get_pc_loss()
     max_batches = 4
 
-    # print("Computing rotation invariance")
-    # eq_dict = get_equiv_dict(
-    #     all_models,
-    #     run_names,
-    #     data_list,
-    #     device,
-    #     loss_eval_pc,
-    #     keys,
-    #     max_batches,
-    #     max_embed_dim,
-    #     squeeze_2d,
-    # )
-    # eq_dict.to_csv(path / "equiv.csv")
+    print("Computing rotation invariance")
+    eq_dict = get_equiv_dict(
+        all_models,
+        run_names,
+        data_list,
+        device,
+        loss_eval_pc,
+        keys,
+        max_batches,
+        max_embed_dim,
+        squeeze_2d,
+    )
+    eq_dict.to_csv(path / "equiv.csv")
 
     all_ret, df = get_embeddings(run_names, dataset)
 
-    # print("Getting reconstruction")
-    # rec_df = all_ret.groupby(["model", "split"]).mean()
-    # rec_df.to_csv(path / "recon.csv")
+    print("Getting reconstruction")
+    rec_df = all_ret.groupby(["model", "split"]).mean()
+    rec_df.to_csv(path / "recon.csv")
 
     all_embeds2 = []
     for i in run_names:
@@ -115,13 +115,13 @@ def compute_features(
         cols = [i for i in all_ret.columns if "mu" in i]
         all_embeds2.append(tt[cols].dropna(axis=1).values)
 
-    # print("Computing compactness")
-    # ret_dict_compactness = get_embedding_metrics(all_ret, max_embed_dim=max_embed_dim)
-    # ret_dict_compactness.to_csv(path / "compactness.csv")
+    print("Computing compactness")
+    ret_dict_compactness = get_embedding_metrics(all_ret, max_embed_dim=max_embed_dim)
+    ret_dict_compactness.to_csv(path / "compactness.csv")
 
-    # print("Computing classification")
-    # ret_dict_classification = get_classification_df(all_ret, class_label)
-    # ret_dict_classification.to_csv(path / "classification.csv")
+    print("Computing classification")
+    ret_dict_classification = get_classification_df(all_ret, class_label)
+    ret_dict_classification.to_csv(path / "classification.csv")
 
     data_evolve_list = get_evolve_data_list(
         save_folder, num_evolve_samples, keys, dataset
@@ -140,3 +140,18 @@ def compute_features(
     )
 
     evolution_dict.to_csv(path / "evolve.csv")
+
+    # print("Computing evolution")
+    # evolution_dict = get_evolution_dict(
+    #     all_models[2:],
+    #     data_evolve_list[2:],
+    #     loss_eval_pc,
+    #     all_embeds2[2:],
+    #     run_names[2:],
+    #     device,
+    #     df,
+    #     keys[2:],
+    #     path / "evolve",
+    # )
+
+    # evolution_dict.to_csv(path / "evolve.csv")

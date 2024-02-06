@@ -1,16 +1,9 @@
 import os
-
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-os.environ["CUDA_VISIBLE_DEVICES"] = "MIG-7d67cf82-0c6b-5aee-99ce-cab54f47f0b6"
 from hydra.utils import instantiate
 import yaml
 import torch
 import numpy as np
 import torch
-
-device = "cuda:0"
-from src.data.get_datamodules import get_pcna_data
-from cyto_dl.models.utils.mlflow import load_model_from_checkpoint
 from tqdm import tqdm
 import pandas as pd
 from pathlib import Path

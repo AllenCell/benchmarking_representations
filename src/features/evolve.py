@@ -9,6 +9,7 @@ from hydra.utils import instantiate
 from pathlib import Path
 from src.models.predict_model import model_pass
 import random
+from sklearn.decomposition import PCA
 
 
 def get_evolve_dataset(dataset_name, num_samples, pc_path, image_path, save_path):
@@ -243,13 +244,18 @@ def get_evolution_dict(
     for j in range(len(all_models)):
         model = all_models[j]
         model = model.eval()
-        for i in tqdm(data_list[j].test_dataloader()):
+        for count, i in enumerate(tqdm(data_list[j].test_dataloader())):
+            this_save = False
+            if count == 0:
+                this_save = save_path
             this_ids = i["cell_id"]
             this_inputs = i[keys[j]]
 
             assert this_inputs.shape[0] == 2
 
             this_all_embeds = all_embeds[j]
+            pca = PCA(n_components=embed_dim)
+            this_all_embeds = pca.fit_transform(this_all_embeds)
 
             init_input = this_inputs[:1]
             final_input = this_inputs[1:2]
@@ -292,7 +298,7 @@ def get_evolution_dict(
                         this_loss,
                         keys[j],
                         fraction,
-                        save_path,
+                        this_save,
                         initial_id,
                         run_names[j],
                     )
@@ -301,6 +307,7 @@ def get_evolution_dict(
                     evolution_dict["final_ID"].append(final_id)
                     evolution_dict["fraction"].append(fraction)
                     evolution_dict["energy"].append(energy.item())
+                    intermediate_embed = pca.transform(intermediate_embed)
                     if len(intermediate_embed.shape) > 2:
                         baseline_all = this_all_embeds.mean(axis=1).squeeze().copy()
                         intermediate_embed = intermediate_embed.mean(axis=0)

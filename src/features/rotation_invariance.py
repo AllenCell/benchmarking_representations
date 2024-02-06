@@ -66,6 +66,7 @@ def get_equiv_dict(
         "id": [],
         "theta": [],
         "value2": [],
+        "value3": [],
     }
 
     all_thetas = [
@@ -117,11 +118,15 @@ def get_equiv_dict(
                         norm_diff2 = np.linalg.norm(z - baseline) / np.linalg.norm(
                             baseline
                         )
+                        norm_diff3 = np.linalg.norm(z - baseline) / (
+                            np.linalg.norm(baseline) + np.linalg.norm(z)
+                        )
 
                         eq_dict["model"].append(run_names[jm])
                         eq_dict["loss"].append(loss)
                         eq_dict["value"].append(norm_diff)
                         eq_dict["value2"].append(norm_diff2)
+                        eq_dict["value3"].append(norm_diff3)
                         eq_dict["id"].append(str(this_ids))
                         eq_dict["theta"].append(theta)
     return pd.DataFrame(eq_dict)

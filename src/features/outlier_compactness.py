@@ -3,9 +3,13 @@ from tqdm import tqdm
 import pandas as pd
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
 from sklearn.cluster import DBSCAN
+from sklearn.model_selection import (
+    RepeatedKFold,
+    cross_validate,
+)
+from sklearn.linear_model import LogisticRegression
 
 
 def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192):
@@ -14,9 +18,6 @@ def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192):
         "model": [],
         "compactness": [],
         "percent_same": [],
-        "percent_same_1": [],
-        "percent_same_2": [],
-        "percent_same_3": [],
     }
     for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
@@ -24,9 +25,7 @@ def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192):
         percent_same = outlier_detection(this_mo)
         ret_dict_compactness["model"].append(model)
         ret_dict_compactness["compactness"].append(val2)
-        for i in range(len(percent_same)):
-            ret_dict_compactness[f"percent_same_{i+1}"].append(percent_same[i])
-        ret_dict_compactness["percent_same"].append(sum(percent_same))
+        ret_dict_compactness["percent_same"].append(percent_same)
     ret_dict_compactness = pd.DataFrame(ret_dict_compactness)
     return ret_dict_compactness
 
@@ -79,9 +78,9 @@ def outlier_detection(this_mo, outlier_label=0):
         this_mo2["outlier"] = "No"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
     elif "meta_fov_position" in this_mo.columns:
-        this_mo1 = this_mo.loc[this_mo["meta_fov_position"].isin(["edge"])]
+        this_mo1 = this_mo.loc[this_mo["edge_flag"].isin([1])]
         this_mo1["outlier"] = "Yes"
-        this_mo2 = this_mo.loc[~this_mo["meta_fov_position"].isin(["edge"])]
+        this_mo2 = this_mo.loc[~this_mo["edge_flag"].isin([1])]
         this_mo2["outlier"] = "No"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
 
@@ -107,28 +106,40 @@ def outlier_detection(this_mo, outlier_label=0):
 
     assert this_mo["outlier_numeric"].isna().any() == False
 
-    all_percent_same = []
-    for n_clusters in [2, 4, 5]:
-        clf = AgglomerativeClustering(n_clusters=n_clusters)
-        model = make_pipeline(StandardScaler(), clf)
-        clustering = model.fit(this_mo[cols].dropna(axis=1).values)
-        pred = clustering[1].labels_
-        true = this_mo[target_col].values
+    # n_clusters = 2
+    # clf = AgglomerativeClustering(n_clusters=n_clusters)
+    # model = make_pipeline(StandardScaler(), clf)
+    # clustering = model.fit(this_mo[cols].dropna(axis=1).values)
+    # pred = clustering[1].labels_
+    # true = this_mo[target_col].values
+    # ari = adjusted_rand_score(true, pred)
+    # ris = rand_score(true, pred)
+    # ss = fowlkes_mallows_score(true, pred)
 
-        # get preds where outlier
-        this_pred = pred[np.where(true == outlier_label)[0]]
+    # clf = proba_logreg(
+    #     random_state=20,
+    #     class_weight=class_weight,
+    #     multi_class="ovr",
+    #     max_iter=3000,
+    # )
 
-        # most common predicted cluster here and its size
-        common_cluster = np.argmax(np.bincount(this_pred))
-        common_cluster_size = np.bincount(this_pred).max()
+    clf = LogisticRegression(class_weight=class_weight, max_iter=3000)
+    model = make_pipeline(StandardScaler(), clf)
 
-        # total cluster size
-        total_common_cluster_size = np.where(pred == common_cluster)[0].shape[0]
+    cv_model = cross_validate(
+        model,
+        this_mo[cols].dropna(axis=1).values,
+        this_mo[target_col].values,
+        cv=RepeatedKFold(n_splits=5, n_repeats=20, random_state=2652124),
+        return_estimator=True,
+        n_jobs=2,
+        scoring=[
+            "balanced_accuracy",
+            "f1",
+            "precision",
+        ],
+        return_train_score=False,
+    )
 
-        # how many cells of the same cluster in the predicted set scaled by
-        # size of that cluster relative to all predictions
-        percent_same = (common_cluster_size / this_pred.shape[0]) * (
-            pred.shape[0] / total_common_cluster_size
-        )
-        all_percent_same.append(percent_same)
-    return all_percent_same
+    acc = [round(i, 2) for i in cv_model["test_balanced_accuracy"]]
+    return np.mean(acc)
