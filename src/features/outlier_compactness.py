@@ -76,15 +76,18 @@ def outlier_detection(this_mo, outlier_label=0):
         this_mo2 = this_mo.loc[this_mo["Anomaly"].isin(["none"])]
         this_mo2["outlier"] = "No"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
-    elif "meta_fov_position" in this_mo.columns:
-        this_mo1 = this_mo.loc[this_mo["edge_flag"].isin([1])]
+    elif "cell_stage" in this_mo.columns:
+        this_mo1 = this_mo.loc[~this_mo["cell_stage"].isin(["M0"])]
         this_mo1["outlier"] = "Yes"
-        this_mo2 = this_mo.loc[~this_mo["edge_flag"].isin([1])]
+        this_mo2 = this_mo.loc[this_mo["cell_stage"].isin(["M0"])]
         this_mo2["outlier"] = "No"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
 
+    if this_mo["outlier"].isna().any():
+        this_mo["outlier"] = this_mo["outlier"].fillna("No")
     this_mo["outlier_numeric"] = pd.factorize(this_mo["outlier"])[0]
     assert this_mo["outlier_numeric"].isna().any() == False
+
     class_weight = {}
     for i in this_mo["outlier_numeric"].unique():
         n = this_mo.loc[this_mo["outlier_numeric"] == i].shape[0]

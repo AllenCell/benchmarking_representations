@@ -11,7 +11,7 @@ METRIC_DICT = {
     "classification": {"metric": ["top_1_acc"], "min": [False]},
     "emissions": {"metric": ["emissions", "inference_time"], "min": [True, True]},
     "evolve": {"metric": ["energy", "closest_embedding_distance"], "min": [True, True]},
-    "equiv": {"metric": ["value"], "min": [True]},
+    "equiv": {"metric": ["value3"], "min": [True]},
     "compactness": {"metric": ["compactness", "percent_same"], "min": [False, False]},
 }
 
@@ -32,7 +32,7 @@ def min_max(df, feat, better_min=True, norm="std"):
         df[feat] = (df[feat] - df[feat].min()) / (df[feat].max() - df[feat].min())
         if better_min:
             df[feat] = df[feat].max() - df[feat]
-    else:
+    elif norm == "scale":
         if df[feat].max() > 1:
             df[feat] = df[feat] / df[feat].max()
         if better_min:
@@ -112,7 +112,7 @@ def collect_outputs(path, norm, model_order=None):
         "top_1_acc": "Classification",
         "compactness": "Compactness",
         "percent_same": "Outlier Detection",
-        "value": "Rotation Invariance Error",
+        "value3": "Rotation Invariance Error",
         "closest_embedding_distance": "Interpolation Embedding Distance",
         "energy": "Shape Evolution Energy",
         "emissions": "Emissions",

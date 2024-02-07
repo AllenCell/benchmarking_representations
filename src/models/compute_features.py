@@ -5,7 +5,8 @@ from src.features.outlier_compactness import get_embedding_metrics
 from src.features.classification import get_classification_df
 from src.features.evolve import get_evolve_dataset
 from src.features.evolve import get_evolution_dict
-from src.models.save_embeddings import get_pc_loss
+from src.models.save_embeddings import get_pc_loss_chamfer, compute_embeddings
+import numpy as np
 
 DATASET_INFO = {
     "pcna": {
@@ -25,6 +26,12 @@ DATASET_INFO = {
         "orig_df": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/singlecell_pointclouds/manifest_all_compound_mergeimage.parquet",
         "image_path": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/single_cell_images/manifest_all_compound.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/singlecell_pointclouds/manifest_all_compound.parquet",
+    },
+    "pcna_vit": {
+        "embedding_save_location": "./embeddings_pcna_vit",
+        "orig_df": "/allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv",
+        "image_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
     },
 }
 
@@ -63,17 +70,16 @@ def get_embeddings(run_names, dataset):
     return all_ret, df
 
 
-def get_evolve_data_list(save_folder, num_samples, keys, dataset):
+def get_evolve_data_list(
+    save_folder, num_samples, config_list_evolve, modality_list, dataset
+):
     image_path = DATASET_INFO[dataset]["image_path"]
     pc_path = DATASET_INFO[dataset]["pc_path"]
 
     data_evolve, _ = get_evolve_dataset(
-        dataset, num_samples, pc_path, image_path, save_folder
+        config_list_evolve, modality_list, num_samples, pc_path, image_path, save_folder
     )
-    data_list = [data_evolve[2], data_evolve[2], data_evolve[1], data_evolve[0]]
-    if keys[0] == "pcloud":
-        data_list.reverse()
-    return data_list
+    return data_evolve
 
 
 def compute_features(
@@ -89,15 +95,17 @@ def compute_features(
     num_evolve_samples: int = 1,
     squeeze_2d: bool = False,
     splits_list: list = ["train", "val", "test"],
+    compute_embeds: bool = False,
+    config_list_evolve: list = [],
+    modality_list_evolve: list = [],
 ):
     """
     Compute all benchmarking metrics and save
     given list of datamodules, models, runs, input keys
     """
-
     path = Path(save_folder)
     path.mkdir(parents=True, exist_ok=True)
-    loss_eval_pc = get_pc_loss()
+    loss_eval_pc = get_pc_loss_chamfer()
     max_batches = 4
 
     # print("Computing rotation invariance")
@@ -122,22 +130,49 @@ def compute_features(
     # rec_df = all_ret.groupby(["model", "split"]).mean()
     # rec_df.to_csv(path / "recon.csv")
 
-    # all_embeds2 = []
-    # for i in run_names:
-    #     tt = all_ret.loc[all_ret["model"] == i].reset_index(drop=True)
-    #     cols = [i for i in all_ret.columns if "mu" in i]
-    #     all_embeds2.append(tt[cols].dropna(axis=1).values)
+    all_embeds2 = []
+    for i in run_names:
+        tt = all_ret.loc[all_ret["model"] == i].reset_index(drop=True)
+        cols = [i for i in all_ret.columns if "mu" in i]
+        all_embeds2.append(tt[cols].dropna(axis=1).values)
 
-    # print("Computing compactness")
-    # ret_dict_compactness = get_embedding_metrics(all_ret, max_embed_dim=max_embed_dim)
-    # ret_dict_compactness.to_csv(path / "compactness.csv")
+    # if compute_embeds:
+    #     all_embeds2 = []
+    #     for j in range(len(all_models)):
+    #         model = all_models[j]
+    #         model = model.eval()
+    #         all_data_ids, all_splits, all_loss, all_embeds = [], [], [], []
+    #         all_embeds, all_data_ids, all_splits, all_loss = compute_embeddings(
+    #             model,
+    #             data_list[j],
+    #             splits_list,
+    #             loss_eval_pc,
+    #             False,
+    #             Path("./"),
+    #             all_embeds,
+    #             all_data_ids,
+    #             all_splits,
+    #             all_loss,
+    #             False,
+    #             device,
+    #         )
+    #         all_embeds = np.concatenate(all_embeds, axis=0)
+    #         all_embeds2.append(all_embeds)
 
-    print("Computing classification")
-    ret_dict_classification = get_classification_df(all_ret, class_label)
-    ret_dict_classification.to_csv(path / "classification.csv")
+    print("Computing compactness")
+    ret_dict_compactness = get_embedding_metrics(all_ret, max_embed_dim=max_embed_dim)
+    ret_dict_compactness.to_csv(path / "compactness.csv")
+
+    # print("Computing classification")
+    # ret_dict_classification = get_classification_df(all_ret, class_label)
+    # ret_dict_classification.to_csv(path / "classification.csv")
 
     # data_evolve_list = get_evolve_data_list(
-    #     save_folder, num_evolve_samples, keys, dataset
+    #     save_folder,
+    #     num_evolve_samples,
+    #     config_list_evolve,
+    #     modality_list_evolve,
+    #     dataset,
     # )
     # print("Computing evolution")
     # evolution_dict = get_evolution_dict(
@@ -147,7 +182,6 @@ def compute_features(
     #     all_embeds2,
     #     run_names,
     #     device,
-    #     df,
     #     keys,
     #     path / "evolve",
     # )

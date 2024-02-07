@@ -12,13 +12,15 @@ import random
 from sklearn.decomposition import PCA
 
 
-def get_evolve_dataset(dataset_name, num_samples, pc_path, image_path, save_path):
+def get_evolve_dataset(
+    config_list_evolve, modality_list, num_samples, pc_path, image_path, save_path
+):
     save_path = Path(save_path)
     save_path.mkdir(parents=True, exist_ok=True)
 
     make_csv(pc_path, image_path, num_samples, save_path)
 
-    data, configs = get_dataloaders(dataset_name, save_path)
+    data, configs = get_dataloaders(save_path, config_list_evolve, modality_list)
     return data, configs
 
 
@@ -55,31 +57,31 @@ def make_csv(pc_path, image_path, num_samples, save_path):
     image_df.to_csv(save_path / "image.csv")
 
 
-def get_pc_configs(dataset_name):
-    folder = get_config_folders(dataset_name)
-    config_list = [
-        f"../data/configs/{folder}/pointcloud_3.yaml",
-        f"../data/configs/{folder}/pointcloud_4.yaml",
-    ]
-    return config_list
+# def get_pc_configs(dataset_name):
+#     folder = get_config_folders(dataset_name)
+#     config_list = [
+#         f"../data/configs/{folder}/pointcloud_3.yaml",
+#         f"../data/configs/{folder}/pointcloud_4.yaml",
+#     ]
+#     return config_list
 
 
-def get_config_folders(dataset_name):
-    if dataset_name == "cellpainting":
-        folder = "inference_cellpainting_configs"
-    elif dataset_name == "variance":
-        folder = "inference_variance_data_configs"
-    elif dataset_name == "pcna":
-        folder = "inference_pcna_data_configs"
-    return folder
+# def get_config_folders(dataset_name):
+#     if dataset_name == "cellpainting":
+#         folder = "inference_cellpainting_configs"
+#     elif dataset_name == "variance":
+#         folder = "inference_variance_data_configs"
+#     elif dataset_name == "pcna":
+#         folder = "inference_pcna_data_configs"
+#     return folder
 
 
-def get_image_configs(dataset_name):
-    folder = get_config_folders(dataset_name)
-    config_list = [
-        f"../data/configs/{folder}/image_full.yaml",
-    ]
-    return config_list
+# def get_image_configs(dataset_name):
+#     folder = get_config_folders(dataset_name)
+#     config_list = [
+#         f"../data/configs/{folder}/image_full.yaml",
+#     ]
+#     return config_list
 
 
 def update_config(config_path, data, configs, save_path, suffix):
@@ -93,18 +95,11 @@ def update_config(config_path, data, configs, save_path, suffix):
     return data, configs
 
 
-def get_dataloaders(dataset_name, save_path):
-    config_list = get_pc_configs(dataset_name)
-
+def get_dataloaders(save_path, config_list_evolve, modality_list):
     data = []
     configs = []
-    for config_path in config_list:
-        data, configs = update_config(config_path, data, configs, save_path, "pc")
-
-    config_list = get_image_configs(dataset_name)
-
-    for config_path in config_list:
-        data, configs = update_config(config_path, data, configs, save_path, "image")
+    for config_path, modality in zip(config_list_evolve, modality_list):
+        data, configs = update_config(config_path, data, configs, save_path, modality)
     return data, configs
 
 
@@ -165,10 +160,8 @@ def model_pass_reconstruct(
         return (init_rcl + final_rcl) / total_rcl
     elif hasattr(model, "backbone"):
         _, backward_indexes1, patch_size1 = model.backbone.encoder(init_x.contiguous())
-        _, backward_indexes2, patch_size2 = model.backbone.encoder(final_x.contiguous())
-        xhat, mask = model.backbone.decoder(
-            torch.unsqueeze(z, dim=1), backward_indexes1, patch_size1
-        )
+        z = z.reshape(1, -1, 256)
+        xhat, mask = model.backbone.decoder(z, backward_indexes1, patch_size1)
         xhat = sample_points(xhat.detach().cpu().numpy())
         if save_path:
             save_pcloud(
@@ -214,7 +207,6 @@ def get_evolution_dict(
     all_embeds,
     run_names,
     device,
-    df,
     keys,
     save_path=None,
 ):
@@ -244,6 +236,7 @@ def get_evolution_dict(
     for j in range(len(all_models)):
         model = all_models[j]
         model = model.eval()
+
         for count, i in enumerate(tqdm(data_list[j].test_dataloader())):
             this_save = False
             if count == 0:
@@ -255,7 +248,12 @@ def get_evolution_dict(
 
             this_all_embeds = all_embeds[j]
             pca = PCA(n_components=embed_dim)
-            this_all_embeds = pca.fit_transform(this_all_embeds)
+            if len(this_all_embeds.shape) > 2:
+                this_all_embeds = pca.fit_transform(
+                    this_all_embeds[:, 1:, :].mean(axis=1)
+                )
+            else:
+                this_all_embeds = pca.fit_transform(this_all_embeds)
 
             init_input = this_inputs[:1]
             final_input = this_inputs[1:2]
@@ -307,17 +305,17 @@ def get_evolution_dict(
                     evolution_dict["final_ID"].append(final_id)
                     evolution_dict["fraction"].append(fraction)
                     evolution_dict["energy"].append(energy.item())
-                    intermediate_embed = pca.transform(intermediate_embed)
                     if len(intermediate_embed.shape) > 2:
-                        baseline_all = this_all_embeds.mean(axis=1).squeeze().copy()
-                        intermediate_embed = intermediate_embed.mean(axis=0)
+                        intermediate_embed = pca.transform(
+                            intermediate_embed[:, 1:, :].mean(axis=1)
+                        )
                     else:
-                        baseline_all = this_all_embeds
+                        intermediate_embed = pca.transform(intermediate_embed)
 
                     all_dist = []
                     for i in range(intermediate_embed.shape[0]):
                         dist = (
-                            baseline_all[:, :embed_dim]
+                            this_all_embeds[:, :embed_dim]
                             - intermediate_embed[i, :embed_dim]
                         ) ** 2
                         dist = np.sqrt(np.sum(dist, axis=1)).min()
