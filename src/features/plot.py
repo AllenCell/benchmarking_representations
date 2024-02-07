@@ -113,8 +113,8 @@ def collect_outputs(path, norm, model_order=None):
         "compactness": "Compactness",
         "percent_same": "Outlier Detection",
         "value3": "Rotation Invariance Error",
-        "closest_embedding_distance": "Interpolation Embedding Distance",
-        "energy": "Shape Evolution Energy",
+        "closest_embedding_distance": "Embedding Distance",
+        "energy": "Evolution Energy",
         "emissions": "Emissions",
         "inference_time": "Inference Time",
     }
@@ -129,14 +129,14 @@ def plot(save_folder, df, models, title, colors_list=None):
     # categories = df["variable"].unique()
     # categories = [*categories, categories[0]]
 
-    gen_metrics = ["Reconstruction", "Shape Evolution Energy"]
+    gen_metrics = ["Reconstruction", "Evolution Energy"]
     emission_metrics = ["Emissions", "Inference Time"]
     expressive_metrics = [
         "Compactness",
         "Outlier Detection",
         "Classification",
         "Rotation Invariance Error",
-        "Interpolation Embedding Distance",
+        "Embedding Distance",
     ]
     cat_order = gen_metrics + emission_metrics + expressive_metrics
     categories = [*cat_order, cat_order[0]]
@@ -163,6 +163,8 @@ def plot(save_folder, df, models, title, colors_list=None):
                 fill=fill,
                 name=models[i],
                 opacity=opacity,
+                line=dict(width=5),
+                marker=dict(size=13),
             )
             for i in range(len(all_models))
         ],
@@ -170,9 +172,15 @@ def plot(save_folder, df, models, title, colors_list=None):
             title=go.layout.Title(text=f"{title}"),
             polar={"radialaxis": {"visible": True}},
             showlegend=True,
-            margin=dict(l=170, r=150, t=100, b=80),
-            legend=dict(orientation="h", xanchor="center", x=0.8, y=1.3),
+            margin=dict(l=170, r=150, t=120, b=80),
+            legend=dict(orientation="h", xanchor="center", x=1.2, y=1.4),
+            font=dict(
+                # family="Courier New, monospace",
+                size=20,  # Set the font size here
+                # color="RebeccaPurple"
+            ),
         ),
     )
 
-    fig.write_image(path / f"{title}.png")
+    # fig.write_image(path / f"{title}.png")
+    fig.write_image(path / f"{title}.pdf")
