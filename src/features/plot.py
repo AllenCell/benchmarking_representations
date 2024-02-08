@@ -173,7 +173,7 @@ def plot(save_folder, df, models, title, colors_list=None):
             polar={"radialaxis": {"visible": True}},
             showlegend=True,
             margin=dict(l=170, r=150, t=120, b=80),
-            legend=dict(orientation="h", xanchor="center", x=1.2, y=1.4),
+            legend=dict(orientation="h", xanchor="center", x=1.2, y=1.5),
             font=dict(
                 # family="Courier New, monospace",
                 size=20,  # Set the font size here

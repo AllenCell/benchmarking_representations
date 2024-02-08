@@ -177,7 +177,6 @@ def _save_plot(
             global_adjust=True,
             colors=colors,
         )
-        print(img_data.shape, proj_method, "project")
         # Convert to YXC for PNG writing
         all_proj = transforms.transpose_to_dims(all_proj, "CYX", "YXC")
         # Drop size to uint8
