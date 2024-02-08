@@ -147,7 +147,7 @@ def _save_plot(
         if "projection" not in image_column:
             # if row[image_column].split('.')[-1] == 'zarr':
             #     img = read_ome_zarr(row[image_column])
-            if row[image_column].split(".")[-1] == "tiff":
+            if row[image_column].split(".")[-1] in ["tiff", "tif"]:
                 img = AICSImage(row[image_column])
             chan_names = [img.channel_names[i] for i in channels]
             if img.shape[1] == 1:
