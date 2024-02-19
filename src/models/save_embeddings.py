@@ -51,12 +51,7 @@ def process_dataloader(
     for j, i in enumerate(tqdm(dataloader)):
         if (debug) and j > 1:
             break
-        (
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-        ) = process_batch_embeddings(
+        (all_embeds, all_data_ids, all_splits, all_loss,) = process_batch_embeddings(
             model,
             loss_eval_pc,
             device,

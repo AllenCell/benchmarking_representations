@@ -6,6 +6,7 @@ from src.features.classification import get_classification_df
 from src.features.evolve import get_evolve_dataset
 from src.features.evolve import get_evolution_dict
 from src.models.save_embeddings import get_pc_loss_chamfer, compute_embeddings
+from src.features.stereotypy import get_stereotypy
 import numpy as np
 
 DATASET_INFO = {
@@ -34,6 +35,19 @@ DATASET_INFO = {
         "pc_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
     },
 }
+
+METRIC_LIST = [
+    "Rotation Invariance Error",
+    "Emissions",
+    "Inference Time",
+    "Evolution Energy",
+    "Reconstruction",
+    "Embedding Distance",
+    "Classification",
+    "Outlier Detection",
+    "Compactness",
+    "Stereotypy",
+]
 
 
 def rename_cellid(df):
@@ -91,13 +105,22 @@ def compute_features(
     keys: list = [],
     device: str = "cuda:0",
     max_embed_dim: int = 256,
-    class_label: str = "cell_stage_fine",
-    num_evolve_samples: int = 1,
-    squeeze_2d: bool = False,
     splits_list: list = ["train", "val", "test"],
     compute_embeds: bool = False,
-    config_list_evolve: list = [],
-    modality_list_evolve: list = [],
+    metric_list: list = METRIC_LIST,
+    classification_params: dict = {"class_label": "cell_stage_fine"},
+    evolve_params: dict = {
+        "modality_list_evolve": [],
+        "config_list_evolve": [],
+        "num_evolve_samples": [],
+    },
+    rot_inv_params: dict = {"squeeze_2d": False},
+    stereotypy_params: dict = {
+        "max_pcs": 8,
+        "max_bins": 9,
+        "get_baseline": False,
+        "return_correlation_matrix": False,
+    },
 ):
     """
     Compute all benchmarking metrics and save
@@ -108,97 +131,114 @@ def compute_features(
     loss_eval_pc = get_pc_loss_chamfer()
     max_batches = 4
 
-    # print("Computing rotation invariance")
-    # eq_dict = get_equiv_dict(
-    #     all_models,
-    #     run_names,
-    #     data_list,
-    #     device,
-    #     loss_eval_pc,
-    #     keys,
-    #     max_batches,
-    #     max_embed_dim,
-    #     squeeze_2d,
-    # )
-    # eq_dict.to_csv(path / "equiv.csv")
+    if "Rotation Invariance Error" in metric_list:
+        print("Computing rotation invariance")
+        eq_dict = get_equiv_dict(
+            all_models,
+            run_names,
+            data_list,
+            device,
+            loss_eval_pc,
+            keys,
+            max_batches,
+            max_embed_dim,
+            rot_inv_params["squeeze_2d"],
+        )
+        eq_dict.to_csv(path / "equiv.csv")
+        metric_list.pop("Rotation Invariance Error")
 
     all_ret, df = get_embeddings(run_names, dataset)
-    if "split" in all_ret.columns:
-        all_ret = all_ret.loc[all_ret["split"].isin(splits_list)].reset_index(drop=True)
 
-    # print("Getting reconstruction")
-    # rec_df = all_ret.groupby(["model", "split"]).mean()
-    # rec_df.to_csv(path / "recon.csv")
+    if "Stereotypy" in metric_list:
+        ret_dict_stereotypy, corrs = get_stereotypy(
+            all_ret,
+            max_embed_dim=max_embed_dim,
+            return_correlation_matrix=stereotypy_params["return_correlation_matrix"],
+            max_pcs=stereotypy_params["max_pcs"],
+            max_bins=stereotypy_params["max_bins"],
+            get_baseline=stereotypy_params["get_baseline"],
+        )
+        ret_dict_stereotypy.to_csv(path / "stereotypy.csv")
+        print(metric_list)
+        import ipdb
 
-    all_embeds2 = []
-    for i in run_names:
-        tt = all_ret.loc[all_ret["model"] == i].reset_index(drop=True)
-        cols = [i for i in all_ret.columns if "mu" in i]
-        all_embeds2.append(tt[cols].dropna(axis=1).values)
+        ipdb.set_trace()
+        metric_list.pop("Stereotypy")
 
-    # if compute_embeds:
-    #     all_embeds2 = []
-    #     for j in range(len(all_models)):
-    #         model = all_models[j]
-    #         model = model.eval()
-    #         all_data_ids, all_splits, all_loss, all_embeds = [], [], [], []
-    #         all_embeds, all_data_ids, all_splits, all_loss = compute_embeddings(
-    #             model,
-    #             data_list[j],
-    #             splits_list,
-    #             loss_eval_pc,
-    #             False,
-    #             Path("./"),
-    #             all_embeds,
-    #             all_data_ids,
-    #             all_splits,
-    #             all_loss,
-    #             False,
-    #             device,
-    #         )
-    #         all_embeds = np.concatenate(all_embeds, axis=0)
-    #         all_embeds2.append(all_embeds)
+    if len(metric_list) != 0:
+        if "split" in all_ret.columns:
+            all_ret = all_ret.loc[all_ret["split"].isin(splits_list)].reset_index(
+                drop=True
+            )
 
-    print("Computing compactness")
-    ret_dict_compactness = get_embedding_metrics(all_ret, max_embed_dim=max_embed_dim)
-    ret_dict_compactness.to_csv(path / "compactness.csv")
+        if "Reconstruction" in metric_list:
+            print("Getting reconstruction")
+            rec_df = all_ret.groupby(["model", "split"]).mean()
+            rec_df.to_csv(path / "recon.csv")
+            metric_list.pop("Reconstruction")
 
-    # print("Computing classification")
-    # ret_dict_classification = get_classification_df(all_ret, class_label)
-    # ret_dict_classification.to_csv(path / "classification.csv")
+        if len(set(METRIC_LIST).intersection(set(metric_list))) > 0:
+            all_embeds2 = []
+            for i in run_names:
+                tt = all_ret.loc[all_ret["model"] == i].reset_index(drop=True)
+                cols = [i for i in all_ret.columns if "mu" in i]
+                all_embeds2.append(tt[cols].dropna(axis=1).values)
 
-    # data_evolve_list = get_evolve_data_list(
-    #     save_folder,
-    #     num_evolve_samples,
-    #     config_list_evolve,
-    #     modality_list_evolve,
-    #     dataset,
-    # )
-    # print("Computing evolution")
-    # evolution_dict = get_evolution_dict(
-    #     all_models,
-    #     data_evolve_list,
-    #     loss_eval_pc,
-    #     all_embeds2,
-    #     run_names,
-    #     device,
-    #     keys,
-    #     path / "evolve",
-    # )
+            if compute_embeds:
+                all_embeds2 = []
+                for j in range(len(all_models)):
+                    model = all_models[j]
+                    model = model.eval()
+                    all_data_ids, all_splits, all_loss, all_embeds = [], [], [], []
+                    all_embeds, all_data_ids, all_splits, all_loss = compute_embeddings(
+                        model,
+                        data_list[j],
+                        splits_list,
+                        loss_eval_pc,
+                        False,
+                        Path("./"),
+                        all_embeds,
+                        all_data_ids,
+                        all_splits,
+                        all_loss,
+                        False,
+                        device,
+                    )
+                    all_embeds = np.concatenate(all_embeds, axis=0)
+                    all_embeds2.append(all_embeds)
 
-    # evolution_dict.to_csv(path / "evolve.csv")
+        if "Compactness" in metric_list:
+            print("Computing compactness")
+            ret_dict_compactness = get_embedding_metrics(
+                all_ret, max_embed_dim=max_embed_dim
+            )
+            ret_dict_compactness.to_csv(path / "compactness.csv")
 
-    # print("Computing evolution")
-    # evolution_dict = get_evolution_dict(
-    #     all_models[2:],
-    #     data_evolve_list[2:],
-    #     loss_eval_pc,
-    #     all_embeds2[2:],
-    #     run_names[2:],
-    #     device,
-    #     df,
-    #     keys[2:],
-    #     path / "evolve",
-    # )
+        if "Classification" in metric_list:
+            print("Computing classification")
+            ret_dict_classification = get_classification_df(
+                all_ret, classification_params["class_label"]
+            )
+            ret_dict_classification.to_csv(path / "classification.csv")
 
-    # evolution_dict.to_csv(path / "evolve.csv")
+        if "Evolution Energy" in metric_list:
+            data_evolve_list = get_evolve_data_list(
+                save_folder,
+                evolve_params["num_evolve_samples"],
+                evolve_params["config_list_evolve"],
+                evolve_params["modality_list_evolve"],
+                dataset,
+            )
+            print("Computing evolution")
+            evolution_dict = get_evolution_dict(
+                all_models,
+                data_evolve_list,
+                loss_eval_pc,
+                all_embeds2,
+                run_names,
+                device,
+                keys,
+                path / "evolve",
+            )
+
+            evolution_dict.to_csv(path / "evolve.csv")

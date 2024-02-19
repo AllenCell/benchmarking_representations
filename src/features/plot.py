@@ -4,6 +4,7 @@ import plotly.offline as pyo
 import seaborn as sns
 import os
 from pathlib import Path
+import plotly.express as px
 
 
 METRIC_DICT = {
@@ -152,7 +153,11 @@ def plot(save_folder, df, models, title, colors_list=None):
             this_model.append(val)
         all_models.append(this_model)
 
-    opacity = 0.8
+    if len(models) == 5:
+        colors = ["#636EFA", "#00CC96", "#AB63FA", "#FFA15A", "#EF553B"]
+    elif len(models) == 4:
+        colors = ["#636EFA", "#00CC96", "#AB63FA", "#EF553B"]
+    opacity = 1
     fill = "toself"
     fill = "none"
     fig = go.Figure(
@@ -162,6 +167,7 @@ def plot(save_folder, df, models, title, colors_list=None):
                 theta=categories,
                 fill=fill,
                 name=models[i],
+                line_color=colors[i],
                 opacity=opacity,
                 line=dict(width=5),
                 marker=dict(size=13),
@@ -170,7 +176,7 @@ def plot(save_folder, df, models, title, colors_list=None):
         ],
         layout=go.Layout(
             title=go.layout.Title(text=f"{title}"),
-            polar={"radialaxis": {"visible": True}},
+            polar={"radialaxis": {"visible": True, "range": [-2, 2], "dtick": 2}},
             showlegend=True,
             margin=dict(l=170, r=150, t=120, b=80),
             legend=dict(orientation="h", xanchor="center", x=1.2, y=1.5),
