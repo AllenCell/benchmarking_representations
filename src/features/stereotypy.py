@@ -17,13 +17,13 @@ def get_stereotypy(
 
     ret_dict_stereotypy = {
         "model": [],
-        "stereotypy_mean": [],
-        "stereotypy_std": [],
+        "structure": [],
+        "stereotypy": [],
+        "pc": [],
+        "bin": [],
     }
-    if get_baseline:
-        path = "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/correlation/values/"
-        ret_dict_stereotypy.update({"baseline_stereotypy_mean": []})
-        ret_dict_stereotypy.update({"baseline_stereotypy_std": []})
+    ret_dict_baseline_stereotypy = ret_dict_stereotypy.copy()
+    path = "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/correlation/values/"
 
     ret_corr = None
     if return_correlation_matrix:
@@ -41,38 +41,55 @@ def get_stereotypy(
                         this_ids = cellids_per_pc_per_bin.get(
                             str(this_pc) + "_" + str(this_bin)
                         )
-                        this_ret = this_mo.loc[
+                        this_all_ret = this_mo.loc[
                             this_mo["CellId"].isin(this_ids["CellIds"].values)
                         ].reset_index(drop=True)
 
-                        stereotypy = correlate(this_ret, max_embed_dim)
-                        np.fill_diagonal(stereotypy, 0)
-                        if return_correlation_matrix:
-                            ret_corr[str(this_pc) + "_" + str(this_bin)] = stereotypy
-                        ret_dict_stereotypy["model"].append(model)
-                        ret_dict_stereotypy["stereotypy_mean"].append(stereotypy.mean())
-                        ret_dict_stereotypy["stereotypy_std"].append(stereotypy.std())
-                        if get_baseline:
-                            this_baseline = imread(
-                                path + f"avg-STR-NUC_MEM_PC{this_pc}-{this_bin}.tif"
-                            )
-                            subset_ids = this_ids.loc[
-                                this_ids["CellIds"].isin(this_ret["CellId"].values)
-                            ]
-                            indices = subset_ids["Unnamed: 0"].values
-                            img_subset = this_baseline[indices, :]
-                            img_subset = this_baseline[:, indices]
+                        for struct in this_all_ret["structure_name"].unique():
+                            this_ret = this_all_ret.loc[
+                                this_all_ret["structure_name"] == struct
+                            ].reset_index(drop=True)
 
-                            np.fill_diagonal(this_baseline, 0)
-                            ret_dict_stereotypy["baseline_stereotypy_mean"].append(
-                                img_subset.mean()
-                            )
-                            ret_dict_stereotypy["baseline_stereotypy_std"].append(
-                                img_subset.std()
-                            )
+                            stereotypy = correlate(this_ret, max_embed_dim)
+                            np.fill_diagonal(stereotypy, 0)
+                            if return_correlation_matrix:
+                                ret_corr[
+                                    str(this_pc) + "_" + str(this_bin)
+                                ] = stereotypy
+
+                            for this_s in np.unique(stereotypy):
+                                ret_dict_stereotypy["model"].append(model)
+                                ret_dict_stereotypy["stereotypy"].append(this_s)
+                                ret_dict_stereotypy["pc"].append(this_pc)
+                                ret_dict_stereotypy["bin"].append(this_bin)
+                                ret_dict_stereotypy["structure"].append(struct)
+                            if get_baseline:
+                                this_baseline = imread(
+                                    path + f"avg-STR-NUC_MEM_PC{this_pc}-{this_bin}.tif"
+                                )
+                                np.fill_diagonal(this_baseline, 0)
+                                subset_ids = this_ids.loc[
+                                    this_ids["CellIds"].isin(this_ret["CellId"].values)
+                                ]
+                                indices = subset_ids["Unnamed: 0"].values
+
+                                img_subset = this_baseline[indices, :]
+                                img_subset = img_subset[:, indices]
+
+                                for this_s in np.unique(img_subset):
+                                    ret_dict_baseline_stereotypy["model"].append(model)
+                                    ret_dict_baseline_stereotypy["stereotypy"].append(
+                                        this_s
+                                    )
+                                    ret_dict_baseline_stereotypy["pc"].append(this_pc)
+                                    ret_dict_baseline_stereotypy["bin"].append(this_bin)
+                                    ret_dict_baseline_stereotypy["structure"].append(
+                                        struct
+                                    )
 
     ret_dict_stereotypy = pd.DataFrame(ret_dict_stereotypy)
-    return ret_dict_stereotypy, ret_corr
+    ret_dict_baseline_stereotypy = pd.DataFrame(ret_dict_baseline_stereotypy)
+    return ret_dict_stereotypy, ret_dict_baseline_stereotypy, ret_corr
 
 
 def generate_correlation_map(x, y):

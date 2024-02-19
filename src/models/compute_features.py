@@ -145,12 +145,13 @@ def compute_features(
             rot_inv_params["squeeze_2d"],
         )
         eq_dict.to_csv(path / "equiv.csv")
-        metric_list.pop("Rotation Invariance Error")
+        metric_list.pop(metric_list.index("Rotation Invariance Error"))
 
     all_ret, df = get_embeddings(run_names, dataset)
 
     if "Stereotypy" in metric_list:
-        ret_dict_stereotypy, corrs = get_stereotypy(
+        print("Computing stereotypy")
+        ret_dict_stereotypy, ret_dict_baseline_stereotypy, corrs = get_stereotypy(
             all_ret,
             max_embed_dim=max_embed_dim,
             return_correlation_matrix=stereotypy_params["return_correlation_matrix"],
@@ -159,11 +160,8 @@ def compute_features(
             get_baseline=stereotypy_params["get_baseline"],
         )
         ret_dict_stereotypy.to_csv(path / "stereotypy.csv")
-        print(metric_list)
-        import ipdb
-
-        ipdb.set_trace()
-        metric_list.pop("Stereotypy")
+        ret_dict_baseline_stereotypy.to_csv(path / "stereotypy_baseline.csv")
+        metric_list.pop(metric_list.index("Stereotypy"))
 
     if len(metric_list) != 0:
         if "split" in all_ret.columns:
@@ -175,7 +173,7 @@ def compute_features(
             print("Getting reconstruction")
             rec_df = all_ret.groupby(["model", "split"]).mean()
             rec_df.to_csv(path / "recon.csv")
-            metric_list.pop("Reconstruction")
+            metric_list.pop(metric_list.index("Reconstruction"))
 
         if len(set(METRIC_LIST).intersection(set(metric_list))) > 0:
             all_embeds2 = []

@@ -21,6 +21,12 @@ CONFIG_LIST = {
         "../data/configs/inference_cellpainting_configs/pointcloud_4.yaml",
         "../data/configs/inference_cellpainting_configs/image_full.yaml",
     ],
+    "mito": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/mito/base_3.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/mito/skeleton_3.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/mito/image.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/mito/image_pad.yaml",
+    ],
 }
 
 
