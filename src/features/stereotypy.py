@@ -59,7 +59,6 @@ def get_stereotypy(
                         this_all_ret = this_mo.loc[
                             this_mo["CellId"].isin(this_ids["CellIds"].values)
                         ].reset_index(drop=True)
-
                         for struct in this_all_ret["structure_name"].unique():
                             this_ret = this_all_ret.loc[
                                 this_all_ret["structure_name"] == struct
@@ -172,10 +171,7 @@ def generate_correlation_map(x, y):
 
 
 def correlate(this_mo, max_embed_dim):
-    """
-    Compactness if %explained variance by 5 PCs
-    fit PCA on embeddings of the same size set by max_embed_dim
-    """
+    """Correlation between representations for different cells"""
     cols = [i for i in this_mo.columns if "mu" in i]
     this_feats = this_mo[cols].iloc[:, :max_embed_dim].dropna(axis=1).values
     stereotypy = generate_correlation_map(this_feats, this_feats)
@@ -183,6 +179,7 @@ def correlate(this_mo, max_embed_dim):
 
 
 def make_scatterplots(base_path, path, pc_list, bin_list, save_folder):
+    """Make scatterplot of baseline stereotypy vs new stereotpy across models"""
     save_path = Path(save_folder)
     save_path.mkdir(parents=True, exist_ok=True)
 
@@ -227,19 +224,35 @@ def make_scatterplots(base_path, path, pc_list, bin_list, save_folder):
                     # )
     all_df = pd.concat(all_df, axis=0)
 
-    g = sns.relplot(
-        data=all_df, x="stereotypy", y="stereotypy_base", col="model", row="structure"
-    )
-    g.set_titles("")
+    for pc in pc_list:
+        for bin in bin_list:
+            hh = all_df.loc[all_df["pc"] == pc]
+            hh = hh.loc[hh["bin"] == bin].reset_index(drop=True)
+            g = sns.relplot(
+                data=hh,
+                x="stereotypy",
+                y="stereotypy_base",
+                col="model",
+                row="structure",
+            )
+            g.set_titles("")
 
-    for ax, m in zip(g.axes[0, :], all_df["model"].unique()):
-        ax.set_title(m, fontweight="bold", fontsize=18)
-    for ax, l in zip(g.axes[:, 0], all_df["structure"].unique()):
-        ax.set_ylabel(
-            l, fontweight="bold", fontsize=18, rotation=0, ha="right", va="center"
-        )
+            for ax, m in zip(g.axes[0, :], hh["model"].unique()):
+                ax.set_title(m, fontweight="bold", fontsize=18)
+            for ax, l in zip(g.axes[:, 0], hh["structure"].unique()):
+                ax.set_ylabel(
+                    l,
+                    fontweight="bold",
+                    fontsize=18,
+                    rotation=0,
+                    ha="right",
+                    va="center",
+                )
 
-    g.savefig(save_path / Path("stereotypy_comparison.png"), bbox_inches="tight")
+            g.savefig(
+                save_path / Path(f"stereotypy_comparison_pc_{pc}_bin_{bin}.png"),
+                bbox_inches="tight",
+            )
 
 
 def make_variance_scatterplots(base_path, path, pc_list, bin_list, save_folder):
