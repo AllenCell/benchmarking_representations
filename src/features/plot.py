@@ -5,10 +5,11 @@ import seaborn as sns
 import os
 from pathlib import Path
 import plotly.express as px
-
+import random
 
 METRIC_DICT = {
     "recon": {"metric": ["loss"], "min": [True]},
+    "regression": {"metric": ["avg_r2"], "min": [False]},
     "classification": {"metric": ["top_1_acc"], "min": [False]},
     "emissions": {"metric": ["emissions", "inference_time"], "min": [True, True]},
     "evolve": {"metric": ["energy", "closest_embedding_distance"], "min": [True, True]},
@@ -78,6 +79,7 @@ def collect_outputs(path, norm, model_order=None):
     for metric in [
         "recon",
         "classification",
+        "regression",
         "equiv",
         "emissions",
         "compactness",
@@ -110,10 +112,11 @@ def collect_outputs(path, norm, model_order=None):
 
     rep_dict_var = {
         "loss": "Reconstruction",
+        "avg_r2": "Feature Regression",
         "top_1_acc": "Classification",
         "compactness": "Compactness",
         "percent_same": "Outlier Detection",
-        "value3": "Rotation Invariance Error",
+        "value": "Rotation Invariance Error",
         "closest_embedding_distance": "Embedding Distance",
         "energy": "Evolution Energy",
         "emissions": "Emissions",
@@ -141,8 +144,11 @@ def plot(save_folder, df, models, title, colors_list=None):
     ]
     cat_order = gen_metrics + emission_metrics + expressive_metrics
     categories = [*cat_order, cat_order[0]]
-    pal = sns.color_palette("pastel")
-    colors = pal.as_hex()
+    # pal = sns.color_palette("pastel")
+    # if colors_list is not None:
+    #     colors = pal.as_hex()
+    # else:
+    colors = colors_list
 
     all_models = []
     for i in models:
@@ -169,8 +175,10 @@ def plot(save_folder, df, models, title, colors_list=None):
                 name=models[i],
                 line_color=colors[i],
                 opacity=opacity,
-                line=dict(width=5),
-                marker=dict(size=13),
+                line=dict(width=5, color=colors[i % len(colors)]),  # Set line color
+                marker=dict(
+                    size=13, color=colors[i % len(colors)]
+                ),  # Set marker color (optional)
             )
             for i in range(len(all_models))
         ],

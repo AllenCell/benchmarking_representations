@@ -3,8 +3,79 @@ import numpy as np
 from tqdm import tqdm
 import pandas as pd
 import torch.nn.functional as F
+
+# from pointcloudutils.networks import LatentLocalDecoder
 from scipy.spatial.transform import Rotation as R
 from src.models.predict_model import model_pass
+from src.models.utils import get_iae_reconstruction_3d_grid
+
+
+def compute_distances_to_baseline(embeddings, div_norm=False):
+    normalized_embeddings = torch.tensor(embeddings)
+    distances_list = []
+
+    for i in range(normalized_embeddings.shape[0]):
+        for j in range(normalized_embeddings.shape[1]):
+            temp_distances = []
+            baseline_vector = normalized_embeddings[i, j, 0, :]
+            for k in range(1, normalized_embeddings.shape[2]):
+                if div_norm:
+                    distance = torch.norm(
+                        (normalized_embeddings[i, j, k, :] - baseline_vector)
+                        / torch.norm(baseline_vector)
+                    )
+                else:
+                    distance = torch.norm(
+                        normalized_embeddings[i, j, k, :] - baseline_vector
+                    )
+                temp_distances.append(distance)
+
+            distances_list.append(temp_distances)
+
+    distances_tensor = torch.tensor(distances_list, dtype=torch.float).reshape(
+        normalized_embeddings.shape[0], normalized_embeddings.shape[1], -1
+    )
+    return distances_tensor
+
+
+def get_precomputed_equiv_dict(
+    file_dict,
+    test_ids,
+    num_samples=128,
+    base_dir="/allen/aics/assay-dev/users/Alex/replearn/rep_paper/implicit_decoder/tmp/cyto-dl/notebooks",
+):
+    subset_test_ids = (
+        test_ids
+        if len(test_ids) < num_samples
+        else np.random.choice(test_ids, num_samples, replace=False)
+    )
+    model_data = []
+    for model_name, paths in file_dict.items():
+        rot_embeds = np.load(f"{base_dir}/{paths['equiv_err_embeds']}")
+        rot_ids = np.load(
+            f"{base_dir}/{paths['equiv_err_ids']}", allow_pickle=True
+        ).squeeze()
+        rot_errors = compute_distances_to_baseline(rot_embeds)
+        avg_errors = rot_errors.mean(dim=(1, 2)).cpu().numpy().squeeze()
+        try:
+            error_df = pd.DataFrame({"error_id": rot_ids, "value": avg_errors})
+        except:
+            import pdb
+
+            pdb.set_trace()
+        if len(error_df) == 0:
+            import pdb
+
+            pdb.set_trace()
+        filtered_df = error_df[error_df["error_id"].isin(subset_test_ids)]
+        filtered_df["model"] = model_name
+        if len(filtered_df) == 0:
+            import pdb
+
+            pdb.set_trace()
+        model_data.append(filtered_df)
+    final_df = pd.concat(model_data)
+    return final_df
 
 
 def rotation_image_batch_z(batch, z_angle, squeeze_2d=False):
@@ -46,15 +117,17 @@ def get_equiv_dict(
     device,
     this_loss,
     keys,
+    id="cell_id",
     max_batches=20,
     max_embed_dim=192,
     squeeze_2d=False,
+    test_cellids=None,
 ):
     """
     all_models - list of models
     data_list - list of datamodules corresponding to models
     device - gpu
-    this_loss - point cloud loss to evaluate models on
+    losses - list of losses to evaluate models on
     keys - list of keys to load appropriate batch element
     max_batches - max number of batches to compute rot inv error
     max_embed_dim - to be consistent across models, use same embedding size
@@ -88,8 +161,11 @@ def get_equiv_dict(
                 if batch_ind > max_batches:
                     break
                 else:
+                    if id not in i:
+                        if test_cellids is not None:
+                            i[id] = list(test_cellids[i["idx"]])
                     for jl, theta in enumerate(all_thetas):
-                        this_ids = i["cell_id"]
+                        this_ids = i[id]
                         if this_key == "pcloud":
                             this_input_rot = rotation_pc_batch_z(i, theta)
                         else:
@@ -100,6 +176,9 @@ def get_equiv_dict(
                         batch_input = {
                             this_key: torch.tensor(this_input_rot).to(device).float()
                         }
+                        # if isinstance(this_model.decoder[this_key], LatentLocalDecoder):
+                        #     batch_input["points"] = i["points"]
+                        #     batch_input["points.df"] = i["points.df"]
 
                         out, z, loss, _ = model_pass(
                             batch_input,
@@ -127,6 +206,10 @@ def get_equiv_dict(
                         eq_dict["value"].append(norm_diff)
                         eq_dict["value2"].append(norm_diff2)
                         eq_dict["value3"].append(norm_diff3)
+                        if isinstance(this_ids, list):
+                            this_ids = this_ids[0]
+                        if torch.is_tensor(this_ids):
+                            this_ids = this_ids.item()
                         eq_dict["id"].append(str(this_ids))
                         eq_dict["theta"].append(theta)
     return pd.DataFrame(eq_dict)

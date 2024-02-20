@@ -2,6 +2,7 @@ import os
 import torch
 from codecarbon import EmissionsTracker
 import sys
+from pathlib import Path
 import logging
 import pandas as pd
 import time
@@ -9,22 +10,37 @@ from .utils import move, sample_points, remove
 
 
 def vit_forward(
-    model, image, device, this_loss, track_emissions, tracker, end, emissions_csv
+    model,
+    image,
+    device,
+    this_loss,
+    track_emissions,
+    tracker,
+    end,
+    emissions_csv,
+    use_sample_points=False,
 ):
     """
     Forward pass for vit with codecarbon tracking option
     """
     features, backward_indexes, patch_size = model.backbone.encoder(image)
     predicted_img, mask = model.backbone.decoder(features, backward_indexes, patch_size)
+
     features = features.reshape(image.shape[0], features.shape[0], -1)
-    input_x = (
-        torch.tensor(sample_points(image.detach().cpu().numpy())).clone().to(device)
-    )
-    pred_x = (
-        torch.tensor(sample_points(predicted_img.detach().cpu().numpy()))
-        .clone()
-        .to(device)
-    )
+
+    if use_sample_points:
+        input_x = (
+            torch.tensor(sample_points(image.detach().cpu().numpy())).clone().to(device)
+        )
+        pred_x = (
+            torch.tensor(sample_points(predicted_img.detach().cpu().numpy()))
+            .clone()
+            .to(device)
+        )
+    else:
+        input_x = torch.tensor(image.detach().cpu().numpy()).clone().to(device)
+        pred_x = torch.tensor(predicted_img.detach().cpu().numpy()).clone().to(device)
+
     rcl_per_input_dimension = this_loss(
         pred_x.contiguous(), input_x.to(device).contiguous()
     )
@@ -114,14 +130,11 @@ def base_forward(
     """
     this_batch = batch.copy()
     if "pcloud" in batch.keys():
-        if model.decoder["pcloud"].folding2[-1].out_features == 3:
-            this_batch["pcloud"] = this_batch["pcloud"][:, :, :3]
         embed_key = "pcloud"
         key = "pcloud"
     else:
         embed_key = "embedding"
         key = "image"
-
     xhat, z, z_params = model(
         move(this_batch, device), decode=True, inference=True, return_params=True
     )
@@ -136,16 +149,25 @@ def base_forward(
             sample_points(xhat["image"].detach().cpu().numpy())
         ).to(device)
 
-    rcl_per_input_dimension = this_loss(
-        xhat[key].contiguous(), move(this_batch, device)[key].contiguous()
-    )
-    loss = (
-        rcl_per_input_dimension
-        # flatten
-        .view(rcl_per_input_dimension.shape[0], -1)
-        # and sum across each batch element's dimensions
-        .sum(dim=1)
-    )
+    if this_loss is not None:
+        if "points.df" in this_batch:
+            rcl_per_input_dimension = this_loss(
+                xhat[key].unsqueeze(1).contiguous(),
+                move(this_batch, device)["points.df"].unsqueeze(1).contiguous(),
+            )
+        else:
+            rcl_per_input_dimension = this_loss(
+                xhat[key].contiguous(), move(this_batch, device)[key].contiguous()
+            )
+        loss = (
+            rcl_per_input_dimension
+            # flatten
+            .view(rcl_per_input_dimension.shape[0], -1)
+            # and sum across each batch element's dimensions
+            .sum(dim=1)
+        )
+    else:
+        loss = None
     if track_emissions:
         emissions: float = tracker.stop()
         emissions_df = pd.read_csv(emissions_csv)
@@ -153,7 +175,7 @@ def base_forward(
         return (
             xhat[key].detach().cpu().numpy(),
             z_params[embed_key].detach().cpu().numpy(),
-            loss.detach().cpu().numpy(),
+            None if this_loss is None else loss.detach().cpu().numpy(),
             None,
             emissions_df,
             time.time() - end,
@@ -161,7 +183,7 @@ def base_forward(
     return (
         xhat[key].detach().cpu().numpy(),
         z_params[embed_key].detach().cpu().numpy(),
-        loss.detach().cpu().numpy(),
+        None if this_loss is None else loss.detach().cpu().numpy(),
         None,
     )
 
@@ -169,10 +191,11 @@ def base_forward(
 def model_pass(
     batch, model, device, this_loss, track_emissions=False, emissions_path=None
 ):
-    if emissions_path is not None:
-        emissions_csv = emissions_path / "emissions.csv"
-    else:
-        emissions_csv = "./emissions.csv"
+    # if emissions_path is not None:
+    #     emissions_csv = emissions_path / "emissions.csv"
+    # else:
+    emissions_path = Path(".")
+    emissions_csv = "./emissions.csv"
 
     logging.disable(sys.maxsize)
     if os.path.isfile(emissions_csv):

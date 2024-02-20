@@ -68,3 +68,24 @@ def sample_points(orig):
         pcloud.append(new_cents)
     pcloud = np.stack(pcloud, axis=0)
     return torch.tensor(pcloud)
+
+
+def get_iae_reconstruction_3d_grid(bb_min=-0.5, bb_max=0.5, resolution=32, padding=0.1):
+    bb_min = (bb_min,)*3
+    bb_max = (bb_max,)*3
+    shape = (resolution,)*3
+    size = shape[0] * shape[1] * shape[2]
+
+    pxs = torch.linspace(bb_min[0], bb_max[0], shape[0])
+    pys = torch.linspace(bb_min[1], bb_max[1], shape[1])
+    pzs = torch.linspace(bb_min[2], bb_max[2], shape[2])
+
+    pxs = pxs.view(-1, 1, 1).expand(*shape).contiguous().view(size)
+    pys = pys.view(1, -1, 1).expand(*shape).contiguous().view(size)
+    pzs = pzs.view(1, 1, -1).expand(*shape).contiguous().view(size)
+    p = torch.stack([pxs, pys, pzs], dim=1)
+    final_grid_size = (bb_max[0] - bb_min[0]) + padding
+    p = final_grid_size * p
+    
+    return p
+    

@@ -50,13 +50,9 @@ DATASET_INFO = {
 
 METRIC_LIST = [
     "Rotation Invariance Error",
-    "Emissions",
-    "Inference Time",
     "Evolution Energy",
     "Reconstruction",
-    "Embedding Distance",
     "Classification",
-    "Outlier Detection",
     "Compactness",
     "Stereotypy",
 ]
@@ -131,7 +127,7 @@ def compute_features(
         "config_list_evolve": [],
         "num_evolve_samples": [],
     },
-    rot_inv_params: dict = {"squeeze_2d": False},
+    rot_inv_params: dict = {"squeeze_2d": False, "id": "CellId"},
     stereotypy_params: dict = {
         "max_pcs": 8,
         "max_bins": 9,
@@ -157,6 +153,7 @@ def compute_features(
             device,
             loss_eval_pc,
             keys,
+            rot_inv_params["id"],
             max_batches,
             max_embed_dim,
             rot_inv_params["squeeze_2d"],
@@ -235,14 +232,14 @@ def compute_features(
             ret_dict_compactness = get_embedding_metrics(
                 all_ret, max_embed_dim=max_embed_dim
             )
-            ret_dict_compactness.to_csv(path / "compactness.csv")
+            ret_dict_compactness.to_csv(path / Path("compactness.csv"))
 
         if "Classification" in metric_list:
             print("Computing classification")
             ret_dict_classification = get_classification_df(
                 all_ret, classification_params["class_label"]
             )
-            ret_dict_classification.to_csv(path / "classification.csv")
+            ret_dict_classification.to_csv(path / Path("classification.csv"))
 
         if "Regression" in metric_list:
             print("Computing regression")
@@ -252,7 +249,7 @@ def compute_features(
                 regression_params["feature_df_path"],
                 regression_params["df_feat"],
             )
-            ret_dict_regression.to_csv(path / "regression.csv")
+            ret_dict_regression.to_csv(path / Path("regression.csv"))
 
         if "Evolution Energy" in metric_list:
             data_evolve_list = get_evolve_data_list(
@@ -274,4 +271,4 @@ def compute_features(
                 path / "evolve",
             )
 
-            evolution_dict.to_csv(path / "evolve.csv")
+            evolution_dict.to_csv(path / Path("evolve.csv"))

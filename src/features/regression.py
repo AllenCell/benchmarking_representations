@@ -12,7 +12,7 @@ from sklearn.model_selection import (
 def get_regression_df(all_ret, target_cols, feature_df_path, df_feat=None):
     ret_dict5 = {"model": [], "test_r2": [], "test_mse": [], "cv": [], "target": []}
 
-    if df_feat is not None:
+    if df_feat is None:
         if feature_df_path is not None:
             df_feat = pd.read_csv(feature_df_path)
             df_feat = df_feat[["CellId"] + target_cols]
