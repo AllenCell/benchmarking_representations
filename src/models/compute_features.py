@@ -5,6 +5,7 @@ from src.features.outlier_compactness import get_embedding_metrics
 from src.features.classification import get_classification_df
 from src.features.evolve import get_evolve_dataset
 from src.features.evolve import get_evolution_dict
+from src.features.regression import get_regression_df
 from src.models.save_embeddings import get_pc_loss_chamfer, compute_embeddings
 from src.features.stereotypy import get_stereotypy
 import numpy as np
@@ -33,6 +34,13 @@ DATASET_INFO = {
         "orig_df": "/allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv",
         "image_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
+    },
+    "mito": {
+        "embedding_save_location": "./embeddings_variance_mito",
+        "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
+        "feature_path": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/computefeatures/manifest.csv",
     },
 }
 
@@ -109,6 +117,11 @@ def compute_features(
     compute_embeds: bool = False,
     metric_list: list = METRIC_LIST,
     classification_params: dict = {"class_label": "cell_stage_fine"},
+    regression_params: dict = {
+        "feature_df_path": None,
+        "target_cols": [],
+        "df_feat": [],
+    },
     evolve_params: dict = {
         "modality_list_evolve": [],
         "config_list_evolve": [],
@@ -218,6 +231,16 @@ def compute_features(
                 all_ret, classification_params["class_label"]
             )
             ret_dict_classification.to_csv(path / "classification.csv")
+
+        if "Regression" in metric_list:
+            print("Computing regression")
+            ret_dict_regression = get_regression_df(
+                all_ret,
+                regression_params["target_cols"],
+                regression_params["feature_df_path"],
+                regression_params["df_feat"],
+            )
+            ret_dict_regression.to_csv(path / "regression.csv")
 
         if "Evolution Energy" in metric_list:
             data_evolve_list = get_evolve_data_list(
