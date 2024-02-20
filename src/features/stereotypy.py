@@ -213,15 +213,6 @@ def make_scatterplots(base_path, path, pc_list, bin_list, save_folder):
                         on=["CellId_1", "CellId_2"],
                     )
                     all_df.append(this_df)
-                    # fig, ax = plt.subplots(1, 1, figsize=(8, 4))
-                    # sns.scatterplot(
-                    #     data=this_df, ax=ax, x="stereotypy", y="stereotypy_base"
-                    # )
-                    # ax.set_title(f"Model {model} structure {struct} PC {pc} bin {bin}")
-                    # fig.savefig(
-                    #     save_path
-                    #     / f"Model_{model}_structure_{struct}_PC_{pc}_bin_{bin}.png"
-                    # )
     all_df = pd.concat(all_df, axis=0)
 
     for pc in pc_list:
@@ -255,7 +246,10 @@ def make_scatterplots(base_path, path, pc_list, bin_list, save_folder):
             )
 
 
-def make_variance_scatterplots(base_path, path, pc_list, bin_list, save_folder):
+def make_variance_boxplots(base_path, path, pc_list, bin_list, save_folder):
+    """
+    Variance paper style boxplots
+    """
     save_path = Path(save_folder)
     save_path.mkdir(parents=True, exist_ok=True)
 

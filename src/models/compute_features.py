@@ -7,8 +7,12 @@ from src.features.evolve import get_evolve_dataset
 from src.features.evolve import get_evolution_dict
 from src.features.regression import get_regression_df
 from src.models.save_embeddings import get_pc_loss_chamfer, compute_embeddings
-from src.features.stereotypy import get_stereotypy
 import numpy as np
+from src.features.stereotypy import (
+    get_stereotypy,
+    make_scatterplots,
+    make_variance_boxplots,
+)
 
 DATASET_INFO = {
     "pcna": {
@@ -175,6 +179,14 @@ def compute_features(
         ret_dict_stereotypy.to_csv(path / "stereotypy.csv")
         ret_dict_baseline_stereotypy.to_csv(path / "stereotypy_baseline.csv")
         metric_list.pop(metric_list.index("Stereotypy"))
+
+        base_path = path / "stereotypy_baseline.csv"
+        this_path = path / "stereotypy.csv"
+        pc_list = [1, 2]
+        bin_list = [5]
+        save_folder = "./features_variance_tmp/"
+        make_scatterplots(base_path, this_path, pc_list, bin_list, path)
+        make_variance_boxplots(base_path, this_path, pc_list, bin_list, path)
 
     if len(metric_list) != 0:
         if "split" in all_ret.columns:
