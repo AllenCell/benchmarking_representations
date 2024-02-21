@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA
 from src.models.utils import sample_points, get_iae_reconstruction_3d_grid
 from src.features.reconstruction import save_pcloud
 
-# from pointcloudutils.networks import LatentLocalDecoder
+from pointcloudutils.networks import LatentLocalDecoder
 from src.models.predict_model import model_pass
 import random
 from sklearn.decomposition import PCA
@@ -149,6 +149,12 @@ def get_dataloaders(save_path, config_list_evolve, modality_list):
     return data, configs
 
 
+def _apply_sample_points(data, use_sample_points):
+    if use_sample_points:
+        return sample_points(data)
+    else:
+        return data
+
 def model_pass_reconstruct(
     z,
     model,
@@ -161,15 +167,13 @@ def model_pass_reconstruct(
     save_path,
     this_id,
     run_name,
+    use_sample_points=True,
 ):
     model = model.to(device)
     z = torch.tensor(z).float().to(device)
     fraction = round(fraction, 1)
-
-    # if key == "pcloud" and not isinstance(model.decoder[key], LatentLocalDecoder):
-    #     init_x = init_x[:, :, :3]
-    #     final_x = final_x[:, :, :3]
-    if key == "pcloud":
+    
+    if key == "pcloud" and not isinstance(model.decoder[key], LatentLocalDecoder):
         init_x = init_x[:, :, :3]
         final_x = final_x[:, :, :3]
     if hasattr(model, "network"):
@@ -213,31 +217,31 @@ def model_pass_reconstruct(
         _, backward_indexes1, patch_size1 = model.backbone.encoder(init_x.contiguous())
         z = z.reshape(1, -1, 256)
         xhat, mask = model.backbone.decoder(z, backward_indexes1, patch_size1)
-        xhat = sample_points(xhat.detach().cpu().numpy())
+        xhat = _apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
         if save_path:
             save_pcloud(
                 xhat[0].detach().cpu().numpy(),
                 save_path,
                 f"{run_name}_{this_id}_{fraction}",
             )
-        init_x = sample_points(init_x.detach().cpu().numpy())
-        final_x = sample_points(final_x.detach().cpu().numpy())
+        init_x = _apply_sample_points(init_x.detach().cpu().numpy(), use_sample_points)
+        final_x = _apply_sample_points(final_x.detach().cpu().numpy(), use_sample_points)
         init_rcl = loss_eval(xhat.contiguous(), init_x.contiguous()).mean()
         final_rcl = loss_eval(xhat.contiguous(), final_x.contiguous()).mean()
         total_rcl = loss_eval(final_x.contiguous(), init_x.contiguous()).mean()
         return (init_rcl + final_rcl) / total_rcl
-    # elif isinstance(model.decoder[key], LatentLocalDecoder):
-    #     points_grid = get_iae_reconstruction_3d_grid()
-    #     xhat_rec, _ = model.decoder[key](
-    #         torch.tensor(points_grid).unsqueeze(0).to(device), z
-    #     )
-    #     init_x_sdf = torch.tensor(init_x[0]).to(device)
-    #     final_x_sdf = torch.tensor(final_x[0]).to(device)
-    #     xhat, _ = model.decoder[key](torch.tensor(init_x[1]).to(device), z)
-    #     init_rcl = loss_eval(xhat.contiguous(), init_x_sdf.contiguous()).mean()
-    #     final_rcl = loss_eval(xhat.contiguous(), final_x_sdf.contiguous()).mean()
-    #     total_rcl = loss_eval(final_x_sdf.contiguous(), init_x_sdf.contiguous()).mean()
-    #     return (init_rcl + final_rcl) / total_rcl
+    elif isinstance(model.decoder[key], LatentLocalDecoder):
+        points_grid = get_iae_reconstruction_3d_grid()
+        xhat_rec, _ = model.decoder[key](
+            torch.tensor(points_grid).unsqueeze(0).to(device), z
+        )
+        init_x_sdf = torch.tensor(init_x[0]).to(device)
+        final_x_sdf = torch.tensor(final_x[0]).to(device)
+        xhat, _ = model.decoder[key](torch.tensor(init_x[1]).to(device), z)
+        init_rcl = loss_eval(xhat.contiguous(), init_x_sdf.contiguous()).mean()
+        final_rcl = loss_eval(xhat.contiguous(), final_x_sdf.contiguous()).mean()
+        total_rcl = loss_eval(final_x_sdf.contiguous(), init_x_sdf.contiguous()).mean()
+        return (init_rcl + final_rcl) / total_rcl
     else:
         init_x = torch.tensor(init_x).to(device)
         final_x = torch.tensor(final_x).to(device)
@@ -248,9 +252,9 @@ def model_pass_reconstruct(
         if key == "pcloud":
             xhat = xhat[:, :, :3]
         else:
-            init_x = sample_points(init_x.detach().cpu().numpy())
-            final_x = sample_points(final_x.detach().cpu().numpy())
-            xhat = sample_points(xhat.detach().cpu().numpy())
+            init_x = _apply_sample_points(init_x.detach().cpu().numpy(), use_sample_points)
+            final_x = _apply_sample_points(final_x.detach().cpu().numpy(), use_sample_points)
+            xhat = _apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
         if save_path:
             save_pcloud(
                 xhat[0].detach().cpu().numpy(),
