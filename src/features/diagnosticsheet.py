@@ -133,13 +133,17 @@ def _save_plot(
 
         # Load feature to plot if feature
         if feature:
-            title = "CellId: {0}, {1} {2}: {3}".format(
-                row[DatasetFields.CellId],
-                "\n",
+            # title = "CellId: {0}, {1} {2}: {3}".format(
+            #     row[DatasetFields.CellId],
+            #     "\n",
+            #     feature,
+            #     row[feature],
+            # )
+            title = "{0}: {1}".format(
                 feature,
                 row[feature],
             )
-            this_axes.set_title(title)
+            this_axes.set_title(title, fontsize=30)
         else:
             this_axes.set_title(f"CellID: {row[DatasetFields.CellId]}")
 

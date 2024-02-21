@@ -96,7 +96,6 @@ def write_pyvista_latent_walk_gif(out_file, view, mesh_files, expl_var=None):
 def write_shape_mode_latent_walk_gif(
     shape_mode, latent_meshes_dir, expl_var, num_structures, mesh_file_suffix="vtk"
 ):
-
     pv.start_xvfb()
 
     mesh_files = sorted(glob.glob(f"{latent_meshes_dir}/*.{mesh_file_suffix}"))

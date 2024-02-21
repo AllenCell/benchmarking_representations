@@ -71,9 +71,9 @@ def sample_points(orig):
 
 
 def get_iae_reconstruction_3d_grid(bb_min=-0.5, bb_max=0.5, resolution=32, padding=0.1):
-    bb_min = (bb_min,)*3
-    bb_max = (bb_max,)*3
-    shape = (resolution,)*3
+    bb_min = (bb_min,) * 3
+    bb_max = (bb_max,) * 3
+    shape = (resolution,) * 3
     size = shape[0] * shape[1] * shape[2]
 
     pxs = torch.linspace(bb_min[0], bb_max[0], shape[0])
@@ -86,6 +86,5 @@ def get_iae_reconstruction_3d_grid(bb_min=-0.5, bb_max=0.5, resolution=32, paddi
     p = torch.stack([pxs, pys, pzs], dim=1)
     final_grid_size = (bb_max[0] - bb_min[0]) + padding
     p = final_grid_size * p
-    
+
     return p
-    

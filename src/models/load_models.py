@@ -1,4 +1,4 @@
-from cyto_dl.models.utils.mlflow import load_model_from_checkpoint
+from cyto_dl.models.utils.mlflow import load_model_from_checkpoint, get_config
 
 MODEL_INFO = {
     "pcna": {
@@ -51,18 +51,23 @@ MODEL_INFO = {
     },
 }
 
+TRACKING_URI = "https://mlflow.a100.int.allencell.org"
+
 
 def load_models(dataset):
     models = MODEL_INFO[dataset]
-
+    model_sizes = []
     all_models = []
     for i in models["run_ids"]:
         all_models.append(
             load_model_from_checkpoint(
-                "https://mlflow.a100.int.allencell.org",
+                TRACKING_URI,
                 i,
                 path="checkpoints/val/loss/best.ckpt",
                 strict=False,
             )
         )
-    return all_models, models["names"]
+        config = get_config(TRACKING_URI, i, "./tmp")
+        model_sizes.append(config["model/params/total"])
+
+    return all_models, models["names"], model_sizes
