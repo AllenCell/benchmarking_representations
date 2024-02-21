@@ -4,8 +4,9 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
-from sklearn.metrics import make_scorer, top_k_accuracy_score
+from sklearn.metrics import make_scorer, top_k_accuracy_score, accuracy_score
 import numpy as np
 
 
@@ -119,3 +120,49 @@ def get_classification(this_mo, target_col):
         )
         # cm_lr = confusion_matrix(target_test, preds)
         return k1, k2, k3
+
+
+def run_drug_classification(df, target_col, num_folds):
+    model = LogisticRegression(multi_class='multinomial', solver='lbfgs')
+    metric = accuracy_score
+    embed_cols = [col for col in df.columns if "mu" in col]
+    X = df[embed_cols].values
+    y = df[target_col].values
+
+    kf = KFold(n_splits=num_folds, shuffle=True, random_state=42)
+
+    metrics_avg = {target_col: 0}
+    metrics_values_all_folds = {target_col: []}
+
+    for fold, (train_index, test_index) in enumerate(kf.split(X)):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        scaler = StandardScaler()
+        X_train = scaler.fit_transform(X_train)
+        X_test = scaler.transform(X_test)
+        model = LogisticRegression(multi_class='multinomial', solver='lbfgs')
+        metric = accuracy_score
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        score = metric(y_test, y_pred)
+        metrics_avg[target_col] += score / num_folds
+        metrics_values_all_folds[target_col].append(score)
+    metrics_std_dev = {col: np.std(values) for col, values in metrics_values_all_folds.items()}
+    return metrics_avg, metrics_std_dev
+    
+
+def get_drug_classification_df(all_ret, target_col, num_folds=10):
+    ret_dict = {
+        "model":[],
+        "acc":[],
+        "std":[]
+    }
+    
+    for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
+        model_df = all_ret[all_ret["model"]==model].reset_index(drop=True)
+        avg, std = run_drug_classification(model_df, target_col, num_folds)
+        ret_dict["model"].append(model)
+        ret_dict["acc"].append(avg[target_col])
+        ret_dict["std"].append(std[target_col])
+
+    return pd.DataFrame(ret_dict)

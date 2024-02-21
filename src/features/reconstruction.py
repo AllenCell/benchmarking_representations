@@ -1,15 +1,22 @@
 import torch
+import os
 import pyvista as pv
 import numpy as np
 import pandas as pd
 import mcubes
+import trimesh
 import glob
+import vtk
+import imageio
 from sklearn.decomposition import PCA
 from skimage.io import imsave
 from src.models.utils import sample_points
 from pathlib import Path
 from aicsimageio import AICSImage
-import imageio
+from vtk.util import numpy_support
+from skimage import morphology as skmorpho
+from skimage import filters as skfilters
+from skimage.measure import label, marching_cubes
 
 
 def write_pyvista_latent_walk_gif(out_file, view, mesh_files, expl_var=None):
@@ -154,9 +161,155 @@ def write_combined_latent_walk_gif(gif_sets_paths, out_path):
     print(f"Wrote {comb_gif_path}")
 
 
-def export_mesh(img_in, filename, levelset=0):
-    vertices, triangles = mcubes.marching_cubes(img_in, levelset)
-    mcubes.export_obj(vertices, triangles, f"{filename}.obj")
+def get_mesh_from_image(
+    image: np.array,
+    sigma: float = 0,
+    lcc: bool = True,
+    denoise: bool = False,
+    translate_to_origin: bool = True,
+    noise_thresh: int = 80,
+):
+    """
+    Parameters
+    ----------
+    image : np.array
+        Input array where the mesh will be computed on
+    Returns
+    -------
+    mesh : vtkPolyData
+        3d mesh in VTK format
+    img_output : np.array
+        Input image after pre-processing
+    centroid : np.array
+        x, y, z coordinates of the mesh centroid
+    Other parameters
+    ----------------
+    lcc : bool, optional
+        Whether or not to compute the mesh only on the largest
+        connected component found in the input connected component,
+        default is True.
+    denoise : bool, optional
+        Whether or not to remove small, potentially noisy objects
+        in the input image, default is False.
+    sigma : float, optional
+        The degree of smooth to be applied to the input image, default
+        is 0 (no smooth).
+    translate_to_origin : bool, optional
+        Wheather or not translate the mesh to the origin (0,0,0),
+        default is True.
+    """
+
+    img = image.copy()
+
+    # VTK requires YXZ
+    img = np.swapaxes(img, 0, 2)
+
+    # Extracting the largest connected component
+    if lcc:
+
+        img = skmorpho.label(img.astype(np.uint8))
+
+        counts = np.bincount(img.flatten())
+
+        lcc = 1 + np.argmax(counts[1:])
+
+        img[img != lcc] = 0
+        img[img == lcc] = 1
+    
+    # Remove small objects in the image
+    if denoise:
+        img = skmorpho.remove_small_objects(label(img), noise_thresh)
+        
+
+    # Smooth binarize the input image and binarize
+    if sigma:
+
+        img = skfilters.gaussian(img.astype(np.float32), sigma=(sigma, sigma, sigma))
+
+        img[img < 1.0 / np.exp(1.0)] = 0
+        img[img > 0] = 1
+
+        if img.sum() == 0:
+            raise ValueError(
+                "No foreground voxels found after pre-processing. Try using sigma=0."
+            )
+
+    # Set image border to 0 so that the mesh forms a manifold
+    img[[0, -1], :, :] = 0
+    img[:, [0, -1], :] = 0
+    img[:, :, [0, -1]] = 0
+    img = img.astype(np.float32)
+
+    if img.sum() == 0:
+        raise ValueError(
+            "No foreground voxels found after pre-processing."
+            "Is the object of interest centered?"
+        )
+
+    # Create vtkImageData
+    imgdata = vtk.vtkImageData()
+    imgdata.SetDimensions(img.shape)
+
+    img = img.transpose(2, 1, 0)
+    img_output = img.copy()
+    img = img.flatten()
+    arr = numpy_support.numpy_to_vtk(img, array_type=vtk.VTK_FLOAT)
+    arr.SetName("Scalar")
+    imgdata.GetPointData().SetScalars(arr)
+
+    # Create 3d mesh
+    cf = vtk.vtkContourFilter()
+    cf.SetInputData(imgdata)
+    cf.SetValue(0, 0.5)
+    cf.Update()
+
+    mesh = cf.GetOutput()
+
+    # Calculate the mesh centroid
+    coords = numpy_support.vtk_to_numpy(mesh.GetPoints().GetData())
+    centroid = coords.mean(axis=0, keepdims=True)
+
+    if translate_to_origin is True:
+
+        # Translate to origin
+        coords -= centroid
+        mesh.GetPoints().SetData(numpy_support.numpy_to_vtk(coords))
+
+    return mesh, img_output, tuple(centroid.squeeze())
+
+
+def get_mesh_from_sdf(sdf, method="skimage"):
+    """
+    This function reconstructs a mesh from signed distance function
+    values using the marching cubes algorithm. 
+
+    Parameters
+    ----------
+    sdf : np.array
+        3D array of shape (N,N,N) 
+
+    Returns
+    -------
+    mesh : pyvista.PolyData
+        Reconstructed mesh
+    """
+    if method == "skimage":
+        try:
+            vertices, faces, normals, _ = marching_cubes(sdf, level=0)
+            mesh = trimesh.Trimesh(vertices=vertices, faces=faces, vertex_normals=normals)
+        except: 
+            # empty mesh
+            mesh = pv.PolyData()
+    elif method == "vae_output":
+        vertices, triangles = mcubes.marching_cubes(sdf, 0)
+        mcubes.export_obj(vertices, triangles, "tmp.obj")
+        mesh = pv.read("tmp.obj")
+        os.remove("tmp.obj")
+    else:
+        raise NotImplementedError
+
+    mesh = pv.wrap(mesh)
+    return mesh
 
 
 def save_pcloud(xhat, path, name):
