@@ -8,7 +8,7 @@ import yaml
 from hydra.utils import instantiate
 from pathlib import Path
 from sklearn.decomposition import PCA
-from src.models.utils import sample_points, get_iae_reconstruction_3d_grid
+from src.models.utils import apply_sample_points, get_iae_reconstruction_3d_grid
 from src.features.reconstruction import save_pcloud
 
 from pointcloudutils.networks import LatentLocalDecoder
@@ -142,12 +142,6 @@ def get_dataloaders(save_path, config_list_evolve, modality_list):
     return data, configs
 
 
-def _apply_sample_points(data, use_sample_points):
-    if use_sample_points:
-        return sample_points(data)
-    else:
-        return data
-
 def model_pass_reconstruct(
     z,
     model,
@@ -210,15 +204,15 @@ def model_pass_reconstruct(
         _, backward_indexes1, patch_size1 = model.backbone.encoder(init_x.contiguous())
         z = z.reshape(1, -1, 256)
         xhat, mask = model.backbone.decoder(z, backward_indexes1, patch_size1)
-        xhat = _apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
+        xhat = apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
         if save_path:
             save_pcloud(
                 xhat[0].detach().cpu().numpy(),
                 save_path,
                 f"{run_name}_{this_id}_{fraction}",
             )
-        init_x = _apply_sample_points(init_x.detach().cpu().numpy(), use_sample_points)
-        final_x = _apply_sample_points(final_x.detach().cpu().numpy(), use_sample_points)
+        init_x = apply_sample_points(init_x.detach().cpu().numpy(), use_sample_points)
+        final_x = apply_sample_points(final_x.detach().cpu().numpy(), use_sample_points)
         init_rcl = loss_eval(xhat.contiguous(), init_x.contiguous()).mean()
         final_rcl = loss_eval(xhat.contiguous(), final_x.contiguous()).mean()
         total_rcl = loss_eval(final_x.contiguous(), init_x.contiguous()).mean()
@@ -245,9 +239,9 @@ def model_pass_reconstruct(
         if key == "pcloud":
             xhat = xhat[:, :, :3]
         else:
-            init_x = _apply_sample_points(init_x.detach().cpu().numpy(), use_sample_points)
-            final_x = _apply_sample_points(final_x.detach().cpu().numpy(), use_sample_points)
-            xhat = _apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
+            init_x = apply_sample_points(init_x.detach().cpu().numpy(), use_sample_points)
+            final_x = apply_sample_points(final_x.detach().cpu().numpy(), use_sample_points)
+            xhat = apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
         if save_path:
             save_pcloud(
                 xhat[0].detach().cpu().numpy(),
