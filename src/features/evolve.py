@@ -1,6 +1,4 @@
 import random
-import re
-import glob
 import shutil
 import torch
 from tqdm import tqdm
@@ -18,11 +16,6 @@ from src.models.predict_model import model_pass
 import random
 from sklearn.decomposition import PCA
 
-
-def numerical_sort_key(s):
-    return [
-        int(text) if text.isdigit() else text.lower() for text in re.split("(\d+)", s)
-    ]
 
 
 def get_evolve_dataset(
