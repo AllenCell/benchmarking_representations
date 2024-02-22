@@ -4,7 +4,7 @@ _convert_: all
 path: /allen/aics/assay-dev/users/Alex/handoff/ritvik/npm_manifest_with_sdfs.csv
 split_column: split
 
-batch_size: 32
+batch_size: 16
 num_workers: 10
 multiprocessing_context: spawn
 persistent_workers: true
@@ -32,4 +32,4 @@ transforms:
   - _target_: monai.transforms.SpatialPadd
     keys: [image]
     spatial_size: [33, 33, 33]
-    value: -2
+    value: 2
