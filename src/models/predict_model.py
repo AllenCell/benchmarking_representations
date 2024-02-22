@@ -216,7 +216,7 @@ def model_pass(
     if hasattr(model, "backbone"):
         return vit_forward(
             model,
-            batch["image"],
+            batch["image"].as_tensor(),
             device,
             this_loss,
             track_emissions,
