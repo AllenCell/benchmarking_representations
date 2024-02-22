@@ -145,12 +145,12 @@ def save_embeddings(
     debug: bool = False,
     split_list: list = ["train", "val", "test"],
     device: str = "cuda:0",
+    loss_eval_list: list = None,
 ):
     Path(save_folder).mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
     logger.setLevel(logging.CRITICAL)
 
-    loss_eval_pc = get_pc_loss()
     track_emissions = False
     emissions_path = Path("./")
 
@@ -161,12 +161,13 @@ def save_embeddings(
         all_loss = []
         all_splits = []
         this_data = data_list[j_ind]
+        loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
             all_embeds, all_data_ids, all_splits, all_loss = compute_embeddings(
                 model,
                 this_data,
                 split_list,
-                loss_eval_pc,
+                loss_eval,
                 track_emissions,
                 emissions_path,
                 all_embeds,
