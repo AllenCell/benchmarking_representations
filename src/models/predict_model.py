@@ -24,6 +24,7 @@ def vit_forward(
     """
     Forward pass for vit with codecarbon tracking option
     """
+    image = torch.tensor(image)
     features, backward_indexes, patch_size = model.backbone.encoder(image)
     predicted_img, mask = model.backbone.decoder(features, backward_indexes, patch_size)
 
@@ -216,7 +217,7 @@ def model_pass(
     if hasattr(model, "backbone"):
         return vit_forward(
             model,
-            batch["image"].as_tensor(),
+            batch["image"],
             device,
             this_loss,
             track_emissions,

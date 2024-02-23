@@ -46,6 +46,10 @@ DATASET_INFO = {
         "pc_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
         "feature_path": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/computefeatures/manifest.csv",
     },
+    "npm1_variance":{
+        "embedding_save_location": "./embeddings_npm1_variance",
+        "orig_df":"/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+    }
 }
 
 METRIC_LIST = [

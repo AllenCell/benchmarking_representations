@@ -49,6 +49,53 @@ MODEL_INFO = {
             "so2_image",
         ],
     },
+    "npm1_variance": {
+        "run_ids": ["b644087898aa4610ab7b7a31d49af10b",
+                    "20a7dfd220514dd0a0cd3b81cc59228b",
+                    "3650587a5e564a5892ca015c8ff5d7da",
+                    "0040690837544434886969d0533fce71",
+                    "4355d6ecaf1b4bafb61f11dddce20df4",
+                    "2952993efb124277aa09fc4c50fabd2d"],
+        "names":["IAE_comb_SO3_ld512_AE_gridlossW2",
+                "CNN_sdf_SO3",
+                "CNN_seg_SO3",
+                "CNN_sdf_noalign",
+                "CNN_seg_noalign",
+                 "ViT_sdf_noalign"],
+    },
+    "fbl_variance": {
+        "run_ids": [],
+        "names":["IAE_comb_SO3_ld512_AE_gridlossW2",
+                "CNN_sdf_SO3",
+                "CNN_seg_SO3",
+                "CNN_sdf_noalign",
+                "CNN_seg_noalign"],
+    },
+    "npm1_labelfree": {
+        "run_ids": [],
+        "names":["IAE_comb_SO3_ld512_AE_gridlossW2_PT",
+                "CNN_sdf_SO3_PT",
+                "CNN_seg_SO3_PT",
+                "CNN_sdf_noalign_PT",
+                "CNN_seg_noalign_PT"],
+    },
+    "npm1_perturb": {
+        "run_ids": [],
+        "names":["IAE_comb_SO3_ld512_AE_gridlossW2_PT",
+                "CNN_sdf_SO3_PT",
+                "CNN_seg_SO3_PT",
+                "CNN_sdf_noalign_PT",
+                "CNN_seg_noalign_PT"],
+    },
+    "fbl_perturb": {
+        "run_ids": [],
+        "names":["IAE_comb_SO3_ld512_AE_gridlossW2_PT",
+                "CNN_sdf_SO3_PT",
+                "CNN_seg_SO3_PT",
+                "CNN_sdf_noalign_PT",
+                "CNN_seg_noalign_PT"],
+    },
+
 }
 
 
