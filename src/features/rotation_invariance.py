@@ -4,7 +4,7 @@ from tqdm import tqdm
 import pandas as pd
 import torch.nn.functional as F
 
-# from pointcloudutils.networks import LatentLocalDecoder
+from pointcloudutils.networks import LatentLocalDecoder
 from scipy.spatial.transform import Rotation as R
 from src.models.predict_model import model_pass
 from src.models.utils import get_iae_reconstruction_3d_grid
@@ -176,9 +176,10 @@ def get_equiv_dict(
                         batch_input = {
                             this_key: torch.tensor(this_input_rot).to(device).float()
                         }
-                        # if isinstance(this_model.decoder[this_key], LatentLocalDecoder):
-                        #     batch_input["points"] = i["points"]
-                        #     batch_input["points.df"] = i["points.df"]
+                        if hasattr(this_model, 'decoder'):
+                            if isinstance(this_model.decoder[this_key], LatentLocalDecoder):
+                                batch_input["points"] = i["points"]
+                                batch_input["points.df"] = i["points.df"]
 
                         out, z, loss, _ = model_pass(
                             batch_input,
