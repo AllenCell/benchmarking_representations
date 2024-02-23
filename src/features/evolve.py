@@ -258,7 +258,7 @@ def model_pass_reconstruct(
 def get_evolution_dict(
     all_models,
     data_list,
-    this_loss,
+    loss_eval,
     all_embeds,
     run_names,
     device,
@@ -293,6 +293,7 @@ def get_evolution_dict(
     for j in range(len(all_models)):
         model = all_models[j]
         model = model.eval()
+        this_loss = loss_eval if not isinstance(loss_eval, list) else loss_eval[j]
         for count, i in enumerate(tqdm(data_list[j].test_dataloader())):
             this_save = False
             if count == 0:

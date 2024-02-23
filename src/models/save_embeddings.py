@@ -37,7 +37,7 @@ def get_pc_loss_chamfer():
 def process_dataloader(
     dataloader,
     model,
-    loss_eval_pc,
+    loss_eval,
     track_emissions,
     emissions_path,
     split,
@@ -58,7 +58,7 @@ def process_dataloader(
             all_loss,
         ) = process_batch_embeddings(
             model,
-            loss_eval_pc,
+            loss_eval,
             device,
             i,
             all_splits,
@@ -76,7 +76,7 @@ def compute_embeddings(
     model,
     this_data,
     split_list,
-    loss_eval_pc,
+    loss_eval,
     track_emissions,
     emissions_path,
     all_embeds,
@@ -91,7 +91,7 @@ def compute_embeddings(
         all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
             this_data.train_dataloader(),
             model,
-            loss_eval_pc,
+            loss_eval,
             track_emissions,
             emissions_path,
             "train",
@@ -107,7 +107,7 @@ def compute_embeddings(
         all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
             this_data.val_dataloader(),
             model,
-            loss_eval_pc,
+            loss_eval,
             track_emissions,
             emissions_path,
             "val",
@@ -123,7 +123,7 @@ def compute_embeddings(
         all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
             this_data.test_dataloader(),
             model,
-            loss_eval_pc,
+            loss_eval,
             track_emissions,
             emissions_path,
             "test",
@@ -215,7 +215,6 @@ def save_emissions(
     emissions_path.mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
     logger.setLevel(logging.CRITICAL)
-    loss_eval_pc = get_pc_loss()
 
     if debug:
         max_batches = 1

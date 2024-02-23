@@ -115,7 +115,7 @@ def get_equiv_dict(
     run_names,
     data_list,
     device,
-    this_loss,
+    loss_eval,
     keys,
     id="cell_id",
     max_batches=20,
@@ -156,6 +156,7 @@ def get_equiv_dict(
             this_data = data_list[jm]
             this_key = keys[jm]
             this_model = this_model.eval()
+            this_loss = loss_eval if not isinstance(loss_eval, list) else loss_eval[jm]
 
             for batch_ind, i in enumerate(tqdm(this_data.test_dataloader())):
                 if batch_ind > max_batches:

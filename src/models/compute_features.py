@@ -120,6 +120,7 @@ def compute_features(
     splits_list: list = ["train", "val", "test"],
     compute_embeds: bool = False,
     metric_list: list = METRIC_LIST,
+    loss_eval_list: list = None,
     classification_params: dict = {"class_label": "cell_stage_fine"},
     regression_params: dict = {
         "feature_df_path": None,
@@ -145,7 +146,7 @@ def compute_features(
     """
     path = Path(save_folder)
     path.mkdir(parents=True, exist_ok=True)
-    loss_eval_pc = get_pc_loss_chamfer()
+    loss_eval = get_pc_loss_chamfer() if loss_eval_list is None else loss_eval_list
     max_batches = 4
 
     if "Rotation Invariance Error" in metric_list:
@@ -155,7 +156,7 @@ def compute_features(
             run_names,
             data_list,
             device,
-            loss_eval_pc,
+            loss_eval,
             keys,
             rot_inv_params["id"],
             max_batches,
@@ -214,11 +215,12 @@ def compute_features(
                     model = all_models[j]
                     model = model.eval()
                     all_data_ids, all_splits, all_loss, all_embeds = [], [], [], []
+                    this_loss_eval = get_pc_loss_chamfer() if loss_eval_list is None else loss_eval_list[j]
                     all_embeds, all_data_ids, all_splits, all_loss = compute_embeddings(
                         model,
                         data_list[j],
                         splits_list,
-                        loss_eval_pc,
+                        this_loss_eval,
                         False,
                         Path("./"),
                         all_embeds,
@@ -267,7 +269,7 @@ def compute_features(
             evolution_dict = get_evolution_dict(
                 all_models,
                 data_evolve_list,
-                loss_eval_pc,
+                loss_eval,
                 all_embeds2,
                 run_names,
                 device,
