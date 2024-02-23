@@ -2,6 +2,7 @@ import numpy as np
 from tqdm import tqdm
 import pandas as pd
 from sklearn.pipeline import make_pipeline
+from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.model_selection import (
@@ -11,7 +12,7 @@ from sklearn.model_selection import (
 from sklearn.linear_model import LogisticRegression
 
 
-def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192):
+def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192, method="mle"):
     # all_ret = all_ret.loc[all_ret["split"] == "test"]
     ret_dict_compactness = {
         "model": [],
@@ -20,30 +21,78 @@ def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192):
     }
     for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
-        val, pca, val2 = compactness(this_mo, num_PCs, max_embed_dim)
+        val = compactness(this_mo, num_PCs, max_embed_dim, method)
         percent_same = outlier_detection(this_mo)
         ret_dict_compactness["model"].append(model)
-        ret_dict_compactness["compactness"].append(val2)
+        ret_dict_compactness["compactness"].append(val)
         ret_dict_compactness["percent_same"].append(percent_same)
     ret_dict_compactness = pd.DataFrame(ret_dict_compactness)
     return ret_dict_compactness
 
 
-def compactness(this_mo, num_PCs, max_embed_dim):
+def compute_PCA_expl_var(feats, num_PCs):
+    if num_PCs is None:
+        num_PCs = feats.shape[1]
+    pca = PCA(n_components=num_PCs)
+    pca.fit(feats)
+    inds = np.argmin(pca.explained_variance_ratio_.cumsum() < 0.8)
+    val = pca.explained_variance_ratio_.cumsum()[5]
+    return inds, pca, val
+
+def _intrinsic_dim_sample_wise(X, k, dist=None):
+    """
+    Returns Levina-Bickel dimensionality estimation
+    
+    Input parameters:
+    X    - data
+    k    - number of nearest neighbours
+    dist - matrix of distances to the k nearest neighbors of each point
+    
+    Returns: 
+    dimensionality estimate for k 
+    """
+    if dist is None:
+        neighb = NearestNeighbors(n_neighbors=k+1, n_jobs=1, algorithm='ball_tree').fit(X)
+        dist, ind = neighb.kneighbors(X)
+    dist = dist[:, 1:(k+1)]
+    assert dist.shape == (X.shape[0], k)
+    assert np.all(dist > 0)
+    d = np.log(dist[:, k - 1: k] / dist[:, 0:k - 1])
+    d = d.sum(axis=1) / (k - 2)
+    d = 1. / d
+    intdim_sample = d
+    return intdim_sample
+
+
+def compute_MLE_intrinsic_dimensionality(feats, k_list=None):
+    if k_list is None:
+        # k range based on dataset size from `Discovering State Variables Hidden in Experimental Data`
+        k_list = (feats.shape[0] * np.linspace(0.008, 0.016, 5)).astype('int')
+    neighb = NearestNeighbors(n_neighbors=k_list[-1]+1, 
+                              n_jobs=1, 
+                              algorithm='ball_tree').fit(feats)
+    dist, ind = neighb.kneighbors(feats)
+    all_estimates = []
+    for k in k_list:
+        est_dim = _intrinsic_dim_sample_wise(feats, k, dist)
+        all_estimates.append(est_dim)
+    return np.avg(all_estimates), np.std(all_estimates)
+
+
+def compactness(this_mo, num_PCs, max_embed_dim, method):
     """
     Compactness if %explained variance by 5 PCs
     fit PCA on embeddings of the same size set by max_embed_dim
     """
     cols = [i for i in this_mo.columns if "mu" in i]
     this_feats = this_mo[cols].iloc[:, :max_embed_dim].dropna(axis=1).values
-    if num_PCs is None:
-        num_PCs = this_feats.shape[1]
-    pca = PCA(n_components=num_PCs)
-    pca.fit(this_feats)
-    inds = np.argmin(pca.explained_variance_ratio_.cumsum() < 0.8)
-    val = pca.explained_variance_ratio_.cumsum()[5]
-    # a, k, b = opt
-    return inds, pca, val
+    if method == "pca":
+        _, _, val = compute_PCA_expl_var(this_feats, num_PCs)
+    elif method == "mle":
+        val, std_val = compute_MLE_intrinsic_dimensionality(this_feats)
+    else:
+        raise NotImplementedError
+    return val
 
 
 def outlier_detection(this_mo, outlier_label=0):
