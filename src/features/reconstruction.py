@@ -41,6 +41,11 @@ def write_pyvista_latent_walk_gif(out_file, view, mesh_files, expl_var=None):
         return
 
     mesh = pv.read(mesh_files[0])
+    if mesh.points.shape[0] == 0:
+        vertices = np.array(
+            [[0, 0, 0], [1, 0, 0]]
+        )
+        mesh = pv.PolyData(vertices)
     mesh.clear_data()
     plotter = pv.Plotter(window_size=[650, 600])
     plotter.add_mesh(mesh, color="white")
@@ -77,6 +82,11 @@ def write_pyvista_latent_walk_gif(out_file, view, mesh_files, expl_var=None):
     mesh_files_tmp = mesh_files.copy()
     for i, f in enumerate(mesh_files_tmp):
         new_mesh = pv.read(f)
+        if new_mesh.points.shape[0] == 0:
+            vertices = np.array(
+                [[0, 0, 0], [1, 0, 0]]
+            )
+            new_mesh = pv.PolyData(vertices)
         new_mesh.clear_data()
         mesh.overwrite(new_mesh)
         slider.GetSliderRepresentation().SetValue(i + 1)
