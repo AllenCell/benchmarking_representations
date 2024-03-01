@@ -79,7 +79,7 @@ def compute_MLE_intrinsic_dimensionality(feats, k_list=None):
     for k in k_list:
         est_dim = _intrinsic_dim_sample_wise(feats, k, dist)
         all_estimates.append(est_dim)
-    return np.mean(all_estimates), np.std(all_estimates)
+    return np.avg(all_estimates), np.std(all_estimates)
 
 
 def compactness(this_mo, num_PCs, max_embed_dim, method):

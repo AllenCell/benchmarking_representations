@@ -421,8 +421,9 @@ def make_variance_boxplots(base_path, path, pc_list, bin_list, save_folder):
     df_base["stereotypy"] = df_base["stereotypy"].abs()
     df_base = df_base[df_base["CellId_1"] != df_base["CellId_2"]]
 
+
     df4 = pd.read_csv(
-        "/allen/aics/modeling/ritvik/projects/benchmarking_representations/notebooks/features_variance_tmp/stereotypy.csv"
+        path
     )
     df4.drop_duplicates(subset=["stereotypy"])
     df4["stereotypy"] = df4["stereotypy"].abs()

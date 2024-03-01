@@ -4,10 +4,8 @@ _convert_: all
 path: /allen/aics/assay-dev/users/Alex/handoff/ritvik/npm_manifest_with_sdfs.csv
 split_column: split
 
-batch_size: 32
-num_workers: 10
-multiprocessing_context: spawn
-persistent_workers: true
+batch_size: 16
+num_workers: 4
 
 transforms:
   - _target_: cyto_dl.dataframe.transforms.GroupCols

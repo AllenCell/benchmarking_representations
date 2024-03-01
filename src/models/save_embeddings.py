@@ -37,7 +37,7 @@ def get_pc_loss_chamfer():
 def process_dataloader(
     dataloader,
     model,
-    loss_eval_pc,
+    loss_eval,
     track_emissions,
     emissions_path,
     split,
@@ -58,7 +58,7 @@ def process_dataloader(
             all_loss,
         ) = process_batch_embeddings(
             model,
-            loss_eval_pc,
+            loss_eval,
             device,
             i,
             all_splits,
@@ -76,7 +76,7 @@ def compute_embeddings(
     model,
     this_data,
     split_list,
-    loss_eval_pc,
+    loss_eval,
     track_emissions,
     emissions_path,
     all_embeds,
@@ -91,7 +91,7 @@ def compute_embeddings(
         all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
             this_data.train_dataloader(),
             model,
-            loss_eval_pc,
+            loss_eval,
             track_emissions,
             emissions_path,
             "train",
@@ -107,7 +107,7 @@ def compute_embeddings(
         all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
             this_data.val_dataloader(),
             model,
-            loss_eval_pc,
+            loss_eval,
             track_emissions,
             emissions_path,
             "val",
@@ -123,7 +123,7 @@ def compute_embeddings(
         all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
             this_data.test_dataloader(),
             model,
-            loss_eval_pc,
+            loss_eval,
             track_emissions,
             emissions_path,
             "test",
@@ -145,12 +145,12 @@ def save_embeddings(
     debug: bool = False,
     split_list: list = ["train", "val", "test"],
     device: str = "cuda:0",
+    loss_eval_list: list = None,
 ):
     Path(save_folder).mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
     logger.setLevel(logging.CRITICAL)
 
-    loss_eval_pc = get_pc_loss()
     track_emissions = False
     emissions_path = Path("./")
 
@@ -161,12 +161,13 @@ def save_embeddings(
         all_loss = []
         all_splits = []
         this_data = data_list[j_ind]
+        loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
             all_embeds, all_data_ids, all_splits, all_loss = compute_embeddings(
                 model,
                 this_data,
                 split_list,
-                loss_eval_pc,
+                loss_eval,
                 track_emissions,
                 emissions_path,
                 all_embeds,
@@ -208,12 +209,12 @@ def save_emissions(
     max_batches: int = 5,
     debug: bool = False,
     device: str = "cuda:0",
+    loss_eval_list: list = None,
 ):
     emissions_path = Path(emissions_path)
     emissions_path.mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
     logger.setLevel(logging.CRITICAL)
-    loss_eval_pc = get_pc_loss()
 
     if debug:
         max_batches = 1
@@ -226,6 +227,7 @@ def save_emissions(
         all_loss = []
         all_splits = []
         this_data = data_list[j_ind]
+        loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
             count = 0
             for i in tqdm(this_data.test_dataloader()):
@@ -245,7 +247,7 @@ def save_emissions(
                     all_x_vis_list,
                 ) = process_batch(
                     model,
-                    loss_eval_pc,
+                    loss_eval,
                     device,
                     i,
                     all_data_inputs,

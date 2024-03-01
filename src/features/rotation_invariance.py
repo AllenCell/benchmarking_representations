@@ -4,7 +4,7 @@ from tqdm import tqdm
 import pandas as pd
 import torch.nn.functional as F
 
-# from pointcloudutils.networks import LatentLocalDecoder
+from pointcloudutils.networks import LatentLocalDecoder
 from scipy.spatial.transform import Rotation as R
 from src.models.predict_model import model_pass
 from src.models.utils import get_iae_reconstruction_3d_grid
@@ -115,7 +115,7 @@ def get_equiv_dict(
     run_names,
     data_list,
     device,
-    this_loss,
+    loss_eval,
     keys,
     id="cell_id",
     max_batches=20,
@@ -156,6 +156,7 @@ def get_equiv_dict(
             this_data = data_list[jm]
             this_key = keys[jm]
             this_model = this_model.eval()
+            this_loss = loss_eval if not isinstance(loss_eval, list) else loss_eval[jm]
 
             for batch_ind, i in enumerate(tqdm(this_data.test_dataloader())):
                 if batch_ind > max_batches:
@@ -176,9 +177,10 @@ def get_equiv_dict(
                         batch_input = {
                             this_key: torch.tensor(this_input_rot).to(device).float()
                         }
-                        # if isinstance(this_model.decoder[this_key], LatentLocalDecoder):
-                        #     batch_input["points"] = i["points"]
-                        #     batch_input["points.df"] = i["points.df"]
+                        if hasattr(this_model, 'decoder'):
+                            if isinstance(this_model.decoder[this_key], LatentLocalDecoder):
+                                batch_input["points"] = i["points"]
+                                batch_input["points.df"] = i["points.df"]
 
                         out, z, loss, _ = model_pass(
                             batch_input,

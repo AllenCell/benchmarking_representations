@@ -42,7 +42,9 @@ CONFIG_LIST = {
     "npm1_perturb": [
         "../data/configs/inference_npm1_perturb/pointcloud_sdf_noalign.yaml",
         "../data/configs/inference_npm1_perturb/image_sdf_noalign_so3.yaml",
+        "../data/configs/inference_npm1_perturb/image_seg_noalign_so3.yaml",
         "../data/configs/inference_npm1_perturb/image_sdf_noalign.yaml",
+        "../data/configs/inference_npm1_perturb/image_seg_noalign.yaml",
     ],
     "npm1_labelfree": [
         "../data/configs/inference_npm1_labelfree/pointcloud_sdf_noalign.yaml",
@@ -52,18 +54,24 @@ CONFIG_LIST = {
     "npm1_variance": [
         "../data/configs/inference_npm1_variance/pointcloud_sdf_noalign.yaml",
         "../data/configs/inference_npm1_variance/image_sdf_noalign_so3.yaml",
+        "../data/configs/inference_npm1_variance/image_seg_noalign_so3.yaml",
         "../data/configs/inference_npm1_variance/image_sdf_noalign.yaml",
+        "../data/configs/inference_npm1_variance/image_seg_noalign.yaml",
         "../data/configs/inference_npm1_variance/vit_sdf_noalign.yaml",
     ],
-    "fbp84_perturb": [
+    "fbl84_perturb": [
         "../data/configs/inference_fbl-84_perturb/pointcloud_sdf_noalign.yaml",
         "../data/configs/inference_fbl-84_perturb/image_sdf_noalign_so3.yaml",
+        "../data/configs/inference_fbl-84_perturb/image_seg_noalign_so3.yaml",
         "../data/configs/inference_fbl-84_perturb/image_sdf_noalign.yaml",
+        "../data/configs/inference_fbl-84_perturb/image_seg_noalign.yaml",
     ],
     "fbl_variance": [
         "../data/configs/inference_fbl_variance/pointcloud_sdf_noalign.yaml",
         "../data/configs/inference_fbl_variance/image_sdf_noalign_so3.yaml",
+        "../data/configs/inference_fbl_variance/image_seg_noalign_so3.yaml",
         "../data/configs/inference_fbl_variance/image_sdf_noalign.yaml",
+        "../data/configs/inference_fbl_variance/image_seg_noalign.yaml",
     ],
     # "cellpack": [
     #     "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/default.yaml",

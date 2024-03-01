@@ -70,6 +70,13 @@ def sample_points(orig):
     return torch.tensor(pcloud)
 
 
+def apply_sample_points(data, use_sample_points):
+    if use_sample_points:
+        return sample_points(data)
+    else:
+        return data
+
+
 def get_iae_reconstruction_3d_grid(bb_min=-0.5, bb_max=0.5, resolution=32, padding=0.1):
     bb_min = (bb_min,) * 3
     bb_max = (bb_max,) * 3

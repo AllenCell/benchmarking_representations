@@ -107,6 +107,82 @@ MODEL_INFO = {
             "equiv",
         ],
     },
+    "npm1_variance": {
+        "run_ids": [
+            "b644087898aa4610ab7b7a31d49af10b",
+            "20a7dfd220514dd0a0cd3b81cc59228b",
+            "3650587a5e564a5892ca015c8ff5d7da",
+            "0040690837544434886969d0533fce71",
+            "4355d6ecaf1b4bafb61f11dddce20df4",
+            "2952993efb124277aa09fc4c50fabd2d",
+        ],
+        "names": [
+            "IAE_comb_SO3_ld512_AE_gridlossW2",
+            "CNN_sdf_SO3",
+            "CNN_seg_SO3",
+            "CNN_sdf_noalign",
+            "CNN_seg_noalign",
+            "ViT_sdf_noalign",
+        ],
+    },
+    "fbl_variance": {
+        "run_ids": [
+            "466bd2e86f1741dd9fdc60f79c39925b",
+            "e73a3b0d78a445299a32e0329852e52d",
+            "29e01867746d4434851afbd24f3c2262",
+            "024f69ad7897459dbfc4da6c500ac2bd",
+            "24092f3d7eb24bc6afec5f55361b1f06",
+        ],
+        "names": [
+            "IAE_comb_SO3_ld512_AE_gridlossW2",
+            "CNN_sdf_SO3",
+            "CNN_seg_SO3",
+            "CNN_sdf_noalign",
+            "CNN_seg_noalign",
+        ],
+    },
+    "npm1_labelfree": {
+        "run_ids": [],
+        "names": [
+            "IAE_comb_SO3_ld512_AE_gridlossW2_PT",
+            "CNN_sdf_SO3_PT",
+            "CNN_seg_SO3_PT",
+            "CNN_sdf_noalign_PT",
+            "CNN_seg_noalign_PT",
+        ],
+    },
+    "npm1_perturb": {
+        "run_ids": [
+            "aec9d28492a7402ebf335240531968a5",
+            "b39653afa5d042a6a105df95d6fecb13",
+            "2675e1d1f8904396a745d3757a2ad64f",
+            "3a035fe44e234e6ebc2d0fa48e18c1a4",
+            "c1f61ed4aea34e5abdb2d711b818cb28",
+        ],
+        "names": [
+            "IAE_comb_SO3_ld512_AE_gridlossW2_PT",
+            "CNN_sdf_SO3_PT",
+            "CNN_seg_SO3_PT",
+            "CNN_sdf_noalign_PT",
+            "CNN_seg_noalign_PT",
+        ],
+    },
+    "fbl84_perturb": {
+        "run_ids": [
+            "1647d10354454fd18646cd654a17546c",
+            "a30999aa027d4297bba3aae985f67e40",
+            "287e762f795b4bb092ceee7314c8fbad",
+            "e8b3bb5c1bed4c8cac59ba6c74056c97",
+            "74e3a7e692f84ad3805cf0967ecf03cd",
+        ],
+        "names": [
+            "IAE_comb_SO3_ld512_AE_gridlossW2_PT",
+            "CNN_sdf_SO3_PT",
+            "CNN_seg_SO3_PT",
+            "CNN_sdf_noalign_PT",
+            "CNN_seg_noalign_PT",
+        ],
+    },
 }
 
 TRACKING_URI = "https://mlflow.a100.int.allencell.org"

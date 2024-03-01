@@ -6,7 +6,8 @@ from pathlib import Path
 import logging
 import pandas as pd
 import time
-from .utils import move, sample_points, remove
+from pointcloudutils.networks import LatentLocalDecoder
+from .utils import move, sample_points, apply_sample_points, remove
 
 
 def vit_forward(
@@ -23,6 +24,7 @@ def vit_forward(
     """
     Forward pass for vit with codecarbon tracking option
     """
+    image = torch.tensor(image)
     features, backward_indexes, patch_size = model.backbone.encoder(image)
     predicted_img, mask = model.backbone.decoder(features, backward_indexes, patch_size)
 
@@ -123,7 +125,7 @@ def mae_forward(
 
 
 def base_forward(
-    model, batch, device, this_loss, track_emissions, tracker, end, emissions_csv
+    model, batch, device, this_loss, track_emissions, tracker, end, emissions_csv, use_sample_points=False
 ):
     """
     Forward pass for base cyto_dl models with codecarbon tracking options
@@ -138,15 +140,15 @@ def base_forward(
     xhat, z, z_params = model(
         move(this_batch, device), decode=True, inference=True, return_params=True
     )
-    if embed_key == "pcloud":
+    if embed_key == "pcloud" and not isinstance(model.decoder[key], LatentLocalDecoder):
         xhat["pcloud"] = xhat["pcloud"][:, :, :3]
         this_batch["pcloud"] = this_batch["pcloud"][:, :, :3]
-    else:
+    elif embed_key == "image":
         this_batch["image"] = torch.tensor(
-            sample_points(this_batch["image"].detach().cpu().numpy())
+            apply_sample_points(this_batch["image"].detach().cpu().numpy(), use_sample_points)
         ).to(device)
         xhat["image"] = torch.tensor(
-            sample_points(xhat["image"].detach().cpu().numpy())
+            apply_sample_points(xhat["image"].detach().cpu().numpy(), use_sample_points)
         ).to(device)
 
     if this_loss is not None:
