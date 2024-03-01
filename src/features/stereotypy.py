@@ -1,12 +1,75 @@
 import numpy as np
 from tqdm import tqdm
 import pandas as pd
-from src.features.shapemodes import get_variance_shapemodes
+from src.features.shapemodes import get_variance_shapemodes, compute_shapemodes
 from skimage.io import imread
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import pearsonr
 from pathlib import Path
+from sklearn.metrics import mutual_info_score
+from scipy.stats import spearmanr
+from sklearn.decomposition import PCA
+from src.features.outlier_compactness import compute_MLE_intrinsic_dimensionality
+
+
+def get_stereotypy_stratified(
+    all_ret,
+    stratify_col=None,
+    max_embed_dim=192,
+    return_correlation_matrix=False,
+    max_pcs=8,
+    max_bins=9,
+    get_baseline=False,
+    compute_PCs=True,
+):
+    tmp_ret = []
+    for model in all_ret["model"].unique():
+        df2 = all_ret.loc[all_ret["model"] == model]
+
+        for strat in df2[stratify_col].unique():
+            df3 = df2.loc[df2[stratify_col] == strat]
+            this_feats = df3[[i for i in df3.columns if "mu" in i]]
+            this_feats = this_feats.dropna(axis=1).values
+
+            num, _ = compute_MLE_intrinsic_dimensionality(this_feats)
+            print(num, strat)
+            # pca = PCA(n_components=min(this_feats.shape[1], this_feats.shape[0]))
+            pca = PCA(n_components=int(num * 10))
+            # pca = PCA(n_components=int(10))
+            pca = pca.fit(this_feats)
+            this_feats = pca.transform(this_feats)
+            df3[[f"PCA_{i}" for i in range(this_feats.shape[1])]] = this_feats
+            tmp_ret.append(df3)
+    all_ret = pd.concat(tmp_ret, axis=0).reset_index(drop=True)
+    if not stratify_col:
+        return get_stereotypy(
+            all_ret,
+            max_embed_dim,
+            return_correlation_matrix,
+            max_pcs,
+            max_bins,
+            get_baseline,
+            compute_PCs,
+        )
+    group_by = all_ret.groupby(stratify_col)
+    keys = group_by.groups.keys()
+    all_stereotypy = []
+    for i in keys:
+        this_g = group_by.get_group(i).reset_index(drop=True)
+        ret_dict_stereotypy, _, _ = get_stereotypy(
+            this_g,
+            max_embed_dim,
+            return_correlation_matrix,
+            max_pcs,
+            max_bins,
+            get_baseline,
+            compute_PCs,
+        )
+        ret_dict_stereotypy[stratify_col] = i
+        all_stereotypy.append(ret_dict_stereotypy)
+    all_stereotypy = pd.concat(all_stereotypy, axis=0).reset_index(drop=True)
+    return all_stereotypy
 
 
 def get_stereotypy(
@@ -16,8 +79,17 @@ def get_stereotypy(
     max_pcs=8,
     max_bins=9,
     get_baseline=False,
+    compute_PCs=False,
 ):
-    cellids_per_pc_per_bin = get_variance_shapemodes(ids=True)
+    if compute_PCs:
+        # pick a model to do shapemode calculation on
+        # nuc SHE is same across models
+        this_mo = all_ret.loc[
+            all_ret["model"] == all_ret["model"].unique()[0]
+        ].reset_index(drop=True)
+        cellids_per_pc_per_bin = compute_shapemodes(this_mo, max_pcs, max_bins)
+    else:
+        cellids_per_pc_per_bin = get_variance_shapemodes(ids=True)
 
     ret_dict_stereotypy = {
         "model": [],
@@ -27,6 +99,7 @@ def get_stereotypy(
         "bin": [],
         "CellId_1": [],
         "CellId_2": [],
+        "distances": [],
     }
     ret_dict_baseline_stereotypy = {
         "structure": [],
@@ -42,10 +115,20 @@ def get_stereotypy(
     if return_correlation_matrix:
         ret_corr = {}
 
+    if "structure_name" not in all_ret.columns:
+        all_ret["structure_name"] = "null"
+
     for model_ind, model in enumerate(
         tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique()))
     ):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
+        # this_feats = this_mo[[i for i in this_mo.columns if "mu" in i]]
+        # this_feats = this_feats.dropna(axis=1).values
+        # from sklearn.decomposition import PCA
+        # pca = PCA(n_components=200)
+        # pca = pca.fit(this_feats)
+        # this_feats = pca.transform(this_feats)
+        # this_mo[[f"PCA_{i}" for i in range(this_feats.shape[1])]] = this_feats
 
         for pc in range(8):
             if pc < max_pcs:
@@ -56,35 +139,49 @@ def get_stereotypy(
                         this_ids = cellids_per_pc_per_bin.get(
                             str(this_pc) + "_" + str(this_bin)
                         )
-                        this_all_ret = this_mo.loc[
-                            this_mo["CellId"].isin(this_ids["CellIds"].values)
-                        ].reset_index(drop=True)
-                        for struct in this_all_ret["structure_name"].unique():
-                            this_ret = this_all_ret.loc[
-                                this_all_ret["structure_name"] == struct
+
+                        if isinstance(this_ids, pd.DataFrame):
+                            id_key = "CellIds"
+                            pc_bin_ids = this_ids[id_key].values
+                        else:
+                            pc_bin_ids = this_ids
+
+                        if len(pc_bin_ids) > 0:
+                            this_all_ret = this_mo.loc[
+                                this_mo["CellId"].isin(pc_bin_ids)
                             ].reset_index(drop=True)
 
-                            stereotypy = correlate(this_ret, max_embed_dim)
-                            cellid_order = this_ret["CellId"].values
-                            np.fill_diagonal(stereotypy, 0)
+                            for struct in this_all_ret["structure_name"].unique():
+                                this_ret = this_all_ret.loc[
+                                    this_all_ret["structure_name"] == struct
+                                ].reset_index(drop=True)
 
-                            for j_ind in range(stereotypy.shape[0]):
-                                for j_ind2 in range(stereotypy.shape[1]):
-                                    this_s = stereotypy[j_ind, j_ind2]
-                                    this_id1 = cellid_order[j_ind]
-                                    this_id2 = cellid_order[j_ind2]
-                                    ret_dict_stereotypy["model"].append(model)
-                                    ret_dict_stereotypy["stereotypy"].append(this_s)
-                                    ret_dict_stereotypy["pc"].append(this_pc)
-                                    ret_dict_stereotypy["bin"].append(this_bin)
-                                    ret_dict_stereotypy["structure"].append(struct)
-                                    ret_dict_stereotypy["CellId_1"].append(this_id1)
-                                    ret_dict_stereotypy["CellId_2"].append(this_id2)
+                                stereotypy, distances = correlate(
+                                    this_ret, max_embed_dim
+                                )
+                                cellid_order = this_ret["CellId"].values
+                                np.fill_diagonal(stereotypy, 0)
+
+                                for j_ind in range(stereotypy.shape[0]):
+                                    for j_ind2 in range(stereotypy.shape[1]):
+                                        this_s = stereotypy[j_ind, j_ind2]
+                                        this_id1 = cellid_order[j_ind]
+                                        this_id2 = cellid_order[j_ind2]
+                                        ret_dict_stereotypy["model"].append(model)
+                                        ret_dict_stereotypy["stereotypy"].append(this_s)
+                                        ret_dict_stereotypy["pc"].append(this_pc)
+                                        ret_dict_stereotypy["bin"].append(this_bin)
+                                        ret_dict_stereotypy["structure"].append(struct)
+                                        ret_dict_stereotypy["CellId_1"].append(this_id1)
+                                        ret_dict_stereotypy["CellId_2"].append(this_id2)
+                                        ret_dict_stereotypy["distances"].append(
+                                            distances[j_ind, j_ind2]
+                                        )
 
                             if return_correlation_matrix:
-                                ret_corr[
-                                    str(this_pc) + "_" + str(this_bin)
-                                ] = stereotypy
+                                ret_corr[str(this_pc) + "_" + str(this_bin)] = (
+                                    stereotypy
+                                )
 
                             if get_baseline:
                                 if model_ind == 0:
@@ -136,7 +233,8 @@ def base_correlation_map(x, y):
     desired = np.empty((x.shape[0], y.shape[0]))
     for n in range(x.shape[0]):
         for m in range(y.shape[0]):
-            desired[n, m] = pearsonr(x[n, :], y[m, :])[0]
+            # desired[n, m] = pearsonr(x[n, :], y[m, :])[0]
+            desired[n, m] = spearmanr(x[n, :], y[m, :]).correlation
     return desired
 
 
@@ -172,10 +270,16 @@ def generate_correlation_map(x, y):
 
 def correlate(this_mo, max_embed_dim):
     """Correlation between representations for different cells"""
-    cols = [i for i in this_mo.columns if "mu" in i]
+    # cols = [i for i in this_mo.columns if "mu" in i]
+    cols = [i for i in this_mo.columns if "PCA" in i]
     this_feats = this_mo[cols].iloc[:, :max_embed_dim].dropna(axis=1).values
+
+    distances = np.sum(
+        (this_feats[:, np.newaxis, :] - this_feats[np.newaxis, :, :]) ** 2, axis=-1
+    )
     stereotypy = generate_correlation_map(this_feats, this_feats)
-    return stereotypy
+    # stereotypy = base_correlation_map(this_feats, this_feats)
+    return stereotypy, distances
 
 
 def make_scatterplots(base_path, path, pc_list, bin_list, save_folder):

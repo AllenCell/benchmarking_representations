@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import mcubes
 import trimesh
+from tqdm import tqdm
 import glob
 import vtk
 import imageio
@@ -215,11 +216,10 @@ def get_mesh_from_image(
 
         img[img != lcc] = 0
         img[img == lcc] = 1
-    
+
     # Remove small objects in the image
     if denoise:
         img = skmorpho.remove_small_objects(label(img), noise_thresh)
-        
 
     # Smooth binarize the input image and binarize
     if sigma:
@@ -281,12 +281,12 @@ def get_mesh_from_image(
 def get_mesh_from_sdf(sdf, method="skimage"):
     """
     This function reconstructs a mesh from signed distance function
-    values using the marching cubes algorithm. 
+    values using the marching cubes algorithm.
 
     Parameters
     ----------
     sdf : np.array
-        3D array of shape (N,N,N) 
+        3D array of shape (N,N,N)
 
     Returns
     -------
@@ -296,8 +296,10 @@ def get_mesh_from_sdf(sdf, method="skimage"):
     if method == "skimage":
         try:
             vertices, faces, normals, _ = marching_cubes(sdf, level=0)
-            mesh = trimesh.Trimesh(vertices=vertices, faces=faces, vertex_normals=normals)
-        except: 
+            mesh = trimesh.Trimesh(
+                vertices=vertices, faces=faces, vertex_normals=normals
+            )
+        except:
             # empty mesh
             mesh = pv.PolyData()
     elif method == "vae_output":
@@ -400,8 +402,19 @@ def extract_digitized_shape_modes(shape_mode, shape_modes_df, pca, map_points):
 
 
 def latent_walk(
-    model, device, df, x_label, max_embed_dim, latent_dim, max_num_shapemodes, path
+    model,
+    device,
+    df,
+    x_label,
+    max_embed_dim,
+    latent_dim,
+    max_num_shapemodes,
+    path,
+    latent_walk_range=None,
 ):
+    path = Path(path)
+    path.mkdir(parents=True, exist_ok=True)
+
     cols = [i for i in df.columns if "mu" in i]
     all_features = df[cols].iloc[:, :max_embed_dim].dropna(axis=1).values
 
@@ -411,7 +424,8 @@ def latent_walk(
 
     all_recons = {}
     with torch.no_grad():
-        latent_walk_range = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2]
+        if latent_walk_range is None:
+            latent_walk_range = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2]
 
         for rank in range(max_num_shapemodes):
             if rank == max_num_shapemodes:
@@ -419,7 +433,9 @@ def latent_walk(
 
             all_recons[f"{rank}"] = {"latent_point": [], "recon": [], "rank": []}
 
-            for value_index, value in enumerate(latent_walk_range):
+            for value_index, value in enumerate(
+                tqdm(latent_walk_range, total=len(latent_walk_range))
+            ):
                 z_inf = torch.zeros(1, latent_dim)
 
                 z_inf[:, rank] += value * pca_std_list[rank]
@@ -427,11 +443,13 @@ def latent_walk(
                 z_inf = torch.tensor(z_inf)
                 z_inf = z_inf.to(device)
                 z_inf = z_inf.float()
-                decoder = model.decoder
+                decoder = model.decoder[x_label]
                 xhat = decoder(z_inf)
 
                 if len(xhat.shape) > 3:
                     xhat = sample_points(xhat.detach().cpu().numpy())
+                else:
+                    xhat = xhat.detach().cpu().numpy()
 
                 save_pcloud(xhat[0], path, f"{rank}_{value_index}")
 

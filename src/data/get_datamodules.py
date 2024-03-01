@@ -2,19 +2,31 @@ from hydra.utils import instantiate
 import yaml
 
 CONFIG_LIST = {
+    # "pcna": [
+    #     "../data/configs/inference_pcna_data_configs/pointcloud_3.yaml",
+    #     "../data/configs/inference_pcna_data_configs/pointcloud_4.yaml",
+    #     "../data/configs/inference_pcna_data_configs/image_resize.yaml",
+    #     "../data/configs/inference_pcna_data_configs/image_full.yaml",
+    #     "../data/configs/inference_pcna_data_configs/mae.yaml",
+    # ],
     "pcna": [
-        "../data/configs/inference_pcna_data_configs/pointcloud_3.yaml",
-        "../data/configs/inference_pcna_data_configs/pointcloud_4.yaml",
-        "../data/configs/inference_pcna_data_configs/image_resize.yaml",
-        "../data/configs/inference_pcna_data_configs/image_full.yaml",
-        "../data/configs/inference_pcna_data_configs/mae.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_updated.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_int_updated.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_updated_morepoints.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_int_updated_morepoints.yaml",
     ],
+    # "variance": [
+    #     "../data/configs/inference_variance_data_configs/pointcloud_3.yaml",
+    #     "../data/configs/inference_variance_data_configs/pointcloud_4.yaml",
+    #     "../data/configs/inference_variance_data_configs/image_resize.yaml",
+    #     "../data/configs/inference_variance_data_configs/image_full.yaml",
+    #     "../data/configs/inference_variance_data_configs/mae.yaml",
+    # ],
     "variance": [
-        "../data/configs/inference_variance_data_configs/pointcloud_3.yaml",
-        "../data/configs/inference_variance_data_configs/pointcloud_4.yaml",
-        "../data/configs/inference_variance_data_configs/image_resize.yaml",
-        "../data/configs/inference_variance_data_configs/image_full.yaml",
-        "../data/configs/inference_variance_data_configs/mae.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance/nuc_bound/punctate_updated.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance/nuc_bound/punctate_int_updated.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance/nuc_bound/punctate_updated_morepoints.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance/nuc_bound/punctate_int_updated_morepoints.yaml",
     ],
     "cellpainting": [
         "../data/configs/inference_cellpainting_configs/pointcloud_3.yaml",
@@ -53,6 +65,14 @@ CONFIG_LIST = {
         "../data/configs/inference_fbl_variance/image_sdf_noalign_so3.yaml",
         "../data/configs/inference_fbl_variance/image_sdf_noalign.yaml",
     ],
+    # "cellpack": [
+    #     "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/default.yaml",
+    #     "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/npm1.yaml",
+    # ],
+    "cellpack": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/upsample_all.yaml",
+        # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/npm1.yaml",
+    ],
 }
 
 
@@ -64,6 +84,7 @@ def get_data(dataset_name, batch_size):
             config = yaml.safe_load(stream)
             if batch_size:
                 config["batch_size"] = batch_size
-                config["shuffle"] = False
+                if "shuffle" in config.keys():
+                    config["shuffle"] = False
             data.append(instantiate(config))
     return data

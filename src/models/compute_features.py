@@ -9,14 +9,20 @@ from src.features.regression import get_regression_df
 from src.models.save_embeddings import get_pc_loss_chamfer, compute_embeddings
 import numpy as np
 from src.features.stereotypy import (
-    get_stereotypy,
+    get_stereotypy_stratified,
     make_scatterplots,
     make_variance_boxplots,
 )
 
 DATASET_INFO = {
+    # "pcna": {
+    #     "embedding_save_location": "./pcna_embeddings",
+    #     "orig_df": "/allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv",
+    #     "image_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
+    #     "pc_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
+    # },
     "pcna": {
-        "embedding_save_location": "./pcna_embeddings",
+        "embedding_save_location": "./pcna_updated_embeds",
         "orig_df": "/allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv",
         "image_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
@@ -45,6 +51,11 @@ DATASET_INFO = {
         "image_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
         "feature_path": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/computefeatures/manifest.csv",
+    },
+    "cellpack": {
+        "embedding_save_location": "./embeddings_cellpack",
+        "orig_df": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
     },
 }
 
@@ -133,6 +144,7 @@ def compute_features(
         "max_bins": 9,
         "get_baseline": False,
         "return_correlation_matrix": False,
+        "stratify_col": None,
     },
 ):
     """
@@ -160,30 +172,33 @@ def compute_features(
         )
         eq_dict.to_csv(path / "equiv.csv")
         metric_list.pop(metric_list.index("Rotation Invariance Error"))
-
     all_ret, df = get_embeddings(run_names, dataset)
 
     if "Stereotypy" in metric_list:
         print("Computing stereotypy")
-        ret_dict_stereotypy, ret_dict_baseline_stereotypy, corrs = get_stereotypy(
+        outs = get_stereotypy_stratified(
             all_ret,
+            stratify_col=stereotypy_params["stratify_col"],
             max_embed_dim=max_embed_dim,
             return_correlation_matrix=stereotypy_params["return_correlation_matrix"],
             max_pcs=stereotypy_params["max_pcs"],
             max_bins=stereotypy_params["max_bins"],
             get_baseline=stereotypy_params["get_baseline"],
         )
-        ret_dict_stereotypy.to_csv(path / "stereotypy.csv")
-        ret_dict_baseline_stereotypy.to_csv(path / "stereotypy_baseline.csv")
+        if isinstance(outs, list) > 1:
+            outs[0].to_csv(path / "stereotypy.csv")
+            outs[1].to_csv(path / "stereotypy_baseline.csv")
+        else:
+            outs.to_csv(path / "stereotypy.csv")
         metric_list.pop(metric_list.index("Stereotypy"))
 
-        base_path = path / "stereotypy_baseline.csv"
-        this_path = path / "stereotypy.csv"
-        pc_list = [1, 2]
-        bin_list = [5]
-        save_folder = "./features_variance_tmp/"
-        make_scatterplots(base_path, this_path, pc_list, bin_list, path)
-        make_variance_boxplots(base_path, this_path, pc_list, bin_list, path)
+        # base_path = path / "stereotypy_baseline.csv"
+        # this_path = path / "stereotypy.csv"
+        # pc_list = [1, 2]
+        # bin_list = [5]
+        # save_folder = "./features_variance_tmp/"
+        # make_scatterplots(base_path, this_path, pc_list, bin_list, path)
+        # make_variance_boxplots(base_path, this_path, pc_list, bin_list, path)
 
     if len(metric_list) != 0:
         if "split" in all_ret.columns:
@@ -193,7 +208,9 @@ def compute_features(
 
         if "Reconstruction" in metric_list:
             print("Getting reconstruction")
-            rec_df = all_ret.groupby(["model", "split"]).mean()
+            rec_df = (
+                all_ret[["model", "split", "loss"]].groupby(["model", "split"]).mean()
+            )
             rec_df.to_csv(path / "recon.csv")
             metric_list.pop(metric_list.index("Reconstruction"))
 

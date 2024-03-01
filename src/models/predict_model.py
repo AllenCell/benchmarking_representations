@@ -196,10 +196,12 @@ def model_pass(
     # else:
     emissions_path = Path(".")
     emissions_csv = "./emissions.csv"
-
     logging.disable(sys.maxsize)
-    if os.path.isfile(emissions_csv):
-        os.remove(emissions_csv)
+    try:
+        if os.path.isfile(emissions_csv):
+            os.remove(emissions_csv)
+    except:
+        pass
     logging.getLogger("apscheduler.executors.default").propagate = False
 
     model = model.to(device)

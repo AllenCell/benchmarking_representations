@@ -24,6 +24,18 @@ def get_variance_shapemodes(ids=False):
     return ret_dict
 
 
+def compute_shapemodes(df, num_PCs, n_bins):
+    df = get_shape_mode_bins(df, num_PCs, n_bins)
+    ret_dict = {}
+    for pc in range(num_PCs):
+        for bin in range(n_bins):
+            this_pc = pc + 1
+            this_bin = bin + 1
+            this_df = df.loc[df[f"PC{this_pc}_bin"] == this_bin].reset_index(drop=True)
+            ret_dict[str(this_pc) + "_" + str(this_bin)] = this_df["CellId"].values
+    return ret_dict
+
+
 def filter_extremes_based_on_percentile(df: pd.DataFrame, features: List, pct: float):
     """
     Exclude extreme data points that fall in the percentile range
@@ -173,7 +185,7 @@ def get_shape_mode_bins(
     df,
     npcs_to_calc=None,
     n_bins=9,
-    filter_extremes_pct=97.5,
+    filter_extremes_pct=1,
     save=False,
     return_freqs_per_structs=False,
 ):
@@ -193,13 +205,17 @@ def get_shape_mode_bins(
     df_trans.index = matrix_of_features_ids
 
     df = df.merge(df_trans[pc_names], how="outer", left_index=True, right_index=True)
+
+    for i in range(npcs_to_calc):
+        this_pc = f"PC{i + 1}"
+        df = digitize_shape_mode(
+            df,
+            this_pc,
+            n_bins,
+            pc_names,
+            filter_extremes_pct,
+            save,
+        )
+        df.rename(columns={"bin": f"{this_pc}_bin"}, inplace=True)
+
     return df
-    return digitize_shape_mode(
-        df,
-        pc_names,
-        n_bins,
-        pc_names,
-        filter_extremes_pct,
-        save,
-        return_freqs_per_structs,
-    )

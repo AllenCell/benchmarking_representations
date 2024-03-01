@@ -9,7 +9,7 @@ import random
 
 METRIC_DICT = {
     "recon": {"metric": ["loss"], "min": [True]},
-    "regression": {"metric": ["avg_r2"], "min": [False]},
+    # "regression": {"metric": ["avg_r2"], "min": [False]},
     "classification": {"metric": ["top_1_acc"], "min": [False]},
     "emissions": {"metric": ["emissions", "inference_time"], "min": [True, True]},
     "evolve": {"metric": ["energy", "closest_embedding_distance"], "min": [True, True]},
@@ -76,10 +76,11 @@ def collect_outputs(path, norm, model_order=None):
     rep_dict = {i: j for i, j in zip(run_names_orig, run_names)}
 
     df_list = []
+    df_non_agg = []
     for metric in [
         "recon",
         "classification",
-        "regression",
+        # "regression",
         "equiv",
         "emissions",
         "compactness",
@@ -88,12 +89,22 @@ def collect_outputs(path, norm, model_order=None):
         this_df = pd.read_csv(path + f"{metric}.csv")
         this_df["model"] = this_df["model"].replace(rep_dict)
         if "split" in this_df.columns:
+            this_metrics = METRIC_DICT[metric]["metric"]
+            # tmp_agg = this_df.loc[this_df["split"] == "test"].reset_index()
+            tmp_agg = this_df
+            print(tmp_agg.shape)
+            tmp_agg = pd.melt(tmp_agg, id_vars=["model"], value_vars=this_metrics)
+            df_non_agg.append(tmp_agg)
             this_df = (
                 this_df.loc[this_df["split"] == "test"]
                 .groupby("model")
                 .mean()
                 .reset_index()
             )
+        else:
+            this_metrics = METRIC_DICT[metric]["metric"]
+            tmp_agg = pd.melt(this_df, id_vars=["model"], value_vars=this_metrics)
+            df_non_agg.append(tmp_agg.reset_index())
 
         this_df = this_df.groupby("model").mean().reset_index()
         if model_order:
@@ -109,21 +120,23 @@ def collect_outputs(path, norm, model_order=None):
             df_list.append(this_df2)
 
     df = pd.concat(df_list, axis=0).reset_index(drop=True)
+    df_non_agg = pd.concat(df_non_agg, axis=0).reset_index(drop=True)
 
     rep_dict_var = {
         "loss": "Reconstruction",
-        "avg_r2": "Feature Regression",
+        # "avg_r2": "Feature Regression",
         "top_1_acc": "Classification",
         "compactness": "Compactness",
         "percent_same": "Outlier Detection",
-        "value": "Rotation Invariance Error",
+        "value3": "Rotation Invariance Error",
         "closest_embedding_distance": "Embedding Distance",
         "energy": "Evolution Energy",
         "emissions": "Emissions",
         "inference_time": "Inference Time",
     }
     df["variable"] = df["variable"].replace(rep_dict_var)
-    return df
+    df_non_agg["variable"] = df_non_agg["variable"].replace(rep_dict_var)
+    return df, df_non_agg
 
 
 def plot(save_folder, df, models, title, colors_list=None):
@@ -196,5 +209,5 @@ def plot(save_folder, df, models, title, colors_list=None):
         ),
     )
 
-    # fig.write_image(path / f"{title}.png")
-    fig.write_image(path / f"{title}.pdf")
+    fig.write_image(path / f"{title}.png")
+    # fig.write_image(path / f"{title}.pdf")
