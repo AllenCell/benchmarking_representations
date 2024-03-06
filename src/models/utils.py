@@ -42,15 +42,17 @@ def sample_points(orig):
         probs_orig = probs.copy()
 
         # adding this to smooth intensity
-        probs_orig = ndimage.gaussian_filter(probs_orig, sigma=sigma, order=0)
-        probs_orig = probs_orig.flatten()
+        # probs_orig = ndimage.gaussian_filter(probs_orig, sigma=sigma, order=0)
+        # probs_orig = probs_orig.flatten()
 
         # compare histograms of real images
 
         probs = probs.flatten()
 
         probs = probs / probs.max()
-        probs = np.exp(20 * probs) - 1
+
+        skewness = 100* (3 * (probs.mean() - np.median(probs))) / probs.std()
+        probs = np.exp(skewness * probs)
 
         probs = probs / probs.sum()
         idxs = np.random.choice(

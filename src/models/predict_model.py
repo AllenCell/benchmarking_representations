@@ -35,6 +35,7 @@ def vit_forward(
     """
     Forward pass for vit with codecarbon tracking option
     """
+    use_sample_points = True
     image = torch.tensor(image)
     features, backward_indexes, patch_size = model.backbone.encoder(image)
     predicted_img, mask = model.backbone.decoder(features, backward_indexes, patch_size)
@@ -151,27 +152,29 @@ def base_forward(
     """
     this_batch = batch.copy()
     if "pcloud" in batch.keys():
-        embed_key = "pcloud"
         key = "pcloud"
-        use_sample_points = False
     else:
-        embed_key = "embedding"
         key = "image"
-        use_sample_points = True
     xhat, z, z_params = model(
         move(this_batch, device), decode=True, inference=True, return_params=True
     )
-    if embed_key == "pcloud" and not isinstance(model.decoder[key], LatentLocalDecoder):
-        xhat["pcloud"] = xhat["pcloud"][:, :, :3]
-        this_batch["pcloud"] = this_batch["pcloud"][:, :, :3]
-    elif embed_key == "embedding":
-        this_batch["image"] = torch.tensor(
+
+    if "embedding" in z.keys():
+        embed_key = 'embedding'
+    else:
+        embed_key = key
+
+    if key == 'pcloud' and not use_sample_points and not isinstance(model.decoder[key], LatentLocalDecoder):
+        xhat[key] = xhat[key][:, :, :3]
+        this_batch[key] = this_batch[key][:, :, :3]
+    elif use_sample_points:
+        this_batch[key] = torch.tensor(
             apply_sample_points(
-                this_batch["image"].detach().cpu().numpy(), use_sample_points
+                this_batch[key].detach().cpu().numpy(), use_sample_points
             )
         ).to(device)
-        xhat["image"] = torch.tensor(
-            apply_sample_points(xhat["image"].detach().cpu().numpy(), use_sample_points)
+        xhat[key] = torch.tensor(
+            apply_sample_points(xhat[key].detach().cpu().numpy(), use_sample_points)
         ).to(device)
 
     if this_loss is not None:
@@ -193,6 +196,7 @@ def base_forward(
         )
     else:
         loss = None
+
     if track_emissions:
         emissions: float = tracker.stop()
         emissions_df = pd.read_csv(emissions_csv)
@@ -214,7 +218,7 @@ def base_forward(
 
 
 def model_pass(
-    batch, model, device, this_loss, track_emissions=False, emissions_path=None
+    batch, model, device, this_loss, track_emissions=False, emissions_path=None, use_sample_points=False
 ):
     # if emissions_path is not None:
     #     emissions_csv = emissions_path / "emissions.csv"
@@ -271,6 +275,7 @@ def model_pass(
             tracker,
             end,
             emissions_csv,
+            use_sample_points,
         )
 
 
@@ -310,7 +315,7 @@ def process_batch(
         emissions_df["inference_time"] = time
     else:
         out, z, loss, x_vis_list = [*model_outputs]
-
+    
     all_outputs.append(out)
     all_embeds.append(z)
     all_emissions.append(emissions_df)
@@ -346,6 +351,7 @@ def process_batch_embeddings(
     track,
     emissions_path,
     meta_key=None,
+    use_sample_points=False
 ):
     if "pcloud" in i.keys():
         key = "pcloud"
@@ -358,6 +364,7 @@ def process_batch_embeddings(
         this_loss,
         track_emissions=track,
         emissions_path=emissions_path,
+        use_sample_points=use_sample_points,
     )
     i = remove(i)
     emissions_df = pd.DataFrame()

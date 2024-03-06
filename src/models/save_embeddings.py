@@ -49,6 +49,7 @@ def process_dataloader(
     debug,
     device,
     meta_key,
+    use_sample_points,
 ):
     for j, i in enumerate(tqdm(dataloader)):
         if (debug) and j > 1:
@@ -68,6 +69,7 @@ def process_dataloader(
                 track_emissions,
                 emissions_path,
                 meta_key,
+                use_sample_points
             )
         )
     return all_embeds, all_data_ids, all_splits, all_loss, all_metadata
@@ -88,6 +90,7 @@ def compute_embeddings(
     debug,
     device,
     meta_key,
+    use_sample_points,
 ):
     if "train" in split_list:
         print("Processing train")
@@ -107,6 +110,7 @@ def compute_embeddings(
                 debug,
                 device,
                 meta_key,
+                use_sample_points,
             )
         )
     if "val" in split_list:
@@ -127,6 +131,7 @@ def compute_embeddings(
                 debug,
                 device,
                 meta_key,
+                use_sample_points
             )
         )
     if "test" in split_list:
@@ -147,6 +152,7 @@ def compute_embeddings(
                 debug,
                 device,
                 meta_key,
+                use_sample_points
             )
         )
     return all_embeds, all_data_ids, all_splits, all_loss, all_metadata
@@ -162,6 +168,7 @@ def save_embeddings(
     device: str = "cuda:0",
     meta_key: str = None,
     loss_eval_list: list = None,
+    sample_points_list: list = [],
 ):
     Path(save_folder).mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
@@ -178,6 +185,7 @@ def save_embeddings(
         all_metadata = []
         all_splits = []
         this_data = data_list[j_ind]
+        this_use_sample_points = sample_points_list[j_ind]
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
             all_embeds, all_data_ids, all_splits, all_loss, all_metadata = (
@@ -196,6 +204,7 @@ def save_embeddings(
                     debug,
                     device,
                     meta_key,
+                    this_use_sample_points
                 )
             )
 
