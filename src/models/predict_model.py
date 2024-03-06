@@ -153,16 +153,18 @@ def base_forward(
     if "pcloud" in batch.keys():
         embed_key = "pcloud"
         key = "pcloud"
+        use_sample_points = False
     else:
         embed_key = "embedding"
         key = "image"
+        use_sample_points = True
     xhat, z, z_params = model(
         move(this_batch, device), decode=True, inference=True, return_params=True
     )
     if embed_key == "pcloud" and not isinstance(model.decoder[key], LatentLocalDecoder):
         xhat["pcloud"] = xhat["pcloud"][:, :, :3]
         this_batch["pcloud"] = this_batch["pcloud"][:, :, :3]
-    elif embed_key == "image":
+    elif embed_key == "embedding":
         this_batch["image"] = torch.tensor(
             apply_sample_points(
                 this_batch["image"].detach().cpu().numpy(), use_sample_points
@@ -330,6 +332,7 @@ def process_batch(
 
 
 def process_batch_embeddings(
+        
     model,
     this_loss,
     device,

@@ -186,17 +186,16 @@ MODEL_INFO = {
     },
     "cellpack_npm1_spheres": {
         "run_ids": [
-            "ac4a8d001c2a42c0bb2ca4378e4f2611",
-            "b4163e1790c1415fafde8565ce23180e", # might need to change
             "fb9a7272d32b4a4ebb4b52dd79cdadb2",
             "bdfaa479acce445cbf4dd5f84fdbc301",
+            "ac4a8d001c2a42c0bb2ca4378e4f2611",
+            "b4163e1790c1415fafde8565ce23180e", # might need to change
         ],
         "names": [
-            "classical_image_sdf",
-            "so3_imag_sdf",
             "classical_image_seg",
             "so3_image_seg",
-
+            "classical_image_sdf",
+            "so3_imag_sdf",
         ],
     },
     # "cellpack": {
