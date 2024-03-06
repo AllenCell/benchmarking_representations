@@ -243,6 +243,7 @@ def save_emissions(
     debug: bool = False,
     device: str = "cuda:0",
     loss_eval_list: list = None,
+    sample_points_list: list = [],
 ):
     emissions_path = Path(emissions_path)
     emissions_path.mkdir(parents=True, exist_ok=True)
@@ -260,6 +261,7 @@ def save_emissions(
         all_loss = []
         all_splits = []
         this_data = data_list[j_ind]
+        this_use_sample_points = sample_points_list[j_ind]
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
             count = 0
@@ -294,6 +296,7 @@ def save_emissions(
                     "test",
                     track_emissions,
                     emissions_path,
+                    this_use_sample_points
                 )
             all_model_emissions.append(pd.concat(all_emissions, axis=0))
 

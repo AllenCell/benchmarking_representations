@@ -85,7 +85,11 @@ def get_precomputed_equiv_dict(
 
 
 def rotation_image_batch_z(batch, z_angle, squeeze_2d=False):
-    in_x = batch["image"]
+    if 'image' in batch.keys():
+        key = 'image'
+    elif "pcloud" in batch.keys():
+        key = 'pcloud'
+    in_x = batch[key]
     if len(in_x.shape) == 4:
         in_x = torch.unsqueeze(in_x, dim=1)
     r = R.from_rotvec(np.array([0, 0, np.deg2rad(z_angle)]))
@@ -102,7 +106,11 @@ def rotation_image_batch_z(batch, z_angle, squeeze_2d=False):
 
 
 def rotation_pc_batch_z(batch, z_angle):
-    this_input = batch["pcloud"].detach().cpu()
+    if 'image' in batch.keys():
+        key = 'image'
+    elif "pcloud" in batch.keys():
+        key = 'pcloud'
+    this_input = batch[key].detach().cpu()
     r = np.array(
         [
             [np.cos(np.deg2rad(z_angle)), -np.sin(np.deg2rad(z_angle)), 0],
@@ -127,6 +135,7 @@ def get_equiv_dict(
     max_batches=20,
     max_embed_dim=192,
     squeeze_2d=False,
+    use_sample_points=[],
     test_cellids=None,
 ):
     """
@@ -163,6 +172,7 @@ def get_equiv_dict(
             this_key = keys[jm]
             this_model = this_model.eval()
             this_loss = loss_eval if not isinstance(loss_eval, list) else loss_eval[jm]
+            this_use_sample_points = use_sample_points[jm]
 
             for batch_ind, i in enumerate(tqdm(this_data.test_dataloader())):
                 if batch_ind > max_batches:
@@ -173,7 +183,7 @@ def get_equiv_dict(
                             i[id] = list(test_cellids[i["idx"]])
                     for jl, theta in enumerate(all_thetas):
                         this_ids = i[id]
-                        if this_key == "pcloud":
+                        if len(i[this_key].shape) == 3:
                             this_input_rot = rotation_pc_batch_z(i, theta)
                         else:
                             this_input_rot = rotation_image_batch_z(
@@ -197,6 +207,8 @@ def get_equiv_dict(
                             device,
                             this_loss,
                             track_emissions=False,
+                            emissions_path=None, 
+                            use_sample_points=this_use_sample_points
                         )
 
                         if jl == 0:

@@ -102,12 +102,14 @@ DATASET_INFO = {
     "cellpack_pcna": {
         "embedding_save_location": "./embeddings_cellpack_pcna",
         "orig_df": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
+        "image_path": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
         "pc_path": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
     },
     "cellpack_npm1_spheres": {
         "embedding_save_location": "./embeddings_cellpack_npm1_spheres",
-        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
-        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
     },
 }
 
@@ -173,6 +175,7 @@ def compute_features(
     data_list: list = [],
     all_models: list = [],
     run_names: list = [],
+    use_sample_points_list: list = [],
     keys: list = [],
     device: str = "cuda:0",
     max_embed_dim: int = 256,
@@ -198,7 +201,11 @@ def compute_features(
         "get_baseline": False,
         "return_correlation_matrix": False,
         "stratify_col": None,
+        "compute_PCs": True
     },
+    compactness_params: dict = {
+        "method": 'mle'
+    }
 ):
     """
     Compute all benchmarking metrics and save
@@ -222,6 +229,7 @@ def compute_features(
             max_batches,
             max_embed_dim,
             rot_inv_params["squeeze_2d"],
+            use_sample_points_list,
         )
         eq_dict.to_csv(path / "equiv.csv")
         metric_list.pop(metric_list.index("Rotation Invariance Error"))
@@ -237,6 +245,7 @@ def compute_features(
             max_pcs=stereotypy_params["max_pcs"],
             max_bins=stereotypy_params["max_bins"],
             get_baseline=stereotypy_params["get_baseline"],
+            compute_PCs=stereotypy_params['compute_PCs']
         )
         if isinstance(outs, list) > 1:
             outs[0].to_csv(path / "stereotypy.csv")
@@ -305,7 +314,8 @@ def compute_features(
         if "Compactness" in metric_list:
             print("Computing compactness")
             ret_dict_compactness = get_embedding_metrics(
-                all_ret, max_embed_dim=max_embed_dim
+                all_ret, max_embed_dim=max_embed_dim, 
+                method=compactness_params['method']
             )
             ret_dict_compactness.to_csv(path / Path("compactness.csv"))
 
@@ -335,6 +345,7 @@ def compute_features(
                 dataset,
             )
             print("Computing evolution")
+
             evolution_dict = get_evolution_dict(
                 all_models,
                 data_evolve_list,
@@ -344,6 +355,7 @@ def compute_features(
                 device,
                 keys,
                 path / "evolve",
+                use_sample_points_list,
             )
 
             evolution_dict.to_csv(path / Path("evolve.csv"))

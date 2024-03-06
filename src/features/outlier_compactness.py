@@ -53,6 +53,7 @@ def _intrinsic_dim_sample_wise(X, k, dist=None):
     Returns:
     dimensionality estimate for k
     """
+
     if dist is None:
         neighb = NearestNeighbors(
             n_neighbors=k + 1, n_jobs=1, algorithm="ball_tree"
@@ -61,6 +62,7 @@ def _intrinsic_dim_sample_wise(X, k, dist=None):
     dist = dist[:, 1 : (k + 1)]
     assert dist.shape == (X.shape[0], k)
     assert np.all(dist > 0)
+    # assert np.all(dist >= 0)
     d = np.log(dist[:, k - 1 : k] / dist[:, 0 : k - 1])
     d = d.sum(axis=1) / (k - 2)
     d = 1.0 / d

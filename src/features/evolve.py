@@ -246,25 +246,23 @@ def model_pass_reconstruct(
         if key == "pcloud":
             xhat = xhat[:, :, :3]
         else:
-            init_x = apply_sample_points(
+            init_x = torch.tensor(apply_sample_points(
                 init_x.detach().cpu().numpy(), use_sample_points
-            )
-            final_x = apply_sample_points(
+            )).type_as(z)
+            final_x = torch.tensor(apply_sample_points(
                 final_x.detach().cpu().numpy(), use_sample_points
-            )
-            xhat = apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
-        if save_path:
+            )).type_as(z)
+            xhat = torch.tensor(apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)).type_as(z)
+        if save_path and len(xhat.shape) == 3:
             save_pcloud(
                 xhat[0].detach().cpu().numpy(),
                 save_path,
                 f"{run_name}_{this_id}_{fraction}",
             )
-
         init_rcl = loss_eval(xhat.contiguous(), init_x.contiguous()).mean()
         final_rcl = loss_eval(xhat.contiguous(), final_x.contiguous()).mean()
         total_rcl = loss_eval(final_x.contiguous(), init_x.contiguous()).mean()
         return (init_rcl + final_rcl) / total_rcl
-
 
 def get_evolution_dict(
     all_models,
@@ -275,6 +273,7 @@ def get_evolution_dict(
     device,
     keys,
     save_path=None,
+    use_sample_points_list: list = [],
     id="cell_id",
     test_cellids=None,
 ):
@@ -305,6 +304,8 @@ def get_evolution_dict(
         model = all_models[j]
         model = model.eval()
         this_loss = loss_eval if not isinstance(loss_eval, list) else loss_eval[j]
+
+        this_use_sample_points = use_sample_points_list[j]
         for count, i in enumerate(tqdm(data_list[j].test_dataloader())):
             this_save = False
             if count == 0:
@@ -379,6 +380,7 @@ def get_evolution_dict(
                         this_save,
                         initial_id,
                         run_names[j],
+                        this_use_sample_points,
                     )
                     evolution_dict["model"].append(run_names[j])
 

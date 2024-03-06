@@ -164,10 +164,11 @@ def base_forward(
     else:
         embed_key = key
 
-    if key == 'pcloud' and not use_sample_points and not isinstance(model.decoder[key], LatentLocalDecoder):
+    if len(xhat[key].shape) == 3 and not isinstance(model.decoder[key], LatentLocalDecoder):
         xhat[key] = xhat[key][:, :, :3]
         this_batch[key] = this_batch[key][:, :, :3]
-    elif use_sample_points:
+
+    if use_sample_points:
         this_batch[key] = torch.tensor(
             apply_sample_points(
                 this_batch[key].detach().cpu().numpy(), use_sample_points
@@ -295,6 +296,7 @@ def process_batch(
     split,
     track,
     emissions_path,
+    use_sample_points,
 ):
     if "pcloud" in i.keys():
         key = "pcloud"
@@ -307,6 +309,7 @@ def process_batch(
         this_loss,
         track_emissions=track,
         emissions_path=emissions_path,
+        use_sample_points=use_sample_points,
     )
     i = remove(i)
     emissions_df = pd.DataFrame()
@@ -357,15 +360,19 @@ def process_batch_embeddings(
         key = "pcloud"
     else:
         key = "image"
-    model_outputs = model_pass(
-        i,
-        model,
-        device,
-        this_loss,
-        track_emissions=track,
-        emissions_path=emissions_path,
-        use_sample_points=use_sample_points,
-    )
+    try:
+        model_outputs = model_pass(
+            i,
+            model,
+            device,
+            this_loss,
+            track_emissions=track,
+            emissions_path=emissions_path,
+            use_sample_points=use_sample_points,
+        )
+    except:
+        print('failed model pass, possibly due to sampling')
+        return (all_embeds, all_data_ids, all_splits, all_loss, all_metadata)
     i = remove(i)
     emissions_df = pd.DataFrame()
     if len(model_outputs) > 4:
