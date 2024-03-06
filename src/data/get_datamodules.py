@@ -15,6 +15,25 @@ CONFIG_LIST = {
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_updated_morepoints.yaml",
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_int_updated_morepoints.yaml",
     ],
+    "pcna_updated": [
+        "../data/configs/inference_pcna_data_configs/image_resize.yaml",
+        "../data/configs/inference_pcna_data_configs/image_full.yaml",
+        "../data/configs/inference_pcna_data_configs/mae.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_updated_morepoints.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_int_updated_morepoints.yaml",
+    ],
+    "test": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_int_updated_morepoints.yaml",
+    ],
+    "test2": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/terf/default_4.yaml",
+    ],
+    "test3": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance/nuc_bound/punctate_int_updated_morepoints.yaml",
+    ],
+    "test4": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/mito/skeleton_4.yaml",
+    ],
     # "variance": [
     #     "../data/configs/inference_variance_data_configs/pointcloud_3.yaml",
     #     "../data/configs/inference_variance_data_configs/pointcloud_4.yaml",
@@ -38,6 +57,7 @@ CONFIG_LIST = {
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/mito/skeleton_3.yaml",
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/mito/image.yaml",
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/mito/image_pad.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/mito/skeleton_4.yaml",
     ],
     "npm1_perturb": [
         "../data/configs/inference_npm1_perturb/pointcloud_sdf_noalign.yaml",
@@ -79,7 +99,16 @@ CONFIG_LIST = {
     # ],
     "cellpack": [
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/upsample_all.yaml",
+        # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/default.yaml",
         # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/npm1.yaml",
+    ],
+    "cellpack_pcna": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/image.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/upsample_all.yaml",
+    ],
+    "cellpack_npm1_spheres": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_seg.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf.yaml",
     ],
 }
 
