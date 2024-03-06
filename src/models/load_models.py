@@ -33,6 +33,60 @@ MODEL_INFO = {
             "2048_int_ed_vndgcnn_more",
         ],
     },
+    "pcna_updated": {
+        "run_ids": [
+            "0c1bbf0c54f343a083e9c26b476c9469",
+            "1c1ca294eb6d4c3092cbfa062dea934a",
+            "e41f0bbf26944ba9b9e4541e87bf42f0",
+            "358cef46219c435ab1b16d2a06dd4436",
+            "5339c30a940141658bdff3507b1b1a69",
+            # "f6fbe34d298c41af8b07b7ddd30aaea8",
+        ],
+        "names": [
+            "2048_ed_dgcnn", # more
+            "2048_int_ed_vndgcnn", # more
+            "classical_image",
+            "so2_image",
+            # "so3_image",
+            "vit",
+        ],
+    },
+    "test": {
+        "run_ids": [
+            "ac43b8bbeb3a493bacc69927c8f21276",
+            # "41cf98f1381f4eb097166beee598f56d",
+        ],
+        "names": [
+            "test_equiv", # pcna 
+        ],
+    },
+    "test2": {
+        "run_ids": [
+            "cf702bb0c3104870adfa7dcb7135e625",
+            # "41cf98f1381f4eb097166beee598f56d",
+        ],
+        "names": [
+            "test_equiv", # terf equiv
+        ],
+    },
+    "test3": {
+        "run_ids": [
+            "1da5f3dd5f264f89825eb75f3562a918",
+            # "41cf98f1381f4eb097166beee598f56d",
+        ],
+        "names": [
+            "test_equiv", # varaince equiv punctate
+        ],
+    },
+    "test4": {
+        "run_ids": [
+            "2d019514f1394ef4823e585dd2ea0872",
+            # "41cf98f1381f4eb097166beee598f56d",
+        ],
+        "names": [
+            "test_mito", # varaince equiv punctate
+        ],
+    },
     # "variance": {
     #     "run_ids": [
     #         "4f0c77509a08411fa6cc78f8cae47f05",
@@ -96,17 +150,66 @@ MODEL_INFO = {
     #         "equiv_aug",
     #     ],
     # },
+    # "cellpack": {
+    #     "run_ids": [
+    #         "6a85aebeb69f4057a82b2038b459db65",
+    #         # "a3c7c8bd25bb43f9aa4200a1990e2c83",
+    #         "15a4ea21eea3482bb7b5a41ca4b4b180",
+    #     ],
+    #     "names": [
+    #         "classical",
+    #         "equiv",
+    #     ],
+    # },
     "cellpack": {
         "run_ids": [
-            "6a85aebeb69f4057a82b2038b459db65",
-            # "a3c7c8bd25bb43f9aa4200a1990e2c83",
-            "15a4ea21eea3482bb7b5a41ca4b4b180",
+            "575c95fad4614d7e83ca6b85f069f6e5", # this is good
         ],
         "names": [
-            "classical",
             "equiv",
         ],
     },
+    "cellpack_pcna": {
+        "run_ids": [
+            "717e948da29740b283466c0952440662",
+            "a548980560734a5f9e6a763b5597fa73",
+            "43f3bb2ffc76466c8023a593d78faf05",
+            "15a4ea21eea3482bb7b5a41ca4b4b180",
+        ],
+        "names": [
+            "classical_image",
+            "so3_image",
+            "classical_pointcloud",
+            "so3_pointcloud",
+
+        ],
+    },
+    "cellpack_npm1_spheres": {
+        "run_ids": [
+            "ac4a8d001c2a42c0bb2ca4378e4f2611",
+            "b4163e1790c1415fafde8565ce23180e", # might need to change
+            "fb9a7272d32b4a4ebb4b52dd79cdadb2",
+            "bdfaa479acce445cbf4dd5f84fdbc301",
+        ],
+        "names": [
+            "classical_image_sdf",
+            "so3_imag_sdf",
+            "classical_image_seg",
+            "so3_image_seg",
+
+        ],
+    },
+    # "cellpack": {
+    #     "run_ids": [
+    #         "3d2d49f22d8f4a52b0bc208cd7f74c7a",
+    #         # "a3c7c8bd25bb43f9aa4200a1990e2c83",
+    #         "70018da0cce143a8881c8b0ff4236fa1",
+    #     ],
+    #     "names": [
+    #         "classical",
+    #         "equiv",
+    #     ],
+    # },
     "npm1_variance": {
         "run_ids": [
             "b644087898aa4610ab7b7a31d49af10b",

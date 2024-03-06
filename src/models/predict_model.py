@@ -6,7 +6,18 @@ from pathlib import Path
 import logging
 import pandas as pd
 import time
-from pointcloudutils.networks import LatentLocalDecoder
+import warnings
+
+try:
+    from pointcloudutils.networks import LatentLocalDecoder
+except ImportError:
+    warnings.warn("local_settings failed to import", ImportWarning)
+
+    class LatentLocalDecoder:
+        def __init__():
+            pass
+
+
 from .utils import move, sample_points, apply_sample_points, remove
 
 
@@ -125,7 +136,15 @@ def mae_forward(
 
 
 def base_forward(
-    model, batch, device, this_loss, track_emissions, tracker, end, emissions_csv, use_sample_points=False
+    model,
+    batch,
+    device,
+    this_loss,
+    track_emissions,
+    tracker,
+    end,
+    emissions_csv,
+    use_sample_points=False,
 ):
     """
     Forward pass for base cyto_dl models with codecarbon tracking options
@@ -145,7 +164,9 @@ def base_forward(
         this_batch["pcloud"] = this_batch["pcloud"][:, :, :3]
     elif embed_key == "image":
         this_batch["image"] = torch.tensor(
-            apply_sample_points(this_batch["image"].detach().cpu().numpy(), use_sample_points)
+            apply_sample_points(
+                this_batch["image"].detach().cpu().numpy(), use_sample_points
+            )
         ).to(device)
         xhat["image"] = torch.tensor(
             apply_sample_points(xhat["image"].detach().cpu().numpy(), use_sample_points)
@@ -317,9 +338,11 @@ def process_batch_embeddings(
     all_data_ids,
     all_embeds,
     all_loss,
+    all_metadata,
     split,
     track,
     emissions_path,
+    meta_key=None,
 ):
     if "pcloud" in i.keys():
         key = "pcloud"
@@ -345,9 +368,8 @@ def process_batch_embeddings(
     all_loss.append(loss)
     all_splits.append(i[key].shape[0] * [split])
     all_data_ids.append(i["cell_id"])
-    return (
-        all_embeds,
-        all_data_ids,
-        all_splits,
-        all_loss,
-    )
+
+    if meta_key is not None:
+        all_metadata.append(i[meta_key])
+
+    return (all_embeds, all_data_ids, all_splits, all_loss, all_metadata)

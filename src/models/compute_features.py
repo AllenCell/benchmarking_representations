@@ -27,8 +27,39 @@ DATASET_INFO = {
         "image_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
     },
+    "test": {
+        "embedding_save_location": "./test",
+        "orig_df": "/allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv",
+        "image_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
+    },
+    "test2": {
+        "embedding_save_location": "./test2",
+        "orig_df": "/allen/aics/assay-dev/computational/data/4DN_handoff_TERF2update/cell_meta_with_mitotic_labels_with_low_count_flags_updated_cell_ids.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/terf/manifest.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/terf/manifest.parquet",
+    },
+    "test3": {
+        "embedding_save_location": "./test3",
+        "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/variance_punctate/one_step/manifest.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest.parquet",
+    },
+    "test4": {
+        "embedding_save_location": "./test4",
+        "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
+        "feature_path": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/computefeatures/manifest.csv",
+    },
+    # "variance": {
+    #     "embedding_save_location": "./variance_embeddings",
+    #     "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+    #     "image_path": "/allen/aics/modeling/ritvik/variance_punctate/one_step/manifest.parquet",
+    #     "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest.parquet",
+    # },
     "variance": {
-        "embedding_save_location": "./variance_embeddings",
+        "embedding_save_location": "./variance_updated_embeds",
         "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
         "image_path": "/allen/aics/modeling/ritvik/variance_punctate/one_step/manifest.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest.parquet",
@@ -45,8 +76,15 @@ DATASET_INFO = {
         "image_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
     },
+    # "mito": {
+    #     "embedding_save_location": "./embeddings_variance_mito",
+    #     "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+    #     "image_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
+    #     "pc_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
+    #     "feature_path": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/computefeatures/manifest.csv",
+    # },
     "mito": {
-        "embedding_save_location": "./embeddings_variance_mito",
+        "embedding_save_location": "./embeddings_variance_mito2",
         "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
         "image_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/projects/data/variance_mito/manifest.parquet",
@@ -60,6 +98,16 @@ DATASET_INFO = {
     "npm1_variance": {
         "embedding_save_location": "./embeddings_npm1_variance",
         "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+    },
+    "cellpack_pcna": {
+        "embedding_save_location": "./embeddings_cellpack_pcna",
+        "orig_df": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
+    },
+    "cellpack_npm1_spheres": {
+        "embedding_save_location": "./embeddings_cellpack_npm1_spheres",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
     },
 }
 
@@ -101,9 +149,9 @@ def get_embeddings(run_names, dataset):
 
     df = rename_cellid(df)
     all_ret = rename_cellid(all_ret)
-    cols_to_use = all_ret.columns.difference(df.columns).tolist()
+    cols_to_use = df.columns.difference(all_ret.columns).tolist()
     cols_to_use = cols_to_use + ["CellId"]
-    all_ret = all_ret[cols_to_use].merge(df, on="CellId")
+    all_ret = all_ret.merge(df[cols_to_use], on="CellId")
     return all_ret, df
 
 

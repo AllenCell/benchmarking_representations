@@ -45,31 +45,32 @@ def process_dataloader(
     all_data_ids,
     all_splits,
     all_loss,
+    all_metadata,
     debug,
     device,
+    meta_key,
 ):
     for j, i in enumerate(tqdm(dataloader)):
         if (debug) and j > 1:
             break
-        (
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-        ) = process_batch_embeddings(
-            model,
-            loss_eval,
-            device,
-            i,
-            all_splits,
-            all_data_ids,
-            all_embeds,
-            all_loss,
-            split,
-            track_emissions,
-            emissions_path,
+        (all_embeds, all_data_ids, all_splits, all_loss, all_metadata) = (
+            process_batch_embeddings(
+                model,
+                loss_eval,
+                device,
+                i,
+                all_splits,
+                all_data_ids,
+                all_embeds,
+                all_loss,
+                all_metadata,
+                split,
+                track_emissions,
+                emissions_path,
+                meta_key,
+            )
         )
-    return all_embeds, all_data_ids, all_splits, all_loss
+    return all_embeds, all_data_ids, all_splits, all_loss, all_metadata
 
 
 def compute_embeddings(
@@ -83,58 +84,72 @@ def compute_embeddings(
     all_data_ids,
     all_splits,
     all_loss,
+    all_metadata,
     debug,
     device,
+    meta_key,
 ):
     if "train" in split_list:
         print("Processing train")
-        all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
-            this_data.train_dataloader(),
-            model,
-            loss_eval,
-            track_emissions,
-            emissions_path,
-            "train",
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            debug,
-            device,
+        all_embeds, all_data_ids, all_splits, all_loss, all_metadata = (
+            process_dataloader(
+                this_data.train_dataloader(),
+                model,
+                loss_eval,
+                track_emissions,
+                emissions_path,
+                "train",
+                all_embeds,
+                all_data_ids,
+                all_splits,
+                all_loss,
+                all_metadata,
+                debug,
+                device,
+                meta_key,
+            )
         )
     if "val" in split_list:
         print("Processing val")
-        all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
-            this_data.val_dataloader(),
-            model,
-            loss_eval,
-            track_emissions,
-            emissions_path,
-            "val",
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            debug,
-            device,
+        all_embeds, all_data_ids, all_splits, all_loss, all_metadata = (
+            process_dataloader(
+                this_data.val_dataloader(),
+                model,
+                loss_eval,
+                track_emissions,
+                emissions_path,
+                "val",
+                all_embeds,
+                all_data_ids,
+                all_splits,
+                all_loss,
+                all_metadata,
+                debug,
+                device,
+                meta_key,
+            )
         )
     if "test" in split_list:
         print("Processing test")
-        all_embeds, all_data_ids, all_splits, all_loss = process_dataloader(
-            this_data.test_dataloader(),
-            model,
-            loss_eval,
-            track_emissions,
-            emissions_path,
-            "test",
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            debug,
-            device,
+        all_embeds, all_data_ids, all_splits, all_loss, all_metadata = (
+            process_dataloader(
+                this_data.test_dataloader(),
+                model,
+                loss_eval,
+                track_emissions,
+                emissions_path,
+                "test",
+                all_embeds,
+                all_data_ids,
+                all_splits,
+                all_loss,
+                all_metadata,
+                debug,
+                device,
+                meta_key,
+            )
         )
-    return all_embeds, all_data_ids, all_splits, all_loss
+    return all_embeds, all_data_ids, all_splits, all_loss, all_metadata
 
 
 def save_embeddings(
@@ -145,6 +160,7 @@ def save_embeddings(
     debug: bool = False,
     split_list: list = ["train", "val", "test"],
     device: str = "cuda:0",
+    meta_key: str = None,
     loss_eval_list: list = None,
 ):
     Path(save_folder).mkdir(parents=True, exist_ok=True)
@@ -159,23 +175,28 @@ def save_embeddings(
         all_data_ids = []
         all_embeds = []
         all_loss = []
+        all_metadata = []
         all_splits = []
         this_data = data_list[j_ind]
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
-            all_embeds, all_data_ids, all_splits, all_loss = compute_embeddings(
-                model,
-                this_data,
-                split_list,
-                loss_eval,
-                track_emissions,
-                emissions_path,
-                all_embeds,
-                all_data_ids,
-                all_splits,
-                all_loss,
-                debug,
-                device,
+            all_embeds, all_data_ids, all_splits, all_loss, all_metadata = (
+                compute_embeddings(
+                    model,
+                    this_data,
+                    split_list,
+                    loss_eval,
+                    track_emissions,
+                    emissions_path,
+                    all_embeds,
+                    all_data_ids,
+                    all_splits,
+                    all_loss,
+                    all_metadata,
+                    debug,
+                    device,
+                    meta_key,
+                )
             )
 
             all_splits = [x for xs in all_splits for x in xs]
@@ -193,6 +214,9 @@ def save_embeddings(
             tmp_df["loss"] = all_loss
             tmp_df["split"] = all_splits
 
+            if len(all_metadata) > 0:
+                all_metadata = [x for xs in all_metadata for x in xs]
+                tmp_df[meta_key] = all_metadata
             this_run_name = run_names[j_ind]
 
             tmp_df.to_csv(Path(save_folder) / f"{this_run_name}.csv")
