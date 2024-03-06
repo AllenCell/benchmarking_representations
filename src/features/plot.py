@@ -3,9 +3,12 @@ import plotly.graph_objects as go
 import plotly.offline as pyo
 import seaborn as sns
 import os
+import matplotlib.pyplot as plt
 from pathlib import Path
 import plotly.express as px
+import numpy as np
 import random
+from .utils import normalize_intensities_and_get_colormap
 
 METRIC_DICT = {
     "recon": {"metric": ["loss"], "min": [True]},
@@ -14,7 +17,7 @@ METRIC_DICT = {
     "emissions": {"metric": ["emissions", "inference_time"], "min": [True, True]},
     "evolve": {"metric": ["energy", "closest_embedding_distance"], "min": [True, True]},
     "equiv": {"metric": ["value3"], "min": [True]},
-    "compactness": {"metric": ["compactness", "percent_same"], "min": [False, False]},
+    "compactness": {"metric": ["compactness", "percent_same"], "min": [True, False]},
 }
 
 
@@ -61,6 +64,8 @@ def collect_outputs(path, norm, model_order=None):
         "classical_image",
         "so2_image",
         "2048_ed_mae",
+        "2048_ed_dgcnn_more",
+        "2048_int_ed_vndgcnn_more",
     ]
     run_names = [
         "DGCNN",
@@ -72,6 +77,8 @@ def collect_outputs(path, norm, model_order=None):
         "ImageAE",
         "SO2 ImageAE",
         "Point MAE",
+        "DGCNN more",
+        "VN-DGCNN int more",
     ]
     rep_dict = {i: j for i, j in zip(run_names_orig, run_names)}
 
@@ -88,25 +95,33 @@ def collect_outputs(path, norm, model_order=None):
     ]:
         this_df = pd.read_csv(path + f"{metric}.csv")
         this_df["model"] = this_df["model"].replace(rep_dict)
+
         if "split" in this_df.columns:
             this_metrics = METRIC_DICT[metric]["metric"]
             # tmp_agg = this_df.loc[this_df["split"] == "test"].reset_index()
             tmp_agg = this_df
-            print(tmp_agg.shape)
-            tmp_agg = pd.melt(tmp_agg, id_vars=["model"], value_vars=this_metrics)
+            tmp_agg = pd.melt(
+                tmp_agg[["model", "split"] + this_metrics],
+                id_vars=["model"],
+                value_vars=this_metrics,
+            )
             df_non_agg.append(tmp_agg)
             this_df = (
                 this_df.loc[this_df["split"] == "test"]
-                .groupby("model")
+                .groupby(["model", "split"])
                 .mean()
                 .reset_index()
             )
         else:
             this_metrics = METRIC_DICT[metric]["metric"]
-            tmp_agg = pd.melt(this_df, id_vars=["model"], value_vars=this_metrics)
+            tmp_agg = pd.melt(
+                this_df[["model"] + this_metrics],
+                id_vars=["model"],
+                value_vars=this_metrics,
+            )
             df_non_agg.append(tmp_agg.reset_index())
+            this_df = this_df.groupby(["model"]).mean(numeric_only=True).reset_index()
 
-        this_df = this_df.groupby("model").mean().reset_index()
         if model_order:
             this_df = this_df.loc[this_df["model"].isin(model_order)]
         this_metrics = METRIC_DICT[metric]["metric"]
@@ -115,7 +130,9 @@ def collect_outputs(path, norm, model_order=None):
         for i in range(len(this_metrics)):
             this_df2 = min_max(this_df, this_metrics[i], this_minmax[i], norm)
             this_df2 = pd.melt(
-                this_df2, id_vars=["model"], value_vars=[this_metrics[i]]
+                this_df2[["model", this_metrics[i]]],
+                id_vars=["model"],
+                value_vars=[this_metrics[i]],
             )
             df_list.append(this_df2)
 
@@ -139,7 +156,9 @@ def collect_outputs(path, norm, model_order=None):
     return df, df_non_agg
 
 
-def plot(save_folder, df, models, title, colors_list=None):
+def plot(save_folder, df, models, title, colors_list=None, norm="std"):
+
+    df = df.loc[df["model"].isin(models)]
     path = Path(save_folder)
     path.mkdir(parents=True, exist_ok=True)
 
@@ -172,13 +191,25 @@ def plot(save_folder, df, models, title, colors_list=None):
             this_model.append(val)
         all_models.append(this_model)
 
+    # import ipdb
+
+    # ipdb.set_trace()
+
     if len(models) == 5:
         colors = ["#636EFA", "#00CC96", "#AB63FA", "#FFA15A", "#EF553B"]
     elif len(models) == 4:
         colors = ["#636EFA", "#00CC96", "#AB63FA", "#EF553B"]
+    elif len(models) == 2:
+        colors = ["#636EFA", "#EF553B"]
     opacity = 1
     fill = "toself"
     fill = "none"
+
+    if norm == "std":
+        range_vals = [-2, 2]
+    else:
+        range_vals = [0, 1]
+
     fig = go.Figure(
         data=[
             go.Scatterpolar(
@@ -197,7 +228,7 @@ def plot(save_folder, df, models, title, colors_list=None):
         ],
         layout=go.Layout(
             title=go.layout.Title(text=f"{title}"),
-            polar={"radialaxis": {"visible": True, "range": [-2, 2], "dtick": 2}},
+            polar={"radialaxis": {"visible": True, "range": range_vals, "dtick": 2}},
             showlegend=True,
             margin=dict(l=170, r=150, t=120, b=80),
             legend=dict(orientation="h", xanchor="center", x=1.2, y=1.5),
@@ -211,3 +242,66 @@ def plot(save_folder, df, models, title, colors_list=None):
 
     fig.write_image(path / f"{title}.png")
     # fig.write_image(path / f"{title}.pdf")
+
+
+def plot_pc(directory, names, key, flip=False, alpha=None, views=['xy']):
+    """
+    Plot point clouds saved as csv's in a directory
+    directory - location where they are saved e.g. './test'
+    names - names of files e.g - ['G1', 'earlyS', ...]
+    key - type of filter used to generate the files e.g. - 'cell_cycle'
+    """
+    fnames = [i + '.csv' for i in names]
+
+    df = pd.DataFrame([])
+    for idx, _ in enumerate(fnames):
+        fname = fnames[idx]
+        print(fname)
+        dft = pd.read_csv(f"{directory}/{fname}", index_col=0)
+        dft[key] = names[idx]
+        df = pd.concat([df, dft], ignore_index=True)
+    
+    df, cmap = normalize_intensities_and_get_colormap(df=df, pcts=[5, 95])
+
+    for sub_key in df[key].unique():
+        df_sub = df.loc[df[key] == sub_key]
+        plt.style.use("default")
+        fig, axes = plt.subplots(1, len(views), figsize=(len(views)*2,2), dpi=150)
+        x = df_sub.x.values
+        y = df_sub.y.values
+        z = df_sub.z.values
+        # if flip:
+        #     y = df_sub.z.values
+        #     z = df_sub.y.values
+        orders = [[x, y], [x, z], [y, z]]
+        labels = ['xy', 'xz', 'yz']
+        if flip:
+            labels = ['xz', 'xy', 'yz']
+
+        for i in range(len(views)):
+            this_view = views[i]
+            ind = np.where(np.array(labels)==this_view)[0][0]
+            this_order = orders[ind]
+            this_label = labels[ind]
+            # valids = np.where((z>-0.5)&(z<0.5))
+            intensity = df_sub.inorm.values
+            # print(mu, bin, intensity.mean())
+            # x = x[valids]; y = y[valids]; intensity = intensity[valids]
+            # ax.set_facecolor("black")
+            try:
+                this_axes = axes[i]
+            except:
+                this_axes = axes
+            this_axes.scatter(this_order[0], this_order[1], c=cmap(intensity), s=3*intensity, alpha=alpha)
+            this_axes.set_title(f"{sub_key}_{this_label}")
+            this_axes.set_aspect("equal")
+            this_axes.axis("off")
+        plt.tight_layout()
+        # plt.show()
+
+        # fig.canvas.draw()
+        # image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
+        # image = image.reshape(*reversed(fig.canvas.get_width_height()), 3)
+        fig.savefig(Path(directory) / Path(f'{sub_key}_clean.png'), bbox_inches='tight', dpi=300)
+        plt.close("all")
+        # seq.append(image)

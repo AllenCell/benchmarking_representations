@@ -61,6 +61,7 @@ def get_classification(this_mo, target_col):
     for i in this_mo[target_col].unique():
         n = this_mo.loc[this_mo[target_col] == i].shape[0]
         class_weight[i] = this_mo.shape[0] / (len(this_mo[target_col].unique()) * n)
+    
     multi_class = "multinomial"
     if np.unique(this_mo[target_col]).shape[0] == 2:
         multi_class = "ovr"

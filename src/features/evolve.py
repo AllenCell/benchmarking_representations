@@ -10,8 +10,16 @@ from pathlib import Path
 from sklearn.decomposition import PCA
 from src.models.utils import apply_sample_points, get_iae_reconstruction_3d_grid
 from src.features.reconstruction import save_pcloud
+import warnings
 
-# from pointcloudutils.networks import LatentLocalDecoder
+try:
+    from pointcloudutils.networks import LatentLocalDecoder
+except ImportError:
+    warnings.warn("local_settings failed to import", ImportWarning)
+    class LatentLocalDecoder():
+        def __init__():
+            pass
+
 from src.models.predict_model import model_pass
 import random
 from sklearn.decomposition import PCA
@@ -159,8 +167,7 @@ def model_pass_reconstruct(
     z = torch.tensor(z).float().to(device)
     fraction = round(fraction, 1)
 
-    # if key == "pcloud" and not isinstance(model.decoder[key], LatentLocalDecoder):
-    if key == "pcloud":
+    if key == "pcloud" and not isinstance(model.decoder[key], LatentLocalDecoder):
         init_x = init_x[:, :, :3]
         final_x = final_x[:, :, :3]
     if hasattr(model, "network"):

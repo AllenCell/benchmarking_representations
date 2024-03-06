@@ -43,9 +43,7 @@ def write_pyvista_latent_walk_gif(out_file, view, mesh_files, expl_var=None):
 
     mesh = pv.read(mesh_files[0])
     if mesh.points.shape[0] == 0:
-        vertices = np.array(
-            [[0, 0, 0], [1, 0, 0]]
-        )
+        vertices = np.array([[0, 0, 0], [1, 0, 0]])
         mesh = pv.PolyData(vertices)
     mesh.clear_data()
     plotter = pv.Plotter(window_size=[650, 600])
@@ -84,9 +82,7 @@ def write_pyvista_latent_walk_gif(out_file, view, mesh_files, expl_var=None):
     for i, f in enumerate(mesh_files_tmp):
         new_mesh = pv.read(f)
         if new_mesh.points.shape[0] == 0:
-            vertices = np.array(
-                [[0, 0, 0], [1, 0, 0]]
-            )
+            vertices = np.array([[0, 0, 0], [1, 0, 0]])
             new_mesh = pv.PolyData(vertices)
         new_mesh.clear_data()
         mesh.overwrite(new_mesh)
@@ -324,31 +320,49 @@ def get_mesh_from_sdf(sdf, method="skimage"):
     return mesh
 
 
-def save_pcloud(xhat, path, name):
+def save_pcloud(xhat, path, name, z_max, z_ind=2):
     """
     Save pointcloud xhat
+    z_max - percentage of z_max to place cut at
 
     """
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
-    this_recon = pv.PolyData(xhat[:, :3])
-    this_recon.save(path / f"{name}.ply", texture=xhat[:, :].astype(np.uint8))
 
-    max_num = xhat[:, 2].max()
-    inds = np.where(xhat[:, 2] < 0.2 * max_num)[0]
-    xhat = xhat[inds]
-    inds = np.where(xhat[:, 2] > -0.2 * max_num)[0]
-    xhat = xhat[inds]
+    if torch.is_tensor(xhat):
+        xhat = xhat.detach().cpu().numpy()
+    # this_recon = pv.PolyData(xhat[:, :3])
+    # this_recon.save(path / f"{name}.ply", texture=xhat[:, :].astype(np.uint8))
+    if len(xhat[0,:]) == 4:
+        cols = ['x', 'y', 'z', 's']
+    else:
+        cols = ['x', 'y', 'z']
 
-    this_recon = pv.PolyData(xhat[:, :3])
-    this_recon.save(path / f"{name}_center.ply", texture=xhat[:, :].astype(np.uint8))
+    if z_max is None:
+        this_recon = pd.DataFrame(xhat, columns=cols)
+        this_recon.to_csv(path / f"{name}.csv")
+    else:
+        max_num = xhat[:, z_ind].max()
+        # ratio = 0.5
+        ratio = z_max
+        inds = np.where(xhat[:, z_ind] < ratio * max_num)[0]
+        xhat = xhat[inds]
+        inds = np.where(xhat[:, z_ind] > -ratio * max_num)[0]
+        xhat = xhat[inds]
+
+        # this_recon = pv.PolyData(xhat[:, :3])
+        # this_recon.save(path / f"{name}_center.ply", texture=xhat[:, :].astype(np.uint8))
+        this_recon = pd.DataFrame(xhat, columns=cols)
+        this_recon.to_csv(path / f"{name}.csv")
+    return xhat
 
 
 def make_canonical_shapes(
-    model, df, device, path, slice_key, sub_slice_list, max_embed_dim
+    model, df, device, path, slice_key, sub_slice_list, max_embed_dim, key, z_max=None, z_ind=2
 ):
     model = model.eval()
     cols = [i for i in df.columns if "mu" in i]
+    all_xhat = []
     for stage in sub_slice_list:
         this_stage_mu = (
             df.loc[df[slice_key] == stage][cols]
@@ -357,16 +371,21 @@ def make_canonical_shapes(
             .values
         )
         with torch.no_grad():
+            # z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
+            # idx = np.random.randint(this_stage_mu.shape[0], size=1)
+            # this_stage_mu = this_stage_mu[idx]
             z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
             z_inf = z_inf.to(device)
             z_inf = z_inf.float()
-            decoder = model.decoder
-            xhat = decoder(z_inf)
+            decoder = model.decoder[key]
+            xhat = decoder(z_inf).detach().cpu().numpy()
 
             if len(xhat.shape) > 3:
                 xhat = sample_points(xhat.detach().cpu().numpy())
 
-            save_pcloud(xhat[0], path, stage)
+            xhat = save_pcloud(xhat[0], path, stage, z_max, z_ind)
+            all_xhat.append(xhat)
+    return all_xhat
 
 
 def extract_digitized_shape_modes(shape_mode, shape_modes_df, pca, map_points):
@@ -411,6 +430,38 @@ def extract_digitized_shape_modes(shape_mode, shape_modes_df, pca, map_points):
     return df_inv
 
 
+def stratified_latent_walk(    
+    model,
+    device,
+    df,
+    x_label,
+    max_embed_dim,
+    latent_dim,
+    max_num_shapemodes,
+    path,
+    stratify_key,
+    z_max=None,
+    latent_walk_range=None,
+    z_ind=2,
+):
+    for strat in df[stratify_key].unique():
+        this_df = df.loc[df[stratify_key] == strat].reset_index(drop=True)
+        latent_walk(
+            model,
+            device,
+            this_df,
+            x_label=x_label,
+            max_embed_dim=max_embed_dim,
+            latent_dim=latent_dim,
+            max_num_shapemodes=max_num_shapemodes,
+            path=path,
+            z_max=z_max,
+            latent_walk_range=latent_walk_range,
+            z_ind=z_ind,
+            sub_key=strat,
+        )
+
+
 def latent_walk(
     model,
     device,
@@ -420,13 +471,21 @@ def latent_walk(
     latent_dim,
     max_num_shapemodes,
     path,
+    z_max=None,
     latent_walk_range=None,
+    z_ind=2,
+    sub_key=None,
 ):
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
-
     cols = [i for i in df.columns if "mu" in i]
     all_features = df[cols].iloc[:, :max_embed_dim].dropna(axis=1).values
+
+    if all_features.shape[0] < 256:
+        n = 256 - all_features.shape[0]  # for 2 random indices
+        index = np.random.choice(all_features.shape[0], n, replace=False) 
+        random_sample = all_features[index] + 0.01*np.random.randn(256)
+        all_features = np.concatenate([all_features, random_sample], axis=0)
 
     pca = PCA(n_components=256)
     pca_features = pca.fit_transform(all_features)
@@ -460,8 +519,11 @@ def latent_walk(
                     xhat = sample_points(xhat.detach().cpu().numpy())
                 else:
                     xhat = xhat.detach().cpu().numpy()
-
-                save_pcloud(xhat[0], path, f"{rank}_{value_index}")
+                if sub_key is None:
+                    name = f"{rank}_{value_index}"
+                else:
+                    name = f"{sub_key}_{rank}_{value_index}"
+                save_pcloud(xhat[0], path, name, z_max, z_ind)
 
                 all_recons[f"{rank}"]["latent_point"].append(value)
                 all_recons[f"{rank}"]["recon"].append(xhat)

@@ -134,12 +134,11 @@ def digitize_shape_mode(
     # Check if feature is available
     if feature not in df.columns:
         raise ValueError(f"Column {feature} not found.")
-
     # Exclude extremeties
     df = filter_extremes_based_on_percentile(
         df=df, features=filter_based_on, pct=filter_extremes_pct
     )
-
+    df = df.reset_index(drop=True)
     # Get feature values
     values = df[feature].values.astype(np.float32)
 
@@ -158,8 +157,10 @@ def digitize_shape_mode(
     # Force samples below/above -/+ 2std to fall into first/last bin
     bin_centers = np.linspace(LINF, LSUP, nbins)
     bin_edges = np.unique([(b - binw, b + binw) for b in bin_centers])
+    bin_edges = [round(i, 2) for i in bin_edges]
     bin_edges[0] = -np.inf
     bin_edges[-1] = np.inf
+    bin_edges = np.unique(bin_edges)
 
     # Aplly digitization
     df["bin"] = np.digitize(values, bin_edges)
@@ -212,10 +213,12 @@ def get_shape_mode_bins(
             df,
             this_pc,
             n_bins,
-            pc_names,
+            # pc_names,
+            [this_pc],
             filter_extremes_pct,
             save,
         )
+        # print(df["bin"].value_counts())
         df.rename(columns={"bin": f"{this_pc}_bin"}, inplace=True)
 
     return df

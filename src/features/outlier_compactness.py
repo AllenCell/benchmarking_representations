@@ -23,9 +23,10 @@ def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192, method="mle"
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
         val = compactness(this_mo, num_PCs, max_embed_dim, method)
         percent_same = outlier_detection(this_mo)
-        ret_dict_compactness["model"].append(model)
-        ret_dict_compactness["compactness"].append(val)
-        ret_dict_compactness["percent_same"].append(percent_same)
+        for i in range(len(val)):
+            ret_dict_compactness["model"].append(model)
+            ret_dict_compactness["compactness"].append(val[i])
+            ret_dict_compactness["percent_same"].append(percent_same)
     ret_dict_compactness = pd.DataFrame(ret_dict_compactness)
     return ret_dict_compactness
 
@@ -79,7 +80,7 @@ def compute_MLE_intrinsic_dimensionality(feats, k_list=None):
     for k in k_list:
         est_dim = _intrinsic_dim_sample_wise(feats, k, dist)
         all_estimates.append(est_dim)
-    return np.avg(all_estimates), np.std(all_estimates)
+    return [np.mean(i) for i in all_estimates], np.mean(all_estimates)
 
 
 def compactness(this_mo, num_PCs, max_embed_dim, method):
@@ -91,8 +92,9 @@ def compactness(this_mo, num_PCs, max_embed_dim, method):
     this_feats = this_mo[cols].iloc[:, :max_embed_dim].dropna(axis=1).values
     if method == "pca":
         _, _, val = compute_PCA_expl_var(this_feats, num_PCs)
+        val = [val]
     elif method == "mle":
-        val, std_val = compute_MLE_intrinsic_dimensionality(this_feats)
+        val, mean_val = compute_MLE_intrinsic_dimensionality(this_feats)
     else:
         raise NotImplementedError
     return val
@@ -109,6 +111,7 @@ def outlier_detection(this_mo, outlier_label=0):
     the total population
     """
     if "flag_comment" in this_mo.columns:
+        print("Outlier column is flag comment")
         this_mo1 = this_mo.loc[
             this_mo["flag_comment"].isin(
                 ["cell appears dead or dying", "no EGFP fluorescence"]
@@ -123,18 +126,21 @@ def outlier_detection(this_mo, outlier_label=0):
         this_mo2["outlier"] = "No"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
     elif "Anomaly" in this_mo.columns:
+        print("Outlier column is Anamoly")
         this_mo1 = this_mo.loc[~this_mo["Anomaly"].isin(["none"])]
         this_mo1["outlier"] = "Yes"
         this_mo2 = this_mo.loc[this_mo["Anomaly"].isin(["none"])]
         this_mo2["outlier"] = "No"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
     elif "cell_stage" in this_mo.columns:
+        print("Outlier column is cell stage")
         this_mo1 = this_mo.loc[~this_mo["cell_stage"].isin(["M0"])]
         this_mo1["outlier"] = "Yes"
         this_mo2 = this_mo.loc[this_mo["cell_stage"].isin(["M0"])]
         this_mo2["outlier"] = "No"
         this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
     elif "outlier" not in this_mo.columns:
+        print("Outlier column is outlier")
         return 0
 
     if this_mo["outlier"].isna().any():

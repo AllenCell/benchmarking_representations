@@ -11,6 +11,7 @@ from sklearn.metrics import mutual_info_score
 from scipy.stats import spearmanr
 from sklearn.decomposition import PCA
 from src.features.outlier_compactness import compute_MLE_intrinsic_dimensionality
+from scipy.spatial.distance import correlation
 
 
 def get_stereotypy_stratified(
@@ -26,16 +27,15 @@ def get_stereotypy_stratified(
     tmp_ret = []
     for model in all_ret["model"].unique():
         df2 = all_ret.loc[all_ret["model"] == model]
-
         for strat in df2[stratify_col].unique():
             df3 = df2.loc[df2[stratify_col] == strat]
             this_feats = df3[[i for i in df3.columns if "mu" in i]]
             this_feats = this_feats.dropna(axis=1).values
 
-            num, _ = compute_MLE_intrinsic_dimensionality(this_feats)
-            print(num, strat)
-            # pca = PCA(n_components=min(this_feats.shape[1], this_feats.shape[0]))
-            pca = PCA(n_components=int(num * 10))
+            _, num = compute_MLE_intrinsic_dimensionality(this_feats)
+            print(num)
+            pca = PCA(n_components=min(this_feats.shape[1], this_feats.shape[0]))
+            # pca = PCA(n_components=int(num))
             # pca = PCA(n_components=int(10))
             pca = pca.fit(this_feats)
             this_feats = pca.transform(this_feats)
@@ -130,9 +130,9 @@ def get_stereotypy(
         # this_feats = pca.transform(this_feats)
         # this_mo[[f"PCA_{i}" for i in range(this_feats.shape[1])]] = this_feats
 
-        for pc in range(8):
+        for pc in range(max_pcs):
             if pc < max_pcs:
-                for bin in range(9):
+                for bin in range(max_bins):
                     if bin < max_bins:
                         this_pc = pc + 1
                         this_bin = bin + 1
@@ -155,6 +155,8 @@ def get_stereotypy(
                                 this_ret = this_all_ret.loc[
                                     this_all_ret["structure_name"] == struct
                                 ].reset_index(drop=True)
+                                this_ret['pc'] = this_pc
+                                this_ret['bin'] = this_bin
 
                                 stereotypy, distances = correlate(
                                     this_ret, max_embed_dim
@@ -229,12 +231,26 @@ def get_stereotypy(
     return ret_dict_stereotypy, ret_dict_baseline_stereotypy, ret_corr
 
 
+from sklearn.feature_selection import mutual_info_regression
+
 def base_correlation_map(x, y):
     desired = np.empty((x.shape[0], y.shape[0]))
     for n in range(x.shape[0]):
         for m in range(y.shape[0]):
-            # desired[n, m] = pearsonr(x[n, :], y[m, :])[0]
-            desired[n, m] = spearmanr(x[n, :], y[m, :]).correlation
+            desired[n, m] = pearsonr(x[n, :], y[m, :])[0]
+            # desired[n, m] = spearmanr(x[n, :], y[m, :]).correlation
+
+            # desired[n, m] = dcor.independence.distance_correlation(x[n, :], y[m, :])
+            # significance = 0.1
+            # desired[n, m] = correlation(x[n, :], y[m, :])
+            # import ipdb
+            # ipdb.set_trace()
+            # desired[n, m] = mutual_info_regression(x[n, :].reshape(-1,1), y[m, :])[0]
+
+            # mine = MINE(alpha=0.6, c=15, est='mic_approx')
+            # mine.compute_score(x[n, :],y[m, :])
+            # desired[n, m] = round(mine.mic(),2)
+            #  = mutual_info_regression(x[n, :], y[m, :])
     return desired
 
 
@@ -270,8 +286,8 @@ def generate_correlation_map(x, y):
 
 def correlate(this_mo, max_embed_dim):
     """Correlation between representations for different cells"""
-    # cols = [i for i in this_mo.columns if "mu" in i]
-    cols = [i for i in this_mo.columns if "PCA" in i]
+    cols = [i for i in this_mo.columns if "mu" in i]
+    # cols = [i for i in this_mo.columns if "PCA" in i]
     this_feats = this_mo[cols].iloc[:, :max_embed_dim].dropna(axis=1).values
 
     distances = np.sum(
@@ -279,6 +295,20 @@ def correlate(this_mo, max_embed_dim):
     )
     stereotypy = generate_correlation_map(this_feats, this_feats)
     # stereotypy = base_correlation_map(this_feats, this_feats)
+
+    stereotypy *= np.tri(*stereotypy.shape)
+    np.fill_diagonal(stereotypy, 0)
+
+    distances *= np.tri(*distances.shape)
+    np.fill_diagonal(distances, 0)
+
+    distances[distances == 0] = np.nan
+    stereotypy[stereotypy == 0] = np.nan
+
+    stereotypy = np.abs(stereotypy)
+    distances = np.abs(distances)
+    print(stereotypy.shape, this_mo['rule'].unique(), this_mo['pc'].unique(), this_mo['bin'].unique(), np.nanmean(distances), np.nanmean(stereotypy))
+
     return stereotypy, distances
 
 
@@ -421,10 +451,7 @@ def make_variance_boxplots(base_path, path, pc_list, bin_list, save_folder):
     df_base["stereotypy"] = df_base["stereotypy"].abs()
     df_base = df_base[df_base["CellId_1"] != df_base["CellId_2"]]
 
-
-    df4 = pd.read_csv(
-        path
-    )
+    df4 = pd.read_csv(path)
     df4.drop_duplicates(subset=["stereotypy"])
     df4["stereotypy"] = df4["stereotypy"].abs()
     df4 = df4[df4["CellId_1"] != df4["CellId_2"]]
