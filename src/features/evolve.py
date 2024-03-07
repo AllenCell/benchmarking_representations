@@ -277,6 +277,7 @@ def get_evolution_dict(
     use_sample_points_list: list = [],
     id="cell_id",
     test_cellids=None,
+    fit_pca: bool = False,
 ):
     """
     all_models - list of models
@@ -326,13 +327,17 @@ def get_evolution_dict(
             assert this_inputs.shape[0] == 2
 
             this_all_embeds = all_embeds[j]
-            pca = PCA(n_components=embed_dim)
-            if len(this_all_embeds.shape) > 2:
-                this_all_embeds = pca.fit_transform(
-                    this_all_embeds[:, 1:, :].mean(axis=1)
-                )
-            else:
-                this_all_embeds = pca.fit_transform(this_all_embeds)
+            if this_all_embeds.shape[0] < embed_dim:
+                embed_dim = this_all_embeds.shape[0]
+
+            if fit_pca:
+                pca = PCA(n_components=embed_dim)
+                if len(this_all_embeds.shape) > 2:
+                    this_all_embeds = pca.fit_transform(
+                        this_all_embeds[:, 1:, :].mean(axis=1)
+                    )
+                else:
+                    this_all_embeds = pca.fit_transform(this_all_embeds)
 
             init_input = this_inputs[:1]
             final_input = this_inputs[1:2]
@@ -397,13 +402,17 @@ def get_evolution_dict(
                     evolution_dict["final_ID"].append(final_id)
                     evolution_dict["fraction"].append(fraction)
                     evolution_dict["energy"].append(energy.item())
-                    intermediate_embed = pca.transform(intermediate_embed)
+                    
                     if len(intermediate_embed.shape) > 2:
-                        intermediate_embed = pca.transform(
-                            intermediate_embed[:, 1:, :].mean(axis=1)
-                        )
+                        if fit_pca:
+                            intermediate_embed = pca.transform(
+                                intermediate_embed[:, 1:, :].mean(axis=1)
+                            )
+                        else:
+                            intermediate_embed = intermediate_embed[:, 1:, :].mean(axis=1)
                     else:
-                        intermediate_embed = pca.transform(intermediate_embed)
+                        if fit_pca:
+                            intermediate_embed = pca.transform(intermediate_embed)
 
                     all_dist = []
                     for i in range(intermediate_embed.shape[0]):

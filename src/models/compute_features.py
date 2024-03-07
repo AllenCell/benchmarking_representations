@@ -112,10 +112,20 @@ DATASET_INFO = {
         "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
     },
     "test5": {
+        # "embedding_save_location": "./test5",
+        # "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
+        # "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
+        # "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
         "embedding_save_location": "./test5",
-        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
-        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
-        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+    },
+    "test6": {
+        "embedding_save_location": "./test6",
+        "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
     },
 }
 
@@ -320,7 +330,7 @@ def compute_features(
         if "Compactness" in metric_list:
             print("Computing compactness")
             ret_dict_compactness = get_embedding_metrics(
-                all_ret, max_embed_dim=max_embed_dim, 
+                all_ret, num_PCs=compactness_params['num_PCs'], max_embed_dim=max_embed_dim, 
                 method=compactness_params['method']
             )
             ret_dict_compactness.to_csv(path / Path("compactness.csv"))

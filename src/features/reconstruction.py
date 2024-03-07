@@ -356,7 +356,7 @@ def save_pcloud(xhat, path, name, z_max, z_ind=2):
         this_recon.to_csv(path / f"{name}.csv")
     return xhat
 
-from src.data.utils import get_mesh_from_sdf, get_scaled_mesh, voxelize_recon_meshes, rescale_meshed_sdfs_to_full
+from src.data.utils import get_mesh_from_sdf, get_scaled_mesh, voxelize_recon_meshes, get_image_from_mesh, rescale_meshed_sdfs_to_full, center_polydata
 from escnn.nn.modules.masking_module import build_mask
 
 
@@ -378,6 +378,7 @@ def make_canonical_shapes(
             # z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
             # idx = np.random.randint(this_stage_mu.shape[0], size=1)
             # this_stage_mu = this_stage_mu[idx]
+            print(this_stage_mu.shape)
             z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
             z_inf = z_inf.to(device)
             z_inf = z_inf.float()
@@ -389,19 +390,19 @@ def make_canonical_shapes(
 
                 xhat = save_pcloud(xhat[0], path, stage, z_max, z_ind)
             elif model_type == 'sdf':
-                mesh = get_mesh_from_sdf(xhat.squeeze(), method="vae_output")
-                scaled_mesh, scale_factor = get_scaled_mesh(mesh, 400, None)
-                print(scale_factor)
-                scale_factor = 3
-                resc_mesh_sdfs, rev_scale_factors = rescale_meshed_sdfs_to_full([scaled_mesh], [scale_factor])
-                resc_vox_recon = voxelize_recon_meshes(resc_mesh_sdfs)
-                xhat = resc_vox_recon[0]
-                min_shape = min(xhat.shape[0], xhat.shape[1], xhat.shape[2])
-                print(min_shape, scale_factor)
-                mask = (build_mask(min_shape, dim=3, margin=0).squeeze().unsqueeze(0))
-                xhat = xhat[:min_shape, :min_shape, :min_shape]
-                xhat = xhat * mask.detach().cpu().numpy()
-
+                mesh = get_mesh_from_sdf(xhat.squeeze(), method="skimage")
+                xhat = get_image_from_mesh(mesh, (64, 64, 64), 0)
+                # scaled_mesh, scale_factor = get_scaled_mesh(mesh, 400, None)
+                # # scale_factor = 3
+                # resc_mesh_sdfs, rev_scale_factors = rescale_meshed_sdfs_to_full([scaled_mesh], [scale_factor])
+                # resc_vox_recon = voxelize_recon_meshes(resc_mesh_sdfs)
+                # resc_vox_recon = voxelize_recon_meshes([mesh])
+                # xhat = resc_vox_recon[0]
+                # min_shape = min(xhat.shape[0], xhat.shape[1], xhat.shape[2])
+                # # print(min_shape, scale_factor)
+                # mask = (build_mask(min_shape, dim=3, margin=0).squeeze().unsqueeze(0))
+                # xhat = xhat[:min_shape, :min_shape, :min_shape]
+                # xhat = xhat * mask.detach().cpu().numpy()
             all_xhat.append(xhat)
     return all_xhat
 

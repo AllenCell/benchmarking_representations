@@ -34,6 +34,9 @@ def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192, method="mle"
 def compute_PCA_expl_var(feats, num_PCs):
     if num_PCs is None:
         num_PCs = feats.shape[1]
+    if num_PCs > feats.shape[0]:
+        num_PCs = feats.shape[0]
+
     pca = PCA(n_components=num_PCs)
     pca.fit(feats)
     inds = np.argmin(pca.explained_variance_ratio_.cumsum() < 0.8)
@@ -92,7 +95,7 @@ def compactness(this_mo, num_PCs, max_embed_dim, method):
     """
     cols = [i for i in this_mo.columns if "mu" in i]
     this_feats = this_mo[cols].iloc[:, :max_embed_dim].dropna(axis=1).values
-    num_PCs = min(num_PCs, this_feats.shape[0])
+    
     if method == "pca":
         _, _, val = compute_PCA_expl_var(this_feats, num_PCs)
         val = [val]

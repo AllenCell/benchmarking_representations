@@ -178,6 +178,23 @@ def base_forward(
             apply_sample_points(xhat[key].detach().cpu().numpy(), use_sample_points)
         ).to(device)
 
+    # import matplotlib.pyplot as plt
+    # ind = 0
+    # points = this_batch[key][ind, 0].detach().cpu().numpy()
+    # points2 = xhat[key][ind, 0].detach().cpu().numpy()
+    # import matplotlib.pyplot as plt
+
+    # # assert (this == this2).all() == False
+    # # this = np.where(this < 0.1, this, 0.1)
+    # # this = np.where(this > -0.1, this, -0.1)
+    # fig, (ax, ax1) = plt.subplots(1,2)
+    # # ax.imshow(points.max(0))
+    # # ax1.imshow(points2.max(0))
+    # ax.imshow(points[16])
+    # ax1.imshow(points2[16])
+    # fig.savefig('/allen/aics/modeling/ritvik/projects/benchmarking_representations/src/models/test.png')
+
+
     if this_loss is not None:
         if "points.df" in this_batch:
             rcl_per_input_dimension = this_loss(
@@ -360,19 +377,27 @@ def process_batch_embeddings(
         key = "pcloud"
     else:
         key = "image"
-    try:
-        model_outputs = model_pass(
-            i,
-            model,
-            device,
-            this_loss,
-            track_emissions=track,
-            emissions_path=emissions_path,
-            use_sample_points=use_sample_points,
-        )
-    except:
-        print('failed model pass, possibly due to sampling')
-        return (all_embeds, all_data_ids, all_splits, all_loss, all_metadata)
+    model_outputs = model_pass(
+        i,
+        model,
+        device,
+        this_loss,
+        track_emissions=track,
+        emissions_path=emissions_path,
+        use_sample_points=use_sample_points)
+    # try:
+    #     model_outputs = model_pass(
+    #         i,
+    #         model,
+    #         device,
+    #         this_loss,
+    #         track_emissions=track,
+    #         emissions_path=emissions_path,
+    #         use_sample_points=use_sample_points,
+    #     )
+    # except:
+    #     print('failed model pass, possibly due to sampling')
+    #     return (all_embeds, all_data_ids, all_splits, all_loss, all_metadata)
     i = remove(i)
     emissions_df = pd.DataFrame()
     if len(model_outputs) > 4:

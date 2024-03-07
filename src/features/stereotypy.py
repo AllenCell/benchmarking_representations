@@ -65,8 +65,14 @@ def get_stereotypy_stratified(
             get_baseline,
             compute_PCs,
         )
-        ret_dict_stereotypy[stratify_col] = i
-        print(ret_dict_stereotypy.shape)
+        ret_dict_stereotypy_mean = ret_dict_stereotypy.groupby(['model', 'pc', 'bin', 'structure']).mean()
+        ret_dict_stereotypy_mean[stratify_col] = i
+
+        ret_dict_stereotypy_std = ret_dict_stereotypy.groupby(['model', 'pc', 'bin', 'structure']).std()
+        ret_dict_stereotypy_std['stereotypy_std'] = ret_dict_stereotypy_std['stereotypy']
+        ret_dict_stereotypy_mean = pd.concat([
+            ret_dict_stereotypy_mean, ret_dict_stereotypy_std[['stereotypy_std']]], axis=1)
+        # print(ret_dict_stereotypy_mean.shape)
         all_stereotypy.append(ret_dict_stereotypy)
     all_stereotypy = pd.concat(all_stereotypy, axis=0).reset_index(drop=True)
     return all_stereotypy

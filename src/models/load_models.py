@@ -200,11 +200,31 @@ MODEL_INFO = {
     },
     "test5": {
         "run_ids": [
-            "c2e3b1088f964b1db99317ede78a2eab", # might need to change
+            "b4163e1790c1415fafde8565ce23180e", # might need to change
         ],
         "names": [
             "so3_imag_sdf",
         ],
+        # "run_ids": [
+        #     "bdfaa479acce445cbf4dd5f84fdbc301", # might need to change
+        # ],
+        # "names": [
+        #     "so3_image_seg",
+        # ],
+    },
+    "test6": {
+        "run_ids": [
+            "d2f425169b5041248755529830387be6", # this is variance all punctate
+        ],
+        "names": [
+            "equiv_scalar",
+        ],
+        # "run_ids": [
+        #     "bdfaa479acce445cbf4dd5f84fdbc301", # might need to change
+        # ],
+        # "names": [
+        #     "so3_image_seg",
+        # ],
     },
     # "cellpack": {
     #     "run_ids": [

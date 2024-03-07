@@ -309,8 +309,7 @@ def get_scale_factor_for_bounds(polydata, resolution):
 
 def get_scaled_mesh(mesh, vox_resolution, scale_factor, vpolydata=None):
     vpolydata = pv.wrap(mesh) 
-    # centered_vpolydata = center_polydata(vpolydata)
-    centered_vpolydata = vpolydata
+    centered_vpolydata = center_polydata(vpolydata)
     scaled_vpolydata, scale_factor = scale_polydata(centered_vpolydata, int(vox_resolution), scale_factor)
     return scaled_vpolydata, scale_factor
 
