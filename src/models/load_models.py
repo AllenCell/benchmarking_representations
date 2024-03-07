@@ -198,6 +198,14 @@ MODEL_INFO = {
             "so3_imag_sdf",
         ],
     },
+    "test5": {
+        "run_ids": [
+            "c2e3b1088f964b1db99317ede78a2eab", # might need to change
+        ],
+        "names": [
+            "so3_imag_sdf",
+        ],
+    },
     # "cellpack": {
     #     "run_ids": [
     #         "3d2d49f22d8f4a52b0bc208cd7f74c7a",

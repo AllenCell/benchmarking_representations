@@ -110,6 +110,9 @@ CONFIG_LIST = {
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_seg.yaml",
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf.yaml",
     ],
+    "test5": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf_baseline.yaml",
+    ],
 }
 
 

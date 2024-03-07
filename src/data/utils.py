@@ -16,6 +16,7 @@ from aicsshparam import shtools, shparam
 
 from aicscytoparam.cytoparam import voxelize_mesh
 from vtk.util.numpy_support import vtk_to_numpy
+import math
 
 
 def get_mesh_from_sdf(sdf, method="skimage"):
@@ -41,7 +42,7 @@ def get_mesh_from_sdf(sdf, method="skimage"):
             # empty mesh
             mesh = pv.PolyData()
     elif method == "vae_output":
-        vertices, triangles = mcubes.marching_cubes(sdf, level=0)
+        vertices, triangles = mcubes.marching_cubes(sdf, 0)
         mcubes.export_obj(vertices, triangles, "tmp.obj")
         mesh = pv.read("tmp.obj")
         os.remove("tmp.obj")
@@ -98,6 +99,7 @@ def vtk_polydata_to_imagedata(polydata, dimensions=(64,64,64), padding=0):
 
     return imgstenc.GetOutput()
 
+
 def vtk_image_to_numpy_image(vtk_image):
     dims = vtk_image.GetDimensions()
     data = vtk_image.GetPointData().GetScalars()
@@ -105,11 +107,11 @@ def vtk_image_to_numpy_image(vtk_image):
     np_image = np_image.reshape(dims, order='F')
     return np_image
 
+
 def get_image_from_mesh(mesh, img_shape, padding):
     vtk_image = vtk_polydata_to_imagedata(mesh, dimensions=img_shape, padding=padding)
     np_image = vtk_image_to_numpy_image(vtk_image)
     return np_image
-
 
 
 def get_mesh_from_image(
@@ -228,6 +230,7 @@ def get_mesh_from_image(
 
     return mesh, img_output, tuple(centroid.squeeze())
 
+
 def center_polydata(polydata):
     """
     Center a polydata mesh around the object's center of mass
@@ -260,6 +263,37 @@ def center_polydata(polydata):
     polydata = transform_filter.GetOutput()
     return polydata
 
+
+def get_mesh_bbox_shape(mesh):
+    bounds = mesh.GetBounds()
+    x_dim = math.ceil(bounds[1] - bounds[0])
+    y_dim = math.ceil(bounds[3] - bounds[2])
+    z_dim = math.ceil(bounds[5] - bounds[4])
+    return (x_dim, y_dim, z_dim)
+
+
+def rescale_meshed_sdfs_to_full(list_of_meshes, scale_factors, resolution=32):
+    rev_scale_factors = []
+    resc_meshed_sdfs = []
+    for i,m in enumerate(list_of_meshes): 
+        orig_max_axis_length = resolution / scale_factors[i]
+        rev_xfac = orig_max_axis_length / resolution
+        resc_recon_mesh, _ = scale_polydata(m, None, rev_xfac)
+        resc_recon_mesh = pv.wrap(center_polydata(resc_recon_mesh))
+        rev_scale_factors.append(rev_xfac)
+        resc_meshed_sdfs.append(resc_recon_mesh)
+    return resc_meshed_sdfs, rev_scale_factors
+
+
+def voxelize_recon_meshes(recon_meshes):
+    vox_recon_meshes = []
+    for i,rm in enumerate(recon_meshes):
+        target_bounds = get_mesh_bbox_shape(recon_meshes[i])
+        recon_vox_mesh_img = get_image_from_mesh(rm, target_bounds, padding=2)
+        vox_recon_meshes.append(recon_vox_mesh_img)
+    return vox_recon_meshes
+
+
 def get_scale_factor_for_bounds(polydata, resolution):
     bounds = polydata.GetBounds()
     bounds = tuple([b + int(resolution/3) if b > 0 else b-int(resolution/3) \
@@ -271,6 +305,14 @@ def get_scale_factor_for_bounds(polydata, resolution):
     max_delta = max([x_delta, y_delta, z_delta])
     scale_factor = resolution/max_delta
     return scale_factor
+
+
+def get_scaled_mesh(mesh, vox_resolution, scale_factor, vpolydata=None):
+    vpolydata = pv.wrap(mesh) 
+    # centered_vpolydata = center_polydata(vpolydata)
+    centered_vpolydata = vpolydata
+    scaled_vpolydata, scale_factor = scale_polydata(centered_vpolydata, int(vox_resolution), scale_factor)
+    return scaled_vpolydata, scale_factor
 
 
 def scale_polydata(polydata, resolution, scale_factor=None):
@@ -308,21 +350,6 @@ def scale_polydata(polydata, resolution, scale_factor=None):
     scaled_polydata = xformoperator.GetOutput()
     return scaled_polydata, scale_factor
 
-
-def get_scaled_mesh(mesh_path, vox_resolution, scale_factor):
-    if mesh_path.endswith("ply"):
-        reader = vtk.vtkPLYReader()
-        reader.SetFileName(mesh_path)
-        reader.Update()
-    elif mesh_path.endswith("vtk"):
-        reader = vtk.vtkPolyDataReader()
-        reader.SetFileName(mesh_path)
-        reader.Update()
-
-    vpolydata = reader.GetOutput()
-    centered_vpolydata = center_polydata(vpolydata)
-    scaled_vpolydata, scale_factor = scale_polydata(centered_vpolydata, int(vox_resolution), scale_factor)
-    return scaled_vpolydata, scale_factor
 
 def get_sdf_from_mesh_vtk(mesh_path, vox_resolution=32, scale_factor=None):
     """

@@ -356,9 +356,12 @@ def save_pcloud(xhat, path, name, z_max, z_ind=2):
         this_recon.to_csv(path / f"{name}.csv")
     return xhat
 
+from src.data.utils import get_mesh_from_sdf, get_scaled_mesh, voxelize_recon_meshes, rescale_meshed_sdfs_to_full
+from escnn.nn.modules.masking_module import build_mask
+
 
 def make_canonical_shapes(
-    model, df, device, path, slice_key, sub_slice_list, max_embed_dim, key, z_max=None, z_ind=2
+    model, df, device, path, slice_key, sub_slice_list, max_embed_dim, key, z_max=None, z_ind=2, model_type='pcloud'
 ):
     model = model.eval()
     cols = [i for i in df.columns if "mu" in i]
@@ -370,6 +373,7 @@ def make_canonical_shapes(
             .dropna(axis=1)
             .values
         )
+        print(stage)
         with torch.no_grad():
             # z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
             # idx = np.random.randint(this_stage_mu.shape[0], size=1)
@@ -379,11 +383,25 @@ def make_canonical_shapes(
             z_inf = z_inf.float()
             decoder = model.decoder[key]
             xhat = decoder(z_inf).detach().cpu().numpy()
+            if model_type == 'pcloud':
+                if len(xhat.shape) > 3:
+                    xhat = sample_points(xhat.detach().cpu().numpy())
 
-            if len(xhat.shape) > 3:
-                xhat = sample_points(xhat.detach().cpu().numpy())
+                xhat = save_pcloud(xhat[0], path, stage, z_max, z_ind)
+            elif model_type == 'sdf':
+                mesh = get_mesh_from_sdf(xhat.squeeze(), method="vae_output")
+                scaled_mesh, scale_factor = get_scaled_mesh(mesh, 400, None)
+                print(scale_factor)
+                scale_factor = 3
+                resc_mesh_sdfs, rev_scale_factors = rescale_meshed_sdfs_to_full([scaled_mesh], [scale_factor])
+                resc_vox_recon = voxelize_recon_meshes(resc_mesh_sdfs)
+                xhat = resc_vox_recon[0]
+                min_shape = min(xhat.shape[0], xhat.shape[1], xhat.shape[2])
+                print(min_shape, scale_factor)
+                mask = (build_mask(min_shape, dim=3, margin=0).squeeze().unsqueeze(0))
+                xhat = xhat[:min_shape, :min_shape, :min_shape]
+                xhat = xhat * mask.detach().cpu().numpy()
 
-            xhat = save_pcloud(xhat[0], path, stage, z_max, z_ind)
             all_xhat.append(xhat)
     return all_xhat
 

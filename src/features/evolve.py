@@ -70,8 +70,9 @@ def make_csv(
     else:
         image_df = pd.read_parquet(image_path)
 
-    pc_df = pc_df.loc[pc_df["split"] == "test"]
-    image_df = image_df.loc[image_df["split"] == "test"]
+    if "split" in pc_df.columns:
+        pc_df = pc_df.loc[pc_df["split"] == "test"]
+        image_df = image_df.loc[image_df["split"] == "test"]
 
     if isinstance(pc_df["CellId"].iloc[0], str):
         if pc_df["CellId"].iloc[0].split(".")[-1] == "ply":

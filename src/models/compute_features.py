@@ -111,6 +111,12 @@ DATASET_INFO = {
         "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
         "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
     },
+    "test5": {
+        "embedding_save_location": "./test5",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
+    },
 }
 
 METRIC_LIST = [
