@@ -6,7 +6,7 @@ import pyvista as pv
 import trimesh
 import mcubes
 import pandas as pd
-
+from sklearn.metrics import jaccard_score as jaccard_similarity_score
 from skimage.measure import marching_cubes
 from skimage import filters as skfilters
 from skimage import morphology as skmorpho
@@ -22,12 +22,12 @@ import math
 def get_mesh_from_sdf(sdf, method="skimage"):
     """
     This function reconstructs a mesh from signed distance function
-    values using the marching cubes algorithm. 
+    values using the marching cubes algorithm.
 
     Parameters
     ----------
     sdf : np.array
-        3D array of shape (N,N,N) 
+        3D array of shape (N,N,N)
 
     Returns
     -------
@@ -37,8 +37,10 @@ def get_mesh_from_sdf(sdf, method="skimage"):
     if method == "skimage":
         try:
             vertices, faces, normals, _ = marching_cubes(sdf, level=0)
-            mesh = trimesh.Trimesh(vertices=vertices, faces=faces, vertex_normals=normals)
-        except: 
+            mesh = trimesh.Trimesh(
+                vertices=vertices, faces=faces, vertex_normals=normals
+            )
+        except:
             # empty mesh
             mesh = pv.PolyData()
     elif method == "vae_output":
@@ -52,7 +54,8 @@ def get_mesh_from_sdf(sdf, method="skimage"):
     mesh = pv.wrap(mesh)
     return mesh
 
-def vtk_polydata_to_imagedata(polydata, dimensions=(64,64,64), padding=0):
+
+def vtk_polydata_to_imagedata(polydata, dimensions=(64, 64, 64), padding=0):
     xi, xf, yi, yf, zi, zf = polydata.GetBounds()
     dx, dy, dz = dimensions
     sx = (xf - xi) / dx
@@ -104,7 +107,7 @@ def vtk_image_to_numpy_image(vtk_image):
     dims = vtk_image.GetDimensions()
     data = vtk_image.GetPointData().GetScalars()
     np_image = numpy_support.vtk_to_numpy(data)
-    np_image = np_image.reshape(dims, order='F')
+    np_image = np_image.reshape(dims, order="F")
     return np_image
 
 
@@ -159,7 +162,6 @@ def get_mesh_from_image(
 
     # Extracting the largest connected component
     if lcc:
-
         img = skmorpho.label(img.astype(np.uint8))
 
         counts = np.bincount(img.flatten())
@@ -168,15 +170,13 @@ def get_mesh_from_image(
 
         img[img != lcc] = 0
         img[img == lcc] = 1
-    
+
     # Remove small objects in the image
     if denoise:
         img = skmorpho.remove_small_objects(label(img), noise_thresh)
-        
 
     # Smooth binarize the input image and binarize
     if sigma:
-
         img = skfilters.gaussian(img.astype(np.float32), sigma=(sigma, sigma, sigma))
 
         img[img < 1.0 / np.exp(1.0)] = 0
@@ -221,9 +221,10 @@ def get_mesh_from_image(
     # Calculate the mesh centroid
     coords = numpy_support.vtk_to_numpy(mesh.GetPoints().GetData())
     centroid = coords.mean(axis=0, keepdims=True)
-    print('before translating to centrooid')
+
+    print("before translating to centrooid")
     if translate_to_origin is True:
-        print('translating to centrooid')
+        print("translating to centrooid")
         # Translate to origin
         coords -= centroid
         mesh.GetPoints().SetData(numpy_support.numpy_to_vtk(coords))
@@ -275,7 +276,7 @@ def get_mesh_bbox_shape(mesh):
 def rescale_meshed_sdfs_to_full(list_of_meshes, scale_factors, resolution=32):
     rev_scale_factors = []
     resc_meshed_sdfs = []
-    for i,m in enumerate(list_of_meshes): 
+    for i, m in enumerate(list_of_meshes):
         orig_max_axis_length = resolution / scale_factors[i]
         rev_xfac = orig_max_axis_length / resolution
         resc_recon_mesh, _ = scale_polydata(m, None, rev_xfac)
@@ -285,10 +286,40 @@ def rescale_meshed_sdfs_to_full(list_of_meshes, scale_factors, resolution=32):
     return resc_meshed_sdfs, rev_scale_factors
 
 
-def voxelize_recon_meshes(recon_meshes):
+def compute_mse_recon_and_target_segs(recon_segs, target_segs):
+    mses = []
+    for i, recon_seg in enumerate(recon_segs):
+        target_seg = target_segs[i]
+        if (
+            (len(np.unique(recon_seg)) > 2)
+            or recon_seg.max() == 255
+            or target_seg.max() == 255
+        ):
+            recon_seg = np.where(recon_seg > 0.5, 1, 0)
+            target_seg = np.where(target_seg > 0.5, 1, 0)
+        mse = 1 - jaccard_similarity_score(
+            target_seg.flatten(), recon_seg.flatten(), pos_label=1
+        )
+        mses.append(mse)
+    return np.array(mses)
+
+
+def voxelize_recon_and_target_meshes(recon_meshes, target_meshes):
     vox_recon_meshes = []
-    for i,rm in enumerate(recon_meshes):
-        target_bounds = get_mesh_bbox_shape(recon_meshes[i])
+    vox_target_meshes = []
+    for i, rm in enumerate(recon_meshes):
+        this_target = target_meshes[i]
+        target_bounds = get_mesh_bbox_shape(this_target)
+        target_vox_mesh_img = get_image_from_mesh(this_target, target_bounds, padding=2)
+        recon_vox_mesh_img = get_image_from_mesh(rm, target_bounds, padding=2)
+        vox_recon_meshes.append(recon_vox_mesh_img)
+        vox_target_meshes.append(target_vox_mesh_img)
+    return vox_recon_meshes, vox_target_meshes
+
+
+def voxelize_recon_meshes(recon_meshes, target_bounds):
+    vox_recon_meshes = []
+    for i, rm in enumerate(recon_meshes):
         recon_vox_mesh_img = get_image_from_mesh(rm, target_bounds, padding=2)
         vox_recon_meshes.append(recon_vox_mesh_img)
     return vox_recon_meshes
@@ -296,22 +327,63 @@ def voxelize_recon_meshes(recon_meshes):
 
 def get_scale_factor_for_bounds(polydata, resolution):
     bounds = polydata.GetBounds()
-    bounds = tuple([b + int(resolution/3) if b > 0 else b-int(resolution/3) \
-                    for b in list(bounds)]) # Increasing bounds to prevent mesh from getting clipped
-    x_delta = (bounds[1] - bounds[0])
-    y_delta = (bounds[3] - bounds[2])
-    z_delta = (bounds[5] - bounds[4])
-    
+    bounds = tuple(
+        [
+            b + int(resolution / 3) if b > 0 else b - int(resolution / 3)
+            for b in list(bounds)
+        ]
+    )  # Increasing bounds to prevent mesh from getting clipped
+    x_delta = bounds[1] - bounds[0]
+    y_delta = bounds[3] - bounds[2]
+    z_delta = bounds[5] - bounds[4]
+
     max_delta = max([x_delta, y_delta, z_delta])
-    scale_factor = resolution/max_delta
+    scale_factor = resolution / max_delta
     return scale_factor
 
 
-def get_scaled_mesh(mesh, vox_resolution, scale_factor, vpolydata=None):
-    vpolydata = pv.wrap(mesh) 
-    centered_vpolydata = center_polydata(vpolydata)
-    scaled_vpolydata, scale_factor = scale_polydata(centered_vpolydata, int(vox_resolution), scale_factor)
-    return scaled_vpolydata, scale_factor
+def center_polydata_using_bbox(mesh):
+    bounds = mesh.GetBounds()
+    bounding_box_center = [(bounds[i * 2 + 1] + bounds[i * 2]) / 2.0 for i in range(3)]
+    translation_vector = [-x for x in bounding_box_center]
+    transform = vtk.vtkTransform()
+    transform.Translate(translation_vector)
+    transform_filter = vtk.vtkTransformPolyDataFilter()
+    transform_filter.SetTransform(transform)
+    transform_filter.SetInputData(mesh)
+    transform_filter.Update()
+    return transform_filter.GetOutput()
+
+
+def get_scaled_mesh(
+    mesh_path, vox_resolution, scale_factor, vpolydata=None, center_and_scale=True
+):
+    if vpolydata is None:
+        if mesh_path.endswith("ply"):
+            reader = vtk.vtkPLYReader()
+            reader.SetFileName(mesh_path)
+            reader.Update()
+            vpolydata = reader.GetOutput()
+        elif mesh_path.endswith("vtk"):
+            reader = vtk.vtkPolyDataReader()
+            reader.SetFileName(mesh_path)
+            reader.Update()
+            vpolydata = reader.GetOutput()
+        elif mesh_path.endswith("stl"):
+            vpolydata = pv.read(mesh_path)
+        else:
+            raise NotImplementedError
+    if center_and_scale:
+        # centered_vpolydata = center_polydata(vpolydata)
+        # scaled_vpolydata, scale_factor = scale_polydata(centered_vpolydata, int(vox_resolution), scale_factor)
+        centered_vpolydata = center_polydata_using_bbox(vpolydata)
+        scaled_vpolydata, scale_factor = scale_polydata(
+            centered_vpolydata, int(vox_resolution), scale_factor
+        )
+        return scaled_vpolydata, scale_factor
+    else:
+        # scaled_vpolydata, scale_factor = scale_polydata(vpolydata, int(vox_resolution), scale_factor)
+        return vpolydata, scale_factor
 
 
 def scale_polydata(polydata, resolution, scale_factor=None):
@@ -322,7 +394,7 @@ def scale_polydata(polydata, resolution, scale_factor=None):
     ----------
     polydata : vtk.PolyData
         Polydata mesh
-    
+
     resolution: int
         Bound to be used in all 3 dimensions (Z,Y,X) to rescale the mesh
 
@@ -334,7 +406,7 @@ def scale_polydata(polydata, resolution, scale_factor=None):
     """
     if scale_factor is None:
         scale_factor = get_scale_factor_for_bounds(polydata, resolution)
-    
+
     xform = vtk.vtkTransform()
     xform.Scale(
         scale_factor,
@@ -345,14 +417,20 @@ def scale_polydata(polydata, resolution, scale_factor=None):
     xformoperator.SetTransform(xform)
     xformoperator.SetInputData(0, polydata)
     xformoperator.Update()
-    
+
     scaled_polydata = xformoperator.GetOutput()
     return scaled_polydata, scale_factor
 
 
-def get_sdf_from_mesh_vtk(mesh_path, vox_resolution=32, scale_factor=None):
+def get_sdf_from_mesh_vtk(
+    mesh_path,
+    vox_resolution=32,
+    scale_factor=None,
+    vpolydata=None,
+    center_and_scale=True,
+):
     """
-    Compute 3D signed distance function values of a mesh 
+    Compute 3D signed distance function values of a mesh
 
     Parameters
     ----------
@@ -368,18 +446,20 @@ def get_sdf_from_mesh_vtk(mesh_path, vox_resolution=32, scale_factor=None):
         Resulting SDF with shape (vox_resolution, vox_resolution, vox_resolution)
 
     """
-    vox_shape = (vox_resolution,vox_resolution,vox_resolution)
-    scaled_vpolydata, scale_factor = get_scaled_mesh(mesh_path, 
-                                                    int(vox_resolution), 
-                                                    scale_factor)
-    
+    vox_shape = (vox_resolution, vox_resolution, vox_resolution)
+    scaled_vpolydata, scale_factor = get_scaled_mesh(
+        mesh_path, int(vox_resolution), scale_factor, vpolydata, center_and_scale
+    )
+
     pdd = vtk.vtkImplicitPolyDataDistance()
     pdd.SetInput(scaled_vpolydata)
 
     sdf = np.zeros(vox_shape)
-    factor = int(vox_resolution/2) 
-    for i in range(-factor,factor):
-        for j in range(-factor,factor):
-            for k in range(-factor,factor):
-                sdf[i+factor, j+factor, k+factor] = pdd.EvaluateFunction([i, j, k])
+    factor = int(vox_resolution / 2)
+    for i in range(-factor, factor):
+        for j in range(-factor, factor):
+            for k in range(-factor, factor):
+                sdf[i + factor, j + factor, k + factor] = pdd.EvaluateFunction(
+                    [i, j, k]
+                )
     return sdf, scale_factor

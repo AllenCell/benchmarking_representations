@@ -18,6 +18,16 @@ from vtk.util import numpy_support
 from skimage import morphology as skmorpho
 from skimage import filters as skfilters
 from skimage.measure import label, marching_cubes
+from src.data.utils import (
+    get_mesh_from_sdf,
+    get_scaled_mesh,
+    voxelize_recon_meshes,
+    get_image_from_mesh,
+    rescale_meshed_sdfs_to_full,
+    center_polydata,
+)
+from escnn.nn.modules.masking_module import build_mask
+from cyto_dl.image.transforms import RotationMask
 
 
 def write_pyvista_latent_walk_gif(out_file, view, mesh_files, expl_var=None):
@@ -213,7 +223,6 @@ def get_mesh_from_image(
 
     # Extracting the largest connected component
     if lcc:
-
         img = skmorpho.label(img.astype(np.uint8))
 
         counts = np.bincount(img.flatten())
@@ -229,7 +238,6 @@ def get_mesh_from_image(
 
     # Smooth binarize the input image and binarize
     if sigma:
-
         img = skfilters.gaussian(img.astype(np.float32), sigma=(sigma, sigma, sigma))
 
         img[img < 1.0 / np.exp(1.0)] = 0
@@ -276,7 +284,6 @@ def get_mesh_from_image(
     centroid = coords.mean(axis=0, keepdims=True)
 
     if translate_to_origin is True:
-
         # Translate to origin
         coords -= centroid
         mesh.GetPoints().SetData(numpy_support.numpy_to_vtk(coords))
@@ -333,10 +340,10 @@ def save_pcloud(xhat, path, name, z_max, z_ind=2):
         xhat = xhat.detach().cpu().numpy()
     # this_recon = pv.PolyData(xhat[:, :3])
     # this_recon.save(path / f"{name}.ply", texture=xhat[:, :].astype(np.uint8))
-    if len(xhat[0,:]) == 4:
-        cols = ['x', 'y', 'z', 's']
+    if len(xhat[0, :]) == 4:
+        cols = ["x", "y", "z", "s"]
     else:
-        cols = ['x', 'y', 'z']
+        cols = ["x", "y", "z"]
 
     if z_max is None:
         this_recon = pd.DataFrame(xhat, columns=cols)
@@ -356,12 +363,21 @@ def save_pcloud(xhat, path, name, z_max, z_ind=2):
         this_recon.to_csv(path / f"{name}.csv")
     return xhat
 
-from src.data.utils import get_mesh_from_sdf, get_scaled_mesh, voxelize_recon_meshes, get_image_from_mesh, rescale_meshed_sdfs_to_full, center_polydata
-from escnn.nn.modules.masking_module import build_mask
-
 
 def make_canonical_shapes(
-    model, df, device, path, slice_key, sub_slice_list, max_embed_dim, key, z_max=None, z_ind=2, model_type='pcloud'
+    model,
+    df,
+    device,
+    path,
+    slice_key,
+    sub_slice_list,
+    max_embed_dim,
+    key,
+    z_max=None,
+    z_ind=2,
+    model_type="pcloud",
+    mask_output=False,
+    sample_closest_cell=False,
 ):
     model = model.eval()
     cols = [i for i in df.columns if "mu" in i]
@@ -373,23 +389,37 @@ def make_canonical_shapes(
             .dropna(axis=1)
             .values
         )
-        print(stage)
+
+        if sample_closest_cell:
+            mean_mu = this_stage_mu.mean(axis=0)
+            dist = (this_stage_mu - mean_mu) ** 2
+            dist = np.sum(dist, axis=1)
+            idx = np.argmin(dist)
+            this_stage_mu = np.expand_dims(this_stage_mu[idx], axis=0)
         with torch.no_grad():
             # z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
-            # idx = np.random.randint(this_stage_mu.shape[0], size=1)
+            # idx = np.random.randint(this_stage_mu.shape[0], size=50)
             # this_stage_mu = this_stage_mu[idx]
-            print(this_stage_mu.shape)
             z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
             z_inf = z_inf.to(device)
             z_inf = z_inf.float()
             decoder = model.decoder[key]
-            xhat = decoder(z_inf).detach().cpu().numpy()
-            if model_type == 'pcloud':
+            xhat = decoder(z_inf)
+            if mask_output:
+                mask = RotationMask(
+                    "so3",
+                    3,
+                    64,
+                    background=2,
+                )
+                xhat = mask(xhat)
+            xhat = xhat.detach().cpu().numpy()
+            if model_type == "pcloud":
                 if len(xhat.shape) > 3:
                     xhat = sample_points(xhat.detach().cpu().numpy())
 
                 xhat = save_pcloud(xhat[0], path, stage, z_max, z_ind)
-            elif model_type == 'sdf':
+            elif model_type == "sdf":
                 mesh = get_mesh_from_sdf(xhat.squeeze(), method="skimage")
                 xhat = get_image_from_mesh(mesh, (64, 64, 64), 0)
                 # scaled_mesh, scale_factor = get_scaled_mesh(mesh, 400, None)
@@ -449,7 +479,7 @@ def extract_digitized_shape_modes(shape_mode, shape_modes_df, pca, map_points):
     return df_inv
 
 
-def stratified_latent_walk(    
+def stratified_latent_walk(
     model,
     device,
     df,
@@ -502,8 +532,22 @@ def latent_walk(
 
     if all_features.shape[0] < 256:
         n = 256 - all_features.shape[0]  # for 2 random indices
-        index = np.random.choice(all_features.shape[0], n, replace=False) 
-        random_sample = all_features[index] + 0.01*np.random.randn(256)
+
+        num_loops = int(n / all_features.shape[0]) + 1
+
+        if n <= all_features.shape[0]:
+            index = np.random.choice(all_features.shape[0], n, replace=False)
+            random_sample = all_features[index] + 0.01 * np.random.randn(256)
+        else:
+            n = 256 - num_loops * all_features.shape[0]
+            random_sample = []
+            for _ in range(num_loops):
+                random_sample1 = all_features + 0.01 * np.random.randn(256)
+                random_sample.append(random_sample1)
+            index = np.random.choice(all_features.shape[0], n, replace=False)
+            random_sample2 = all_features[index] + 0.01 * np.random.randn(256)
+            random_sample.append(random_sample2)
+            random_sample = np.concatenate(random_sample, axis=0)
         all_features = np.concatenate([all_features, random_sample], axis=0)
 
     pca = PCA(n_components=256)

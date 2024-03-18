@@ -21,7 +21,7 @@ DATASET_INFO = {
     #     "image_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
     #     "pc_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
     # },
-    "pcna": {
+    "pcna_updated": {
         "embedding_save_location": "./pcna_updated_embeds",
         "orig_df": "/allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv",
         "image_path": "/allen/aics/modeling/ritvik/pcna/manifest.parquet",
@@ -209,6 +209,9 @@ def compute_features(
         "modality_list_evolve": [],
         "config_list_evolve": [],
         "num_evolve_samples": [],
+        "compute_evolve_dataloaders": False,
+        "sdf_forward_pass": False,
+        "sdf_process": [],
     },
     rot_inv_params: dict = {"squeeze_2d": False, "id": "CellId"},
     stereotypy_params: dict = {
@@ -217,11 +220,9 @@ def compute_features(
         "get_baseline": False,
         "return_correlation_matrix": False,
         "stratify_col": None,
-        "compute_PCs": True
+        "compute_PCs": True,
     },
-    compactness_params: dict = {
-        "method": 'mle'
-    }
+    compactness_params: dict = {"method": "mle"},
 ):
     """
     Compute all benchmarking metrics and save
@@ -261,7 +262,7 @@ def compute_features(
             max_pcs=stereotypy_params["max_pcs"],
             max_bins=stereotypy_params["max_bins"],
             get_baseline=stereotypy_params["get_baseline"],
-            compute_PCs=stereotypy_params['compute_PCs']
+            compute_PCs=stereotypy_params["compute_PCs"],
         )
         if isinstance(outs, list) > 1:
             outs[0].to_csv(path / "stereotypy.csv")
@@ -330,8 +331,10 @@ def compute_features(
         if "Compactness" in metric_list:
             print("Computing compactness")
             ret_dict_compactness = get_embedding_metrics(
-                all_ret, num_PCs=compactness_params['num_PCs'], max_embed_dim=max_embed_dim, 
-                method=compactness_params['method']
+                all_ret,
+                num_PCs=compactness_params["num_PCs"],
+                max_embed_dim=max_embed_dim,
+                method=compactness_params["method"],
             )
             ret_dict_compactness.to_csv(path / Path("compactness.csv"))
 
@@ -353,13 +356,15 @@ def compute_features(
             ret_dict_regression.to_csv(path / Path("regression.csv"))
 
         if "Evolution Energy" in metric_list:
-            data_evolve_list = get_evolve_data_list(
-                save_folder,
-                evolve_params["num_evolve_samples"],
-                evolve_params["config_list_evolve"],
-                evolve_params["modality_list_evolve"],
-                dataset,
-            )
+            data_evolve_list = data_list
+            if evolve_params["compute_evolve_dataloaders"]:
+                data_evolve_list = get_evolve_data_list(
+                    save_folder,
+                    evolve_params["num_evolve_samples"],
+                    evolve_params["config_list_evolve"],
+                    evolve_params["modality_list_evolve"],
+                    dataset,
+                )
             print("Computing evolution")
 
             evolution_dict = get_evolution_dict(
@@ -372,6 +377,11 @@ def compute_features(
                 keys,
                 path / "evolve",
                 use_sample_points_list,
+                "cell_id",
+                None,
+                False,
+                evolve_params["sdf_forward_pass"],
+                evolve_params["sdf_process"],
             )
 
             evolution_dict.to_csv(path / Path("evolve.csv"))

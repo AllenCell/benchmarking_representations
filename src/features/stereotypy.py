@@ -31,14 +31,14 @@ def get_stereotypy_stratified(
             df3 = df2.loc[df2[stratify_col] == strat]
             this_feats = df3[[i for i in df3.columns if "mu" in i]]
             this_feats = this_feats.dropna(axis=1).values
-            # _, num = compute_MLE_intrinsic_dimensionality(this_feats)
-            # print(num)
-            pca = PCA(n_components=min(this_feats.shape[1], this_feats.shape[0]))
-            # pca = PCA(n_components=int(num))
-            # pca = PCA(n_components=int(10))
-            pca = pca.fit(this_feats)
-            this_feats = pca.transform(this_feats)
-            df3[[f"PCA_{i}" for i in range(this_feats.shape[1])]] = this_feats
+            # # _, num = compute_MLE_intrinsic_dimensionality(this_feats)
+            # # print(num)
+            # pca = PCA(n_components=min(this_feats.shape[1], this_feats.shape[0]))
+            # # pca = PCA(n_components=int(num))
+            # # pca = PCA(n_components=int(10))
+            # pca = pca.fit(this_feats)
+            # this_feats = pca.transform(this_feats)
+            # df3[[f"PCA_{i}" for i in range(this_feats.shape[1])]] = this_feats
             tmp_ret.append(df3)
     all_ret = pd.concat(tmp_ret, axis=0).reset_index(drop=True)
     if not stratify_col:
@@ -65,15 +65,23 @@ def get_stereotypy_stratified(
             get_baseline,
             compute_PCs,
         )
-        ret_dict_stereotypy_mean = ret_dict_stereotypy.groupby(['model', 'pc', 'bin', 'structure']).mean()
+        ret_dict_stereotypy_mean = ret_dict_stereotypy.groupby(
+            ["model", "pc", "bin", "structure"]
+        ).mean()
         ret_dict_stereotypy_mean[stratify_col] = i
 
-        ret_dict_stereotypy_std = ret_dict_stereotypy.groupby(['model', 'pc', 'bin', 'structure']).std()
-        ret_dict_stereotypy_std['stereotypy_std'] = ret_dict_stereotypy_std['stereotypy']
-        ret_dict_stereotypy_mean = pd.concat([
-            ret_dict_stereotypy_mean, ret_dict_stereotypy_std[['stereotypy_std']]], axis=1)
-        # print(ret_dict_stereotypy_mean.shape)
-        all_stereotypy.append(ret_dict_stereotypy)
+        ret_dict_stereotypy_std = ret_dict_stereotypy.groupby(
+            ["model", "pc", "bin", "structure"]
+        ).std()
+        ret_dict_stereotypy_std["stereotypy_std"] = ret_dict_stereotypy_std[
+            "stereotypy"
+        ]
+        ret_dict_stereotypy_mean = pd.concat(
+            [ret_dict_stereotypy_mean, ret_dict_stereotypy_std[["stereotypy_std"]]],
+            axis=1,
+        )
+        print(ret_dict_stereotypy_mean.shape, i)
+        all_stereotypy.append(ret_dict_stereotypy_mean.reset_index())
     all_stereotypy = pd.concat(all_stereotypy, axis=0).reset_index(drop=True)
     return all_stereotypy
 
@@ -94,7 +102,7 @@ def get_stereotypy(
             all_ret["model"] == all_ret["model"].unique()[0]
         ].reset_index(drop=True)
         cellids_per_pc_per_bin = compute_shapemodes(this_mo, max_pcs, max_bins)
-    elif compute_PCs == 'none':
+    elif compute_PCs == "none":
         cellids_per_pc_per_bin = {}
         cellids_per_pc_per_bin["1" + "_" + "1"] = all_ret["CellId"].values
     else:
@@ -163,8 +171,8 @@ def get_stereotypy(
                                 this_ret = this_all_ret.loc[
                                     this_all_ret["structure_name"] == struct
                                 ].reset_index(drop=True)
-                                this_ret['pc'] = this_pc
-                                this_ret['bin'] = this_bin
+                                this_ret["pc"] = this_pc
+                                this_ret["bin"] = this_bin
 
                                 stereotypy, distances = correlate(
                                     this_ret, max_embed_dim
@@ -178,21 +186,35 @@ def get_stereotypy(
                                             if not np.isnan(this_s):
                                                 this_id1 = cellid_order[j_ind]
                                                 this_id2 = cellid_order[j_ind2]
-                                                ret_dict_stereotypy["model"].append(model)
-                                                ret_dict_stereotypy["stereotypy"].append(this_s)
-                                                ret_dict_stereotypy["pc"].append(this_pc)
-                                                ret_dict_stereotypy["bin"].append(this_bin)
-                                                ret_dict_stereotypy["structure"].append(struct)
-                                                ret_dict_stereotypy["CellId_1"].append(this_id1)
-                                                ret_dict_stereotypy["CellId_2"].append(this_id2)
+                                                ret_dict_stereotypy["model"].append(
+                                                    model
+                                                )
+                                                ret_dict_stereotypy[
+                                                    "stereotypy"
+                                                ].append(this_s)
+                                                ret_dict_stereotypy["pc"].append(
+                                                    this_pc
+                                                )
+                                                ret_dict_stereotypy["bin"].append(
+                                                    this_bin
+                                                )
+                                                ret_dict_stereotypy["structure"].append(
+                                                    struct
+                                                )
+                                                ret_dict_stereotypy["CellId_1"].append(
+                                                    this_id1
+                                                )
+                                                ret_dict_stereotypy["CellId_2"].append(
+                                                    this_id2
+                                                )
                                                 ret_dict_stereotypy["distances"].append(
                                                     distances[j_ind, j_ind2]
                                                 )
 
                             if return_correlation_matrix:
-                                ret_corr[str(this_pc) + "_" + str(this_bin)] = (
-                                    stereotypy
-                                )
+                                ret_corr[
+                                    str(this_pc) + "_" + str(this_bin)
+                                ] = stereotypy
 
                             if get_baseline:
                                 if model_ind == 0:
@@ -241,6 +263,7 @@ def get_stereotypy(
 
 
 from sklearn.feature_selection import mutual_info_regression
+
 
 def base_correlation_map(x, y):
     desired = np.empty((x.shape[0], y.shape[0]))

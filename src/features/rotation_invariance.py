@@ -85,10 +85,10 @@ def get_precomputed_equiv_dict(
 
 
 def rotation_image_batch_z(batch, z_angle, squeeze_2d=False):
-    if 'image' in batch.keys():
-        key = 'image'
+    if "image" in batch.keys():
+        key = "image"
     elif "pcloud" in batch.keys():
-        key = 'pcloud'
+        key = "pcloud"
     in_x = batch[key]
     if len(in_x.shape) == 4:
         in_x = torch.unsqueeze(in_x, dim=1)
@@ -106,10 +106,10 @@ def rotation_image_batch_z(batch, z_angle, squeeze_2d=False):
 
 
 def rotation_pc_batch_z(batch, z_angle):
-    if 'image' in batch.keys():
-        key = 'image'
+    if "image" in batch.keys():
+        key = "image"
     elif "pcloud" in batch.keys():
-        key = 'pcloud'
+        key = "pcloud"
     this_input = batch[key].detach().cpu()
     r = np.array(
         [
@@ -207,8 +207,8 @@ def get_equiv_dict(
                             device,
                             this_loss,
                             track_emissions=False,
-                            emissions_path=None, 
-                            use_sample_points=this_use_sample_points
+                            emissions_path=None,
+                            use_sample_points=this_use_sample_points,
                         )
 
                         if jl == 0:

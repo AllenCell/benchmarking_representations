@@ -50,27 +50,35 @@ def process_dataloader(
     device,
     meta_key,
     use_sample_points,
+    sdf_forward_pass,
+    sdf_process,
 ):
     for j, i in enumerate(tqdm(dataloader)):
         if (debug) and j > 1:
             break
-        (all_embeds, all_data_ids, all_splits, all_loss, all_metadata) = (
-            process_batch_embeddings(
-                model,
-                loss_eval,
-                device,
-                i,
-                all_splits,
-                all_data_ids,
-                all_embeds,
-                all_loss,
-                all_metadata,
-                split,
-                track_emissions,
-                emissions_path,
-                meta_key,
-                use_sample_points
-            )
+        (
+            all_embeds,
+            all_data_ids,
+            all_splits,
+            all_loss,
+            all_metadata,
+        ) = process_batch_embeddings(
+            model,
+            loss_eval,
+            device,
+            i,
+            all_splits,
+            all_data_ids,
+            all_embeds,
+            all_loss,
+            all_metadata,
+            split,
+            track_emissions,
+            emissions_path,
+            meta_key,
+            use_sample_points,
+            sdf_forward_pass,
+            sdf_process,
         )
     return all_embeds, all_data_ids, all_splits, all_loss, all_metadata
 
@@ -91,69 +99,89 @@ def compute_embeddings(
     device,
     meta_key,
     use_sample_points,
+    sdf_forward_pass,
+    sdf_process,
 ):
     if "train" in split_list:
         print("Processing train")
-        all_embeds, all_data_ids, all_splits, all_loss, all_metadata = (
-            process_dataloader(
-                this_data.train_dataloader(),
-                model,
-                loss_eval,
-                track_emissions,
-                emissions_path,
-                "train",
-                all_embeds,
-                all_data_ids,
-                all_splits,
-                all_loss,
-                all_metadata,
-                debug,
-                device,
-                meta_key,
-                use_sample_points,
-            )
+        (
+            all_embeds,
+            all_data_ids,
+            all_splits,
+            all_loss,
+            all_metadata,
+        ) = process_dataloader(
+            this_data.train_dataloader(),
+            model,
+            loss_eval,
+            track_emissions,
+            emissions_path,
+            "train",
+            all_embeds,
+            all_data_ids,
+            all_splits,
+            all_loss,
+            all_metadata,
+            debug,
+            device,
+            meta_key,
+            use_sample_points,
+            sdf_forward_pass,
+            sdf_process,
         )
     if "val" in split_list:
         print("Processing val")
-        all_embeds, all_data_ids, all_splits, all_loss, all_metadata = (
-            process_dataloader(
-                this_data.val_dataloader(),
-                model,
-                loss_eval,
-                track_emissions,
-                emissions_path,
-                "val",
-                all_embeds,
-                all_data_ids,
-                all_splits,
-                all_loss,
-                all_metadata,
-                debug,
-                device,
-                meta_key,
-                use_sample_points
-            )
+        (
+            all_embeds,
+            all_data_ids,
+            all_splits,
+            all_loss,
+            all_metadata,
+        ) = process_dataloader(
+            this_data.val_dataloader(),
+            model,
+            loss_eval,
+            track_emissions,
+            emissions_path,
+            "val",
+            all_embeds,
+            all_data_ids,
+            all_splits,
+            all_loss,
+            all_metadata,
+            debug,
+            device,
+            meta_key,
+            use_sample_points,
+            sdf_forward_pass,
+            sdf_process,
         )
     if "test" in split_list:
         print("Processing test")
-        all_embeds, all_data_ids, all_splits, all_loss, all_metadata = (
-            process_dataloader(
-                this_data.test_dataloader(),
-                model,
-                loss_eval,
-                track_emissions,
-                emissions_path,
-                "test",
-                all_embeds,
-                all_data_ids,
-                all_splits,
-                all_loss,
-                all_metadata,
-                debug,
-                device,
-                meta_key,
-                use_sample_points
-            )
+        (
+            all_embeds,
+            all_data_ids,
+            all_splits,
+            all_loss,
+            all_metadata,
+        ) = process_dataloader(
+            this_data.test_dataloader(),
+            model,
+            loss_eval,
+            track_emissions,
+            emissions_path,
+            "test",
+            all_embeds,
+            all_data_ids,
+            all_splits,
+            all_loss,
+            all_metadata,
+            debug,
+            device,
+            meta_key,
+            use_sample_points,
+            sdf_forward_pass,
+            sdf_process,
         )
     return all_embeds, all_data_ids, all_splits, all_loss, all_metadata
 
@@ -169,6 +197,8 @@ def save_embeddings(
     meta_key: str = None,
     loss_eval_list: list = None,
     sample_points_list: list = [],
+    sdf_forward_pass: str = False,
+    sdf_process: list = [],
 ):
     Path(save_folder).mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
@@ -186,26 +216,35 @@ def save_embeddings(
         all_splits = []
         this_data = data_list[j_ind]
         this_use_sample_points = sample_points_list[j_ind]
+        this_sdf_process = []
+        if sdf_forward_pass:
+            this_sdf_process = sdf_process[j_ind]
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
-            all_embeds, all_data_ids, all_splits, all_loss, all_metadata = (
-                compute_embeddings(
-                    model,
-                    this_data,
-                    split_list,
-                    loss_eval,
-                    track_emissions,
-                    emissions_path,
-                    all_embeds,
-                    all_data_ids,
-                    all_splits,
-                    all_loss,
-                    all_metadata,
-                    debug,
-                    device,
-                    meta_key,
-                    this_use_sample_points
-                )
+            (
+                all_embeds,
+                all_data_ids,
+                all_splits,
+                all_loss,
+                all_metadata,
+            ) = compute_embeddings(
+                model,
+                this_data,
+                split_list,
+                loss_eval,
+                track_emissions,
+                emissions_path,
+                all_embeds,
+                all_data_ids,
+                all_splits,
+                all_loss,
+                all_metadata,
+                debug,
+                device,
+                meta_key,
+                this_use_sample_points,
+                sdf_forward_pass,
+                this_sdf_process,
             )
 
             all_splits = [x for xs in all_splits for x in xs]
@@ -244,6 +283,8 @@ def save_emissions(
     device: str = "cuda:0",
     loss_eval_list: list = None,
     sample_points_list: list = [],
+    sdf_forward_pass: str = False,
+    sdf_process: list = [],
 ):
     emissions_path = Path(emissions_path)
     emissions_path.mkdir(parents=True, exist_ok=True)
@@ -261,6 +302,9 @@ def save_emissions(
         all_loss = []
         all_splits = []
         this_data = data_list[j_ind]
+        this_sdf_process = []
+        if sdf_forward_pass:
+            this_sdf_process = sdf_process[j_ind]
         this_use_sample_points = sample_points_list[j_ind]
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
@@ -296,7 +340,9 @@ def save_emissions(
                     "test",
                     track_emissions,
                     emissions_path,
-                    this_use_sample_points
+                    this_use_sample_points,
+                    sdf_forward_pass,
+                    this_sdf_process,
                 )
             all_model_emissions.append(pd.concat(all_emissions, axis=0))
 

@@ -61,7 +61,7 @@ def get_classification(this_mo, target_col):
     for i in this_mo[target_col].unique():
         n = this_mo.loc[this_mo[target_col] == i].shape[0]
         class_weight[i] = this_mo.shape[0] / (len(this_mo[target_col].unique()) * n)
-    
+
     multi_class = "multinomial"
     if np.unique(this_mo[target_col]).shape[0] == 2:
         multi_class = "ovr"
@@ -124,7 +124,7 @@ def get_classification(this_mo, target_col):
 
 
 def run_drug_classification(df, target_col, num_folds):
-    model = LogisticRegression(multi_class='multinomial', solver='lbfgs')
+    model = LogisticRegression(multi_class="multinomial", solver="lbfgs")
     metric = accuracy_score
     embed_cols = [col for col in df.columns if "mu" in col]
     X = df[embed_cols].values
@@ -141,26 +141,24 @@ def run_drug_classification(df, target_col, num_folds):
         scaler = StandardScaler()
         X_train = scaler.fit_transform(X_train)
         X_test = scaler.transform(X_test)
-        model = LogisticRegression(multi_class='multinomial', solver='lbfgs')
+        model = LogisticRegression(multi_class="multinomial", solver="lbfgs")
         metric = accuracy_score
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         score = metric(y_test, y_pred)
         metrics_avg[target_col] += score / num_folds
         metrics_values_all_folds[target_col].append(score)
-    metrics_std_dev = {col: np.std(values) for col, values in metrics_values_all_folds.items()}
+    metrics_std_dev = {
+        col: np.std(values) for col, values in metrics_values_all_folds.items()
+    }
     return metrics_avg, metrics_std_dev
-    
+
 
 def get_drug_classification_df(all_ret, target_col, num_folds=10):
-    ret_dict = {
-        "model":[],
-        "acc":[],
-        "std":[]
-    }
-    
+    ret_dict = {"model": [], "acc": [], "std": []}
+
     for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
-        model_df = all_ret[all_ret["model"]==model].reset_index(drop=True)
+        model_df = all_ret[all_ret["model"] == model].reset_index(drop=True)
         avg, std = run_drug_classification(model_df, target_col, num_folds)
         ret_dict["model"].append(model)
         ret_dict["acc"].append(avg[target_col])

@@ -6,11 +6,12 @@ import multiprocessing
 from aicsimageio import AICSImage, writers
 from concurrent.futures import ProcessPoolExecutor
 
+
 def load_flat_pilr(file_path):
     return AICSImage(file_path).data.squeeze().flatten()
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     SOURCE_DIR = "/allen/aics/assay-dev/MicroscopyOtherData/Viana/datasets/cellpack_pcna_images/pilr"
     OUTPUT_DIR = "/allen/aics/assay-dev/MicroscopyOtherData/Viana/datasets/cellpack_pcna_images/correlations"
 
@@ -25,9 +26,9 @@ if __name__ == "__main__":
     print(f"Computing pairwise correlations between {len(file_paths)} PILRs.")
 
     with ProcessPoolExecutor(multiprocessing.cpu_count()) as executor:
-            pilrs = list(tqdm(
-                executor.map(load_flat_pilr, file_paths), total=len(file_paths)
-            ))
+        pilrs = list(
+            tqdm(executor.map(load_flat_pilr, file_paths), total=len(file_paths))
+        )
 
     pilrs = np.array(pilrs)
 
@@ -37,4 +38,3 @@ if __name__ == "__main__":
 
     w = writers.OmeTiffWriter()
     w.save(corr, os.path.join(OUTPUT_DIR, "correlations.tif"), dim_order="YX")
-

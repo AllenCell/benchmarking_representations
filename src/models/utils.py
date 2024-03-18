@@ -23,50 +23,59 @@ def rescale_img(tmp):
     return tmp
 
 
+def _sample(raw, skew_scale=100):
+    # assert len(raw.shape) == 3
+    num_points = 2048
+
+    disp = 1
+    outs = np.where(np.ones_like(raw) > 0)
+    if len(outs) == 3:
+        z, y, x = outs
+        sigma = (1, 2, 2)
+    else:
+        y, x = outs
+        sigma = (1, 2)
+    probs = raw.copy()
+    probs_orig = probs.copy()
+
+    # adding this to smooth intensity
+    # probs_orig = ndimage.gaussian_filter(probs_orig, sigma=sigma, order=0)
+    # probs_orig = probs_orig.flatten()
+
+    # compare histograms of real images
+
+    probs = probs.flatten()
+
+    probs = probs / probs.max()
+
+    skewness = skew_scale * (3 * (probs.mean() - np.median(probs))) / probs.std()
+    probs = np.exp(skewness * probs)
+
+    probs = np.where(probs < 1e21, probs, 1e21)  # dont let sum of probs blow up
+
+    probs = probs / probs.sum()
+    idxs = np.random.choice(np.arange(len(probs)), size=1024 * 2, replace=True, p=probs)
+    x = x[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
+    y = y[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
+    if len(outs) == 3:
+        z = z[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp * 0.3
+    else:
+        z = np.copy(x)
+        z.fill(0)
+    new_cents = np.stack([z, y, x], axis=1).astype(float)
+    assert new_cents.shape[0] == num_points
+    return new_cents
+
+
 def sample_points(orig):
     pcloud = []
     for i in range(orig.shape[0]):
         raw = rescale_img(orig[i, 0])
-        # assert len(raw.shape) == 3
-        num_points = 2048
-
-        disp = 1
-        outs = np.where(np.ones_like(raw) > 0)
-        if len(outs) == 3:
-            z, y, x = outs
-            sigma = (1, 2, 2)
-        else:
-            y, x = outs
-            sigma = (1, 2)
-        probs = raw.copy()
-        probs_orig = probs.copy()
-
-        # adding this to smooth intensity
-        # probs_orig = ndimage.gaussian_filter(probs_orig, sigma=sigma, order=0)
-        # probs_orig = probs_orig.flatten()
-
-        # compare histograms of real images
-
-        probs = probs.flatten()
-
-        probs = probs / probs.max()
-
-        skewness = 100* (3 * (probs.mean() - np.median(probs))) / probs.std()
-        probs = np.exp(skewness * probs)
-
-        probs = probs / probs.sum()
-        idxs = np.random.choice(
-            np.arange(len(probs)), size=1024 * 2, replace=True, p=probs
-        )
-        x = x[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
-        y = y[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
-        if len(outs) == 3:
-            z = z[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp * 0.3
-        else:
-            z = np.copy(x)
-            z.fill(0)
-        new_cents = np.stack([z, y, x], axis=1).astype(float)
-        assert new_cents.shape[0] == num_points
+        try:
+            new_cents = _sample(raw, 300)
+        except:
+            print("exception")
+            new_cents = _sample(raw, 100)
         pcloud.append(new_cents)
     pcloud = np.stack(pcloud, axis=0)
     return torch.tensor(pcloud)

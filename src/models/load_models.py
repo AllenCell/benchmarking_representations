@@ -35,29 +35,31 @@ MODEL_INFO = {
     },
     "pcna_updated": {
         "run_ids": [
+            "f6fbe34d298c41af8b07b7ddd30aaea8",
             "0c1bbf0c54f343a083e9c26b476c9469",
             "1c1ca294eb6d4c3092cbfa062dea934a",
-            "e41f0bbf26944ba9b9e4541e87bf42f0",
-            "358cef46219c435ab1b16d2a06dd4436",
-            "5339c30a940141658bdff3507b1b1a69",
-            # "f6fbe34d298c41af8b07b7ddd30aaea8",
+            "bc9a169ca7c943debcb3352bb80b19ac",
+            # "358cef46219c435ab1b16d2a06dd4436",
+            "d172d8f823dc437b9fae7ab6b2673d3e",
+            "ac43b8bbeb3a493bacc69927c8f21276",
         ],
         "names": [
-            "2048_ed_dgcnn", # more
-            "2048_int_ed_vndgcnn", # more
-            "classical_image",
-            "so2_image",
-            # "so3_image",
             "vit",
+            "2048_ed_dgcnn",  # more
+            "2048_int_ed_vndgcnn",  # more
+            "classical_image",
+            # "so2_image",
+            "so3_image",
+            "2048_int_ed_vndgcnn_jitter",
         ],
     },
     "test": {
         "run_ids": [
-            "ac43b8bbeb3a493bacc69927c8f21276",
-            # "41cf98f1381f4eb097166beee598f56d",
+            # "ac43b8bbeb3a493bacc69927c8f21276",
+            "1c1ca294eb6d4c3092cbfa062dea934a",
         ],
         "names": [
-            "test_equiv", # pcna 
+            "test_equiv",  # pcna
         ],
     },
     "test2": {
@@ -66,7 +68,7 @@ MODEL_INFO = {
             # "41cf98f1381f4eb097166beee598f56d",
         ],
         "names": [
-            "test_equiv", # terf equiv
+            "test_equiv",  # terf equiv
         ],
     },
     "test3": {
@@ -75,7 +77,7 @@ MODEL_INFO = {
             # "41cf98f1381f4eb097166beee598f56d",
         ],
         "names": [
-            "test_equiv", # varaince equiv punctate
+            "test_equiv",  # varaince equiv punctate
         ],
     },
     "test4": {
@@ -84,7 +86,7 @@ MODEL_INFO = {
             # "41cf98f1381f4eb097166beee598f56d",
         ],
         "names": [
-            "test_mito", # varaince equiv punctate
+            "test_mito",  # varaince equiv punctate
         ],
     },
     # "variance": {
@@ -163,7 +165,7 @@ MODEL_INFO = {
     # },
     "cellpack": {
         "run_ids": [
-            "575c95fad4614d7e83ca6b85f069f6e5", # this is good
+            "575c95fad4614d7e83ca6b85f069f6e5",  # this is good
         ],
         "names": [
             "equiv",
@@ -171,8 +173,8 @@ MODEL_INFO = {
     },
     "cellpack_pcna": {
         "run_ids": [
-            "717e948da29740b283466c0952440662",
-            "a548980560734a5f9e6a763b5597fa73",
+            "2dbec95965374c8a85b2dbdd4d569284",
+            "a2c2c55d2f2f4b329e3003279c8d4e09",
             "43f3bb2ffc76466c8023a593d78faf05",
             "15a4ea21eea3482bb7b5a41ca4b4b180",
         ],
@@ -181,15 +183,14 @@ MODEL_INFO = {
             "so3_image",
             "classical_pointcloud",
             "so3_pointcloud",
-
         ],
     },
     "cellpack_npm1_spheres": {
         "run_ids": [
-            "fb9a7272d32b4a4ebb4b52dd79cdadb2",
-            "bdfaa479acce445cbf4dd5f84fdbc301",
-            "ac4a8d001c2a42c0bb2ca4378e4f2611",
-            "b4163e1790c1415fafde8565ce23180e", # might need to change
+            "711b27416d274e84850a607e09d21c26",
+            "a303f36e2fcb4e2f89f1bad1e171e3f6",
+            "58b4431719a340ab8cafddc16abc8826",
+            "1430ad66f450454d9164098c1ea1daa9",  # might need to change
         ],
         "names": [
             "classical_image_seg",
@@ -200,7 +201,7 @@ MODEL_INFO = {
     },
     "test5": {
         "run_ids": [
-            "b4163e1790c1415fafde8565ce23180e", # might need to change
+            "11fa061e42b343f396768c4333e32d82",  # might need to change
         ],
         "names": [
             "so3_imag_sdf",
@@ -214,7 +215,7 @@ MODEL_INFO = {
     },
     "test6": {
         "run_ids": [
-            "d2f425169b5041248755529830387be6", # this is variance all punctate
+            "d2f425169b5041248755529830387be6",  # this is variance all punctate
         ],
         "names": [
             "equiv_scalar",

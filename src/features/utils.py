@@ -157,13 +157,13 @@ def imgtoprojection(
     return img_final
 
 
-def normalize_intensities_and_get_colormap(df, pcts=[1,60], cm_name="inferno"):
+def normalize_intensities_and_get_colormap(df, pcts=[1, 60], cm_name="inferno"):
     if "s" in df.columns:
         vmin, vmax = np.percentile(df.s.values, pcts)
         df["inorm"] = np.clip(df.s.values, vmin, vmax)
-        df["inorm"] = (df.inorm-vmin)/(vmax-vmin)
+        df["inorm"] = (df.inorm - vmin) / (vmax - vmin)
     else:
-        df['inorm'] = 1
+        df["inorm"] = 1
     cmap = plt.cm.get_cmap(cm_name)
     # print(vmin, vmax)
     return df, cmap

@@ -7,6 +7,15 @@ import logging
 import pandas as pd
 import time
 import warnings
+import pyvista as pv
+import numpy as np
+from src.data.utils import (
+    get_sdf_from_mesh_vtk,
+    get_mesh_from_sdf,
+    rescale_meshed_sdfs_to_full,
+    voxelize_recon_and_target_meshes,
+    compute_mse_recon_and_target_segs,
+)
 
 try:
     from pointcloudutils.networks import LatentLocalDecoder
@@ -55,16 +64,19 @@ def vit_forward(
         input_x = torch.tensor(image.detach().cpu().numpy()).clone().to(device)
         pred_x = torch.tensor(predicted_img.detach().cpu().numpy()).clone().to(device)
 
-    rcl_per_input_dimension = this_loss(
-        pred_x.contiguous(), input_x.to(device).contiguous()
-    )
-    loss = (
-        rcl_per_input_dimension
-        # flatten
-        .view(rcl_per_input_dimension.shape[0], -1)
-        # and sum across each batch element's dimensions
-        .sum(dim=1)
-    )
+    if this_loss is not None:
+        rcl_per_input_dimension = this_loss(
+            pred_x.contiguous(), input_x.to(device).contiguous()
+        )
+        loss = (
+            rcl_per_input_dimension
+            # flatten
+            .view(rcl_per_input_dimension.shape[0], -1)
+            # and sum across each batch element's dimensions
+            .sum(dim=1)
+        )
+    else:
+        loss = None
 
     if track_emissions:
         emissions: float = tracker.stop()
@@ -80,7 +92,7 @@ def vit_forward(
     return (
         predicted_img.detach().cpu().numpy(),
         features.detach().cpu().numpy(),
-        loss.detach().cpu().numpy(),
+        None if this_loss is None else loss.detach().cpu().numpy(),
         None,
     )
 
@@ -155,16 +167,19 @@ def base_forward(
         key = "pcloud"
     else:
         key = "image"
+
     xhat, z, z_params = model(
         move(this_batch, device), decode=True, inference=True, return_params=True
     )
 
     if "embedding" in z.keys():
-        embed_key = 'embedding'
+        embed_key = "embedding"
     else:
         embed_key = key
 
-    if len(xhat[key].shape) == 3 and not isinstance(model.decoder[key], LatentLocalDecoder):
+    if len(xhat[key].shape) == 3 and not isinstance(
+        model.decoder[key], LatentLocalDecoder
+    ):
         xhat[key] = xhat[key][:, :, :3]
         this_batch[key] = this_batch[key][:, :, :3]
 
@@ -177,23 +192,6 @@ def base_forward(
         xhat[key] = torch.tensor(
             apply_sample_points(xhat[key].detach().cpu().numpy(), use_sample_points)
         ).to(device)
-
-    # import matplotlib.pyplot as plt
-    # ind = 0
-    # points = this_batch[key][ind, 0].detach().cpu().numpy()
-    # points2 = xhat[key][ind, 0].detach().cpu().numpy()
-    # import matplotlib.pyplot as plt
-
-    # # assert (this == this2).all() == False
-    # # this = np.where(this < 0.1, this, 0.1)
-    # # this = np.where(this > -0.1, this, -0.1)
-    # fig, (ax, ax1) = plt.subplots(1,2)
-    # # ax.imshow(points.max(0))
-    # # ax1.imshow(points2.max(0))
-    # ax.imshow(points[16])
-    # ax1.imshow(points2[16])
-    # fig.savefig('/allen/aics/modeling/ritvik/projects/benchmarking_representations/src/models/test.png')
-
 
     if this_loss is not None:
         if "points.df" in this_batch:
@@ -235,8 +233,98 @@ def base_forward(
     )
 
 
+def sdf_forward(
+    model,
+    batch,
+    device,
+    this_loss,
+    track_emissions,
+    tracker,
+    end,
+    emissions_csv,
+    sdf_process=False,
+):
+    """
+    Forward pass for base cyto_dl models with codecarbon tracking options
+    """
+    this_batch = batch.copy()
+    key = "image"
+
+    xhat, z, z_params = model(
+        move(this_batch, device), decode=True, inference=True, return_params=True
+    )
+
+    if "embedding" in z.keys():
+        embed_key = "embedding"
+    else:
+        embed_key = key
+
+    if len(xhat[key].shape) == 3 and not isinstance(
+        model.decoder[key], LatentLocalDecoder
+    ):
+        xhat[key] = xhat[key][:, :, :3]
+        this_batch[key] = this_batch[key][:, :, :3]
+
+    cellids = batch["cell_id"]
+    gt_mesh_dir = "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/"
+
+    errs = []
+    recon = xhat["image"].detach().cpu().numpy()
+    gt = batch["image"].detach().cpu().numpy()
+
+    for i, cellid in enumerate(cellids):
+        if sdf_process:
+            target_mesh = pv.read(f"{gt_mesh_dir}/{cellid}.ply")
+            target_sdf, target_scale_factor = get_sdf_from_mesh_vtk(
+                f"{gt_mesh_dir}/{cellid}.ply", vox_resolution=64, scale_factor=None
+            )
+            mesh = get_mesh_from_sdf(recon[i].squeeze(), method="vae_output")
+            resc_mesh_sdfs, rev_scale_factors = rescale_meshed_sdfs_to_full(
+                [mesh], [target_scale_factor]
+            )
+            resc_vox_recon, vox_target_meshes = voxelize_recon_and_target_meshes(
+                resc_mesh_sdfs, [target_mesh]
+            )
+        else:
+            resc_vox_recon = [recon[i]]
+            vox_target_meshes = [gt[i]]
+        recon_err_seg = compute_mse_recon_and_target_segs(
+            resc_vox_recon, vox_target_meshes
+        )
+        errs.append(recon_err_seg)
+
+    loss = np.expand_dims(np.mean(errs), axis=0)
+
+    if track_emissions:
+        emissions: float = tracker.stop()
+        emissions_df = pd.read_csv(emissions_csv)
+
+        return (
+            xhat[key].detach().cpu().numpy(),
+            z_params[embed_key].detach().cpu().numpy(),
+            loss,
+            None,
+            emissions_df,
+            time.time() - end,
+        )
+    return (
+        xhat[key].detach().cpu().numpy(),
+        z_params[embed_key].detach().cpu().numpy(),
+        loss,
+        None,
+    )
+
+
 def model_pass(
-    batch, model, device, this_loss, track_emissions=False, emissions_path=None, use_sample_points=False
+    batch,
+    model,
+    device,
+    this_loss,
+    track_emissions=False,
+    emissions_path=None,
+    use_sample_points=False,
+    sdf_forward_pass=False,
+    sdf_process=False,
 ):
     # if emissions_path is not None:
     #     emissions_csv = emissions_path / "emissions.csv"
@@ -261,6 +349,18 @@ def model_pass(
         tracker.start()
         end = time.time()
 
+    if sdf_forward_pass:
+        return sdf_forward(
+            model,
+            batch,
+            device,
+            this_loss,
+            track_emissions,
+            tracker,
+            end,
+            emissions_csv,
+            sdf_process,
+        )
     if hasattr(model, "backbone"):
         return vit_forward(
             model,
@@ -314,6 +414,8 @@ def process_batch(
     track,
     emissions_path,
     use_sample_points,
+    sdf_forward_pass,
+    sdf_process,
 ):
     if "pcloud" in i.keys():
         key = "pcloud"
@@ -327,6 +429,8 @@ def process_batch(
         track_emissions=track,
         emissions_path=emissions_path,
         use_sample_points=use_sample_points,
+        sdf_forward_pass=sdf_forward_pass,
+        sdf_process=sdf_process,
     )
     i = remove(i)
     emissions_df = pd.DataFrame()
@@ -335,7 +439,7 @@ def process_batch(
         emissions_df["inference_time"] = time
     else:
         out, z, loss, x_vis_list = [*model_outputs]
-    
+
     all_outputs.append(out)
     all_embeds.append(z)
     all_emissions.append(emissions_df)
@@ -357,7 +461,6 @@ def process_batch(
 
 
 def process_batch_embeddings(
-        
     model,
     this_loss,
     device,
@@ -371,7 +474,9 @@ def process_batch_embeddings(
     track,
     emissions_path,
     meta_key=None,
-    use_sample_points=False
+    use_sample_points=False,
+    sdf_forward_pass=False,
+    sdf_process=False,
 ):
     if "pcloud" in i.keys():
         key = "pcloud"
@@ -384,20 +489,11 @@ def process_batch_embeddings(
         this_loss,
         track_emissions=track,
         emissions_path=emissions_path,
-        use_sample_points=use_sample_points)
-    # try:
-    #     model_outputs = model_pass(
-    #         i,
-    #         model,
-    #         device,
-    #         this_loss,
-    #         track_emissions=track,
-    #         emissions_path=emissions_path,
-    #         use_sample_points=use_sample_points,
-    #     )
-    # except:
-    #     print('failed model pass, possibly due to sampling')
-    #     return (all_embeds, all_data_ids, all_splits, all_loss, all_metadata)
+        use_sample_points=use_sample_points,
+        sdf_forward_pass=sdf_forward_pass,
+        sdf_process=sdf_process,
+    )
+
     i = remove(i)
     emissions_df = pd.DataFrame()
     if len(model_outputs) > 4:
