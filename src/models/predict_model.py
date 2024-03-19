@@ -280,7 +280,8 @@ def base_forward(
             sc_factor_data = np.load(gt_scale_factor_dict_path, allow_pickle=True)
             scale_factor_dict = dict(zip(sc_factor_data['keys'], sc_factor_data['values']))
 
-        recon_data_list = [recon.squeeze()[i].reshape(eval_scaled_img_resolution, eval_scaled_img_resolution, eval_scaled_img_resolution) for i in range(len(cellids))]
+        reshape_vox_size = eval_scaled_img_resolution if eval_scaled_img_model_type == "iae" else recon.squeeze().shape[-1]
+        recon_data_list = [recon.squeeze()[i].reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size) for i in range(len(cellids))]
         
         with Pool(processes=8) as pool:
             args = [(cellid, recon_data, eval_scaled_img_resolution, gt_mesh_dir, mesh_ext, gt_sampled_pts_dir, eval_scaled_img_model_type, scale_factor_dict if gt_scale_factor_dict_path is not None else None) for cellid, recon_data in zip(cellids, recon_data_list)]
