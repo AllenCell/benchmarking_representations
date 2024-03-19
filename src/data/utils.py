@@ -4,6 +4,7 @@ import numpy as np
 from vtk.util import numpy_support
 import pyvista as pv
 import trimesh
+import torch
 import mcubes
 import pandas as pd
 from sklearn.metrics import jaccard_score as jaccard_similarity_score
@@ -19,7 +20,7 @@ from vtk.util.numpy_support import vtk_to_numpy
 import math
 
 
-def get_mesh_from_sdf(sdf, method="skimage"):
+def get_mesh_from_sdf(sdf, method="skimage", cast_pyvista=True):
     """
     This function reconstructs a mesh from signed distance function
     values using the marching cubes algorithm.
@@ -41,17 +42,26 @@ def get_mesh_from_sdf(sdf, method="skimage"):
                 vertices=vertices, faces=faces, vertex_normals=normals
             )
         except:
-            # empty mesh
-            mesh = pv.PolyData()
+            print("Created empty mesh")
+            vertices = np.array([
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0]
+            ])
+            faces = np.array([
+                [0, 1, 2]
+            ])
+            mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
     elif method == "vae_output":
         vertices, triangles = mcubes.marching_cubes(sdf, 0)
         mcubes.export_obj(vertices, triangles, "tmp.obj")
-        mesh = pv.read("tmp.obj")
+        mesh = trimesh.load("tmp.obj")
         os.remove("tmp.obj")
     else:
         raise NotImplementedError
 
-    mesh = pv.wrap(mesh)
+    if cast_pyvista:
+        mesh = pv.wrap(mesh)
     return mesh
 
 
@@ -463,3 +473,23 @@ def get_sdf_from_mesh_vtk(
                     [i, j, k]
                 )
     return sdf, scale_factor
+
+
+def get_iae_reconstruction_3d_grid(bb_min=-0.5, bb_max=0.5, resolution=32, padding=0.1):
+    bb_min = (bb_min,)*3
+    bb_max = (bb_max,)*3
+    shape = (resolution,)*3
+    size = shape[0] * shape[1] * shape[2]
+
+    pxs = torch.linspace(bb_min[0], bb_max[0], shape[0])
+    pys = torch.linspace(bb_min[1], bb_max[1], shape[1])
+    pzs = torch.linspace(bb_min[2], bb_max[2], shape[2])
+
+    pxs = pxs.view(-1, 1, 1).expand(*shape).contiguous().view(size)
+    pys = pys.view(1, -1, 1).expand(*shape).contiguous().view(size)
+    pzs = pzs.view(1, 1, -1).expand(*shape).contiguous().view(size)
+    p = torch.stack([pxs, pys, pzs], dim=1)
+    final_grid_size = (bb_max[0] - bb_min[0]) + padding
+    p = final_grid_size * p
+    
+    return p

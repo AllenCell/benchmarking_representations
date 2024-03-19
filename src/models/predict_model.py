@@ -6,15 +6,19 @@ from pathlib import Path
 import logging
 import pandas as pd
 import time
+import trimesh
 import warnings
 import pyvista as pv
 import numpy as np
+from skimage.filters import threshold_otsu
 from src.data.utils import (
     get_sdf_from_mesh_vtk,
     get_mesh_from_sdf,
     rescale_meshed_sdfs_to_full,
     voxelize_recon_and_target_meshes,
     compute_mse_recon_and_target_segs,
+    get_mesh_from_image,
+    get_iae_reconstruction_3d_grid
 )
 
 try:
@@ -158,16 +162,28 @@ def base_forward(
     end,
     emissions_csv,
     use_sample_points=False,
+    eval_scaled_img=False,
+    eval_scaled_img_model_type=None,
+    eval_scaled_img_resolution=32,
+    gt_mesh_dir=".",
+    gt_sampled_pts_dir=".",
+    mesh_ext="stl",
 ):
     """
     Forward pass for base cyto_dl models with codecarbon tracking options
     """
     this_batch = batch.copy()
+    
     if "pcloud" in batch.keys():
         key = "pcloud"
     else:
         key = "image"
 
+    if eval_scaled_img and eval_scaled_img_model_type == "iae":
+        uni_sample_points = get_iae_reconstruction_3d_grid()
+        uni_sample_points = uni_sample_points.unsqueeze(0).repeat(this_batch[key].shape[0], 1, 1)
+        this_batch["points"] = uni_sample_points
+        
     xhat, z, z_params = model(
         move(this_batch, device), decode=True, inference=True, return_params=True
     )
@@ -193,7 +209,7 @@ def base_forward(
             apply_sample_points(xhat[key].detach().cpu().numpy(), use_sample_points)
         ).to(device)
 
-    if this_loss is not None:
+    if this_loss is not None and not eval_scaled_img:
         if "points.df" in this_batch:
             rcl_per_input_dimension = this_loss(
                 xhat[key].unsqueeze(1).contiguous(),
@@ -210,90 +226,67 @@ def base_forward(
             # and sum across each batch element's dimensions
             .sum(dim=1)
         )
+        loss = loss.detach().cpu().numpy()
     else:
         loss = None
 
-    if track_emissions:
-        emissions: float = tracker.stop()
-        emissions_df = pd.read_csv(emissions_csv)
-
-        return (
-            xhat[key].detach().cpu().numpy(),
-            z_params[embed_key].detach().cpu().numpy(),
-            None if this_loss is None else loss.detach().cpu().numpy(),
-            None,
-            emissions_df,
-            time.time() - end,
-        )
-    return (
-        xhat[key].detach().cpu().numpy(),
-        z_params[embed_key].detach().cpu().numpy(),
-        None if this_loss is None else loss.detach().cpu().numpy(),
-        None,
-    )
-
-
-def sdf_forward(
-    model,
-    batch,
-    device,
-    this_loss,
-    track_emissions,
-    tracker,
-    end,
-    emissions_csv,
-    sdf_process=False,
-):
-    """
-    Forward pass for base cyto_dl models with codecarbon tracking options
-    """
-    this_batch = batch.copy()
-    key = "image"
-
-    xhat, z, z_params = model(
-        move(this_batch, device), decode=True, inference=True, return_params=True
-    )
-
-    if "embedding" in z.keys():
-        embed_key = "embedding"
-    else:
-        embed_key = key
-
-    if len(xhat[key].shape) == 3 and not isinstance(
-        model.decoder[key], LatentLocalDecoder
-    ):
-        xhat[key] = xhat[key][:, :, :3]
-        this_batch[key] = this_batch[key][:, :, :3]
-
-    cellids = batch["cell_id"]
-    gt_mesh_dir = "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/"
-
-    errs = []
-    recon = xhat["image"].detach().cpu().numpy()
-    gt = batch["image"].detach().cpu().numpy()
-
-    for i, cellid in enumerate(cellids):
-        if sdf_process:
-            target_mesh = pv.read(f"{gt_mesh_dir}/{cellid}.ply")
-            target_sdf, target_scale_factor = get_sdf_from_mesh_vtk(
-                f"{gt_mesh_dir}/{cellid}.ply", vox_resolution=64, scale_factor=None
+    if eval_scaled_img:
+        cellids = batch["cell_id"]
+        recon = xhat[key].detach().cpu().numpy()
+        gt = batch[key].detach().cpu().numpy()
+        errs = []
+        for i, cellid in enumerate(cellids):
+            target_mesh = trimesh.load(f"{gt_mesh_dir}/{cellid}.{mesh_ext}")
+            _, target_scale_factor = get_sdf_from_mesh_vtk(
+                None, 
+                vox_resolution=eval_scaled_img_resolution, 
+                scale_factor=None,
+                vpolydata=pv.wrap(target_mesh)
             )
-            mesh = get_mesh_from_sdf(recon[i].squeeze(), method="vae_output")
+            
+            if eval_scaled_img_model_type == "sdf":
+                
+                mesh = get_mesh_from_sdf(recon[i].squeeze(), 
+                                         method="skimage")
+                
+            elif eval_scaled_img_model_type == "seg":
+                
+                img=recon.squeeze()[i]
+                thresh = threshold_otsu(img)
+                bin_recon = (img > thresh).astype(float)
+                mesh,_,_ = get_mesh_from_image(bin_recon, 
+                                               sigma=0,
+                                               lcc=False, 
+                                               denoise=False)
+                
+            elif eval_scaled_img_model_type == "iae":
+                
+                target_mesh.vertices -= target_mesh.center_mass
+                points = np.load(f"{gt_sampled_pts_dir}/{cellid}/points.npz")
+                pred_mesh = get_mesh_from_sdf(recon.squeeze()[i].reshape(eval_scaled_img_resolution,
+                                                                    eval_scaled_img_resolution,
+                                                                    eval_scaled_img_resolution),
+                                             cast_pyvista=False)
+                unit_pred_mesh = pred_mesh.copy()
+                unit_pred_mesh.vertices -= unit_pred_mesh.center_mass
+                unit_pred_mesh = pred_mesh.apply_scale(1/eval_scaled_img_resolution)
+                mesh = unit_pred_mesh.copy()
+                mesh.vertices -= mesh.center_mass
+                mesh = mesh.apply_scale(points["scale"])
+                mesh = pv.wrap(mesh)
+                
             resc_mesh_sdfs, rev_scale_factors = rescale_meshed_sdfs_to_full(
                 [mesh], [target_scale_factor]
             )
             resc_vox_recon, vox_target_meshes = voxelize_recon_and_target_meshes(
-                resc_mesh_sdfs, [target_mesh]
+                resc_mesh_sdfs, [pv.wrap(target_mesh)]
             )
-        else:
-            resc_vox_recon = [recon[i]]
-            vox_target_meshes = [gt[i]]
-        recon_err_seg = compute_mse_recon_and_target_segs(
-            resc_vox_recon, vox_target_meshes
-        )
-        errs.append(recon_err_seg)
-
-    loss = np.expand_dims(np.mean(errs), axis=0)
+            recon_err_seg = compute_mse_recon_and_target_segs(
+                resc_vox_recon, vox_target_meshes
+            )
+            errs.append(recon_err_seg)
+        loss = np.expand_dims(np.mean(errs), axis=0)
+        
 
     if track_emissions:
         emissions: float = tracker.stop()
@@ -313,7 +306,7 @@ def sdf_forward(
         loss,
         None,
     )
-
+    
 
 def model_pass(
     batch,
@@ -323,14 +316,16 @@ def model_pass(
     track_emissions=False,
     emissions_path=None,
     use_sample_points=False,
-    sdf_forward_pass=False,
-    sdf_process=False,
+    eval_scaled_img=False,
+    eval_scaled_img_params=None,
 ):
-    # if emissions_path is not None:
-    #     emissions_csv = emissions_path / "emissions.csv"
-    # else:
-    emissions_path = Path(".")
-    emissions_csv = "./emissions.csv"
+    if emissions_path is not None:
+        emissions_path = Path(emissions_path)
+        emissions_csv = emissions_path / "emissions.csv"
+    else:
+        emissions_path = Path(".")
+        emissions_csv = "./emissions.csv"
+        
     logging.disable(sys.maxsize)
     try:
         if os.path.isfile(emissions_csv):
@@ -349,18 +344,6 @@ def model_pass(
         tracker.start()
         end = time.time()
 
-    if sdf_forward_pass:
-        return sdf_forward(
-            model,
-            batch,
-            device,
-            this_loss,
-            track_emissions,
-            tracker,
-            end,
-            emissions_csv,
-            sdf_process,
-        )
     if hasattr(model, "backbone"):
         return vit_forward(
             model,
@@ -394,6 +377,8 @@ def model_pass(
             end,
             emissions_csv,
             use_sample_points,
+            eval_scaled_img,
+            **eval_scaled_img_params
         )
 
 
@@ -414,8 +399,8 @@ def process_batch(
     track,
     emissions_path,
     use_sample_points,
-    sdf_forward_pass,
-    sdf_process,
+    eval_scaled_img,
+    eval_scaled_img_params,
 ):
     if "pcloud" in i.keys():
         key = "pcloud"
@@ -429,8 +414,8 @@ def process_batch(
         track_emissions=track,
         emissions_path=emissions_path,
         use_sample_points=use_sample_points,
-        sdf_forward_pass=sdf_forward_pass,
-        sdf_process=sdf_process,
+        eval_scaled_img=eval_scaled_img,
+        eval_scaled_img_model_type=eval_scaled_img_params,
     )
     i = remove(i)
     emissions_df = pd.DataFrame()
@@ -475,8 +460,8 @@ def process_batch_embeddings(
     emissions_path,
     meta_key=None,
     use_sample_points=False,
-    sdf_forward_pass=False,
-    sdf_process=False,
+    eval_scaled_img=False,
+    eval_scaled_img_params=None,
 ):
     if "pcloud" in i.keys():
         key = "pcloud"
@@ -490,8 +475,8 @@ def process_batch_embeddings(
         track_emissions=track,
         emissions_path=emissions_path,
         use_sample_points=use_sample_points,
-        sdf_forward_pass=sdf_forward_pass,
-        sdf_process=sdf_process,
+        eval_scaled_img=eval_scaled_img,
+        eval_scaled_img_params=eval_scaled_img_params,
     )
 
     i = remove(i)

@@ -197,8 +197,8 @@ def save_embeddings(
     meta_key: str = None,
     loss_eval_list: list = None,
     sample_points_list: list = [],
-    sdf_forward_pass: str = False,
-    sdf_process: list = [],
+    eval_scaled_img: list = [],
+    eval_scaled_img_params: list = [],
 ):
     Path(save_folder).mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
@@ -216,9 +216,8 @@ def save_embeddings(
         all_splits = []
         this_data = data_list[j_ind]
         this_use_sample_points = sample_points_list[j_ind]
-        this_sdf_process = []
-        if sdf_forward_pass:
-            this_sdf_process = sdf_process[j_ind]
+        this_eval_scaled_img = eval_scaled_img[j_ind]
+        this_eval_scaled_img_params = eval_scaled_img_params[j_ind]
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
             (
@@ -243,8 +242,8 @@ def save_embeddings(
                 device,
                 meta_key,
                 this_use_sample_points,
-                sdf_forward_pass,
-                this_sdf_process,
+                this_eval_scaled_img,
+                this_eval_scaled_img_params,
             )
 
             all_splits = [x for xs in all_splits for x in xs]
