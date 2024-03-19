@@ -10,6 +10,7 @@ import trimesh
 import warnings
 import pyvista as pv
 import numpy as np
+from multiprocessing import Pool
 from skimage.filters import threshold_otsu
 from src.data.utils import (
     get_sdf_from_mesh_vtk,
@@ -152,6 +153,43 @@ def mae_forward(
     )
 
 
+def multi_proc_scale_img_eval(args):
+    cellid, recon_data, eval_scaled_img_resolution, gt_mesh_dir, mesh_ext, gt_sampled_pts_dir, eval_scaled_img_model_type, scale_factor_dict = args
+    
+    target_mesh = trimesh.load(f"{gt_mesh_dir}/{cellid}.{mesh_ext}")
+
+    if eval_scaled_img_model_type == "iae":
+        target_mesh.vertices -= target_mesh.center_mass
+        points = np.load(f"{gt_sampled_pts_dir}/{cellid}/points.npz")
+        pred_mesh = get_mesh_from_sdf(recon_data, cast_pyvista=False)
+        unit_pred_mesh = pred_mesh.copy()
+        unit_pred_mesh.vertices -= unit_pred_mesh.center_mass
+        unit_pred_mesh = pred_mesh.apply_scale(1 / eval_scaled_img_resolution)
+        mesh = unit_pred_mesh.copy()
+        mesh.vertices -= mesh.center_mass
+        mesh = mesh.apply_scale(points["scale"])
+        mesh = pv.wrap(mesh)
+        resc_mesh = [mesh]
+    else:
+        if scale_factor_dict is not None:
+            target_scale_factor = scale_factor_dict[int(cellid)]
+        else:
+            _, target_scale_factor = get_sdf_from_mesh_vtk(None, vox_resolution=eval_scaled_img_resolution, scale_factor=None, vpolydata=pv.wrap(target_mesh))
+        
+        if eval_scaled_img_model_type == "sdf":
+            mesh = get_mesh_from_sdf(recon_data, method="skimage")
+        elif eval_scaled_img_model_type == "seg":
+            thresh = threshold_otsu(recon_data)
+            bin_recon = (recon_data > thresh).astype(float)
+            mesh, _, _ = get_mesh_from_image(bin_recon, sigma=0, lcc=False, denoise=False)
+
+        resc_mesh, _ = rescale_meshed_sdfs_to_full([mesh], [target_scale_factor])
+
+    resc_vox_recon, vox_target_meshes = voxelize_recon_and_target_meshes(resc_mesh, [pv.wrap(target_mesh)])
+    recon_err_seg = compute_mse_recon_and_target_segs(resc_vox_recon, vox_target_meshes)
+    return recon_err_seg
+
+
 def base_forward(
     model,
     batch,
@@ -232,7 +270,8 @@ def base_forward(
         loss = None
 
     if eval_scaled_img:
-        cellids = batch["cell_id"]
+        cellids = batch["cell_id"].detach().cpu().numpy() if isinstance(batch["cell_id"], torch.Tensor) else np.array(batch["cell_id"])
+
         recon = xhat[key].detach().cpu().numpy()
         gt = batch[key].detach().cpu().numpy()
         errs = []
@@ -240,64 +279,73 @@ def base_forward(
         if gt_scale_factor_dict_path is not None:
             sc_factor_data = np.load(gt_scale_factor_dict_path, allow_pickle=True)
             scale_factor_dict = dict(zip(sc_factor_data['keys'], sc_factor_data['values']))
-        
-        for i, cellid in enumerate(cellids):
-            target_mesh = trimesh.load(f"{gt_mesh_dir}/{cellid}.{mesh_ext}")
 
-            if eval_scaled_img_model_type == "iae":
-                target_mesh.vertices -= target_mesh.center_mass
-                points = np.load(f"{gt_sampled_pts_dir}/{cellid}/points.npz")
-                pred_mesh = get_mesh_from_sdf(recon.squeeze()[i].reshape(eval_scaled_img_resolution,
-                                                                    eval_scaled_img_resolution,
-                                                                    eval_scaled_img_resolution),
-                                             cast_pyvista=False)
-                unit_pred_mesh = pred_mesh.copy()
-                unit_pred_mesh.vertices -= unit_pred_mesh.center_mass
-                unit_pred_mesh = pred_mesh.apply_scale(1/eval_scaled_img_resolution)
-                mesh = unit_pred_mesh.copy()
-                mesh.vertices -= mesh.center_mass
-                mesh = mesh.apply_scale(points["scale"])
-                mesh = pv.wrap(mesh)
-                resc_mesh = [mesh]
-            else:
-                if gt_scale_factor_dict_path is None:
-                    _, target_scale_factor = get_sdf_from_mesh_vtk(
-                        None, 
-                        vox_resolution=eval_scaled_img_resolution, 
-                        scale_factor=None,
-                        vpolydata=pv.wrap(target_mesh)
-                    )
-                else:
-                    target_scale_factor = scale_factor_dict[int(f"{cellid}")]
-                    
-                if eval_scaled_img_model_type == "sdf":
-                    
-                    mesh = get_mesh_from_sdf(recon[i].squeeze(), 
-                                             method="skimage")
-                    
-                elif eval_scaled_img_model_type == "seg":
-                    
-                    img=recon.squeeze()[i]
-                    thresh = threshold_otsu(img)
-                    bin_recon = (img > thresh).astype(float)
-                    mesh,_,_ = get_mesh_from_image(bin_recon, 
-                                                   sigma=0,
-                                                   lcc=False, 
-                                                   denoise=False)
-                
-                resc_mesh, rev_scale_factors = rescale_meshed_sdfs_to_full(
-                    [mesh], [target_scale_factor]
-                )
-                
-            resc_vox_recon, vox_target_meshes = voxelize_recon_and_target_meshes(
-                resc_mesh, [pv.wrap(target_mesh)]
-            )
-            recon_err_seg = compute_mse_recon_and_target_segs(
-                resc_vox_recon, vox_target_meshes
-            )
-            errs.append(recon_err_seg)
-            
+        recon_data_list = [recon.squeeze()[i].reshape(eval_scaled_img_resolution, eval_scaled_img_resolution, eval_scaled_img_resolution) for i in range(len(cellids))]
+        
+        with Pool(processes=8) as pool:
+            args = [(cellid, recon_data, eval_scaled_img_resolution, gt_mesh_dir, mesh_ext, gt_sampled_pts_dir, eval_scaled_img_model_type, scale_factor_dict if gt_scale_factor_dict_path is not None else None) for cellid, recon_data in zip(cellids, recon_data_list)]
+            errs = pool.map(multi_proc_scale_img_eval, args)
+        
         loss = np.expand_dims(np.mean(errs), axis=0)
+
+        
+        # for i, cellid in enumerate(cellids):
+        #     target_mesh = trimesh.load(f"{gt_mesh_dir}/{cellid}.{mesh_ext}")
+
+        #     if eval_scaled_img_model_type == "iae":
+        #         target_mesh.vertices -= target_mesh.center_mass
+        #         points = np.load(f"{gt_sampled_pts_dir}/{cellid}/points.npz")
+        #         pred_mesh = get_mesh_from_sdf(recon.squeeze()[i].reshape(eval_scaled_img_resolution,
+        #                                                             eval_scaled_img_resolution,
+        #                                                             eval_scaled_img_resolution),
+        #                                      cast_pyvista=False)
+        #         unit_pred_mesh = pred_mesh.copy()
+        #         unit_pred_mesh.vertices -= unit_pred_mesh.center_mass
+        #         unit_pred_mesh = pred_mesh.apply_scale(1/eval_scaled_img_resolution)
+        #         mesh = unit_pred_mesh.copy()
+        #         mesh.vertices -= mesh.center_mass
+        #         mesh = mesh.apply_scale(points["scale"])
+        #         mesh = pv.wrap(mesh)
+        #         resc_mesh = [mesh]
+        #     else:
+        #         if gt_scale_factor_dict_path is None:
+        #             _, target_scale_factor = get_sdf_from_mesh_vtk(
+        #                 None, 
+        #                 vox_resolution=eval_scaled_img_resolution, 
+        #                 scale_factor=None,
+        #                 vpolydata=pv.wrap(target_mesh)
+        #             )
+        #         else:
+        #             target_scale_factor = scale_factor_dict[int(f"{cellid}")]
+                    
+        #         if eval_scaled_img_model_type == "sdf":
+                    
+        #             mesh = get_mesh_from_sdf(recon[i].squeeze(), 
+        #                                      method="skimage")
+                    
+        #         elif eval_scaled_img_model_type == "seg":
+                    
+        #             img=recon.squeeze()[i]
+        #             thresh = threshold_otsu(img)
+        #             bin_recon = (img > thresh).astype(float)
+        #             mesh,_,_ = get_mesh_from_image(bin_recon, 
+        #                                            sigma=0,
+        #                                            lcc=False, 
+        #                                            denoise=False)
+                
+        #         resc_mesh, rev_scale_factors = rescale_meshed_sdfs_to_full(
+        #             [mesh], [target_scale_factor]
+        #         )
+                
+        #     resc_vox_recon, vox_target_meshes = voxelize_recon_and_target_meshes(
+        #         resc_mesh, [pv.wrap(target_mesh)]
+        #     )
+        #     recon_err_seg = compute_mse_recon_and_target_segs(
+        #         resc_vox_recon, vox_target_meshes
+        #     )
+        #     errs.append(recon_err_seg)
+            
+        # loss = np.expand_dims(np.mean(errs), axis=0)
         
 
     if track_emissions:
