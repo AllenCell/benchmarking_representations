@@ -167,6 +167,7 @@ def base_forward(
     eval_scaled_img_resolution=32,
     gt_mesh_dir=".",
     gt_sampled_pts_dir=".",
+    gt_scale_factor_dict_path=None,
     mesh_ext="stl",
 ):
     """
@@ -235,32 +236,15 @@ def base_forward(
         recon = xhat[key].detach().cpu().numpy()
         gt = batch[key].detach().cpu().numpy()
         errs = []
+
+        if gt_scale_factor_dict_path is not None:
+            sc_factor_data = np.load(gt_scale_factor_dict_path, allow_pickle=True)
+            scale_factor_dict = dict(zip(sc_factor_data['keys'], sc_factor_data['values']))
+        
         for i, cellid in enumerate(cellids):
             target_mesh = trimesh.load(f"{gt_mesh_dir}/{cellid}.{mesh_ext}")
-            _, target_scale_factor = get_sdf_from_mesh_vtk(
-                None, 
-                vox_resolution=eval_scaled_img_resolution, 
-                scale_factor=None,
-                vpolydata=pv.wrap(target_mesh)
-            )
-            
-            if eval_scaled_img_model_type == "sdf":
-                
-                mesh = get_mesh_from_sdf(recon[i].squeeze(), 
-                                         method="skimage")
-                
-            elif eval_scaled_img_model_type == "seg":
-                
-                img=recon.squeeze()[i]
-                thresh = threshold_otsu(img)
-                bin_recon = (img > thresh).astype(float)
-                mesh,_,_ = get_mesh_from_image(bin_recon, 
-                                               sigma=0,
-                                               lcc=False, 
-                                               denoise=False)
-                
-            elif eval_scaled_img_model_type == "iae":
-                
+
+            if eval_scaled_img_model_type == "iae":
                 target_mesh.vertices -= target_mesh.center_mass
                 points = np.load(f"{gt_sampled_pts_dir}/{cellid}/points.npz")
                 pred_mesh = get_mesh_from_sdf(recon.squeeze()[i].reshape(eval_scaled_img_resolution,
@@ -274,17 +258,45 @@ def base_forward(
                 mesh.vertices -= mesh.center_mass
                 mesh = mesh.apply_scale(points["scale"])
                 mesh = pv.wrap(mesh)
+                resc_mesh = [mesh]
+            else:
+                if gt_scale_factor_dict_path is None:
+                    _, target_scale_factor = get_sdf_from_mesh_vtk(
+                        None, 
+                        vox_resolution=eval_scaled_img_resolution, 
+                        scale_factor=None,
+                        vpolydata=pv.wrap(target_mesh)
+                    )
+                else:
+                    target_scale_factor = scale_factor_dict[int(f"{cellid}")]
+                    
+                if eval_scaled_img_model_type == "sdf":
+                    
+                    mesh = get_mesh_from_sdf(recon[i].squeeze(), 
+                                             method="skimage")
+                    
+                elif eval_scaled_img_model_type == "seg":
+                    
+                    img=recon.squeeze()[i]
+                    thresh = threshold_otsu(img)
+                    bin_recon = (img > thresh).astype(float)
+                    mesh,_,_ = get_mesh_from_image(bin_recon, 
+                                                   sigma=0,
+                                                   lcc=False, 
+                                                   denoise=False)
                 
-            resc_mesh_sdfs, rev_scale_factors = rescale_meshed_sdfs_to_full(
-                [mesh], [target_scale_factor]
-            )
+                resc_mesh, rev_scale_factors = rescale_meshed_sdfs_to_full(
+                    [mesh], [target_scale_factor]
+                )
+                
             resc_vox_recon, vox_target_meshes = voxelize_recon_and_target_meshes(
-                resc_mesh_sdfs, [pv.wrap(target_mesh)]
+                resc_mesh, [pv.wrap(target_mesh)]
             )
             recon_err_seg = compute_mse_recon_and_target_segs(
                 resc_vox_recon, vox_target_meshes
             )
             errs.append(recon_err_seg)
+            
         loss = np.expand_dims(np.mean(errs), axis=0)
         
 
