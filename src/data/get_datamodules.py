@@ -77,7 +77,7 @@ CONFIG_LIST = {
         "../data/configs/inference_npm1_variance/image_seg_noalign_so3.yaml",
         "../data/configs/inference_npm1_variance/image_sdf_noalign.yaml",
         "../data/configs/inference_npm1_variance/image_seg_noalign.yaml",
-        "../data/configs/inference_npm1_variance/vit_sdf_noalign.yaml",
+        # "../data/configs/inference_npm1_variance/vit_sdf_noalign.yaml",
     ],
     "fbl84_perturb": [
         "../data/configs/inference_fbl-84_perturb/pointcloud_sdf_noalign.yaml",

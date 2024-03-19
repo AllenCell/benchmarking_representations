@@ -1,7 +1,7 @@
 _target_: cyto_dl.datamodules.DataframeDatamodule
 _convert_: all
 
-path: /allen/aics/assay-dev/users/Alex/handoff/ritvik/npm_manifest_with_sdfs.csv
+path: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv
 split_column: split
 
 batch_size: 16
@@ -10,14 +10,30 @@ num_workers: 4
 transforms:
   - _target_: cyto_dl.dataframe.transforms.GroupCols
     groups:
-      image: seg_path_unalign
+      image: seg_path_noalign_32res
       cell_id: CellId
   - _target_: cyto_dl.image.io.ReadNumpyFile
-    keys: [image]
+    keys:
+    - image
     remote: false
   - _target_: monai.transforms.AddChanneld
     keys: image
   - _target_: monai.transforms.SpatialPadd
-    keys: [image]
-    spatial_size: [33, 33, 33]
+    keys:
+    - image
+    spatial_size:
+    - 35
+    - 35
+    - 35
     value: 0
+  - _target_: cyto_dl.image.transforms.RotationMaskd
+    keys:
+    - image
+    group: so3
+    spatial_dims: 3
+    mask_side: 35
+    background: 0
+  - _target_: monai.transforms.ToTensord
+    keys:
+    - image
+    track_meta: false

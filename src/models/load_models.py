@@ -238,14 +238,31 @@ MODEL_INFO = {
     #         "equiv",
     #     ],
     # },
+    # "npm1_variance": {
+    #     "run_ids": [
+    #         "b644087898aa4610ab7b7a31d49af10b",
+    #         "20a7dfd220514dd0a0cd3b81cc59228b",
+    #         "3650587a5e564a5892ca015c8ff5d7da",
+    #         "0040690837544434886969d0533fce71",
+    #         "4355d6ecaf1b4bafb61f11dddce20df4",
+    #         "2952993efb124277aa09fc4c50fabd2d",
+    #     ],
+    #     "names": [
+    #         "IAE_comb_SO3_ld512_AE_gridlossW2",
+    #         "CNN_sdf_SO3",
+    #         "CNN_seg_SO3",
+    #         "CNN_sdf_noalign",
+    #         "CNN_seg_noalign",
+    #         "ViT_sdf_noalign",
+    #     ],
+    # },
     "npm1_variance": {
         "run_ids": [
             "b644087898aa4610ab7b7a31d49af10b",
-            "20a7dfd220514dd0a0cd3b81cc59228b",
-            "3650587a5e564a5892ca015c8ff5d7da",
-            "0040690837544434886969d0533fce71",
-            "4355d6ecaf1b4bafb61f11dddce20df4",
-            "2952993efb124277aa09fc4c50fabd2d",
+            "14e969bbeb554e688dff56014f359192",
+            "93942206dd55425e8adcdcbd4df18b00",
+            "1d398530dd0349df8150af342b407dd4",
+            "ee6b24c15a1e485f9862b6dd1aef94e5",
         ],
         "names": [
             "IAE_comb_SO3_ld512_AE_gridlossW2",
@@ -253,9 +270,9 @@ MODEL_INFO = {
             "CNN_seg_SO3",
             "CNN_sdf_noalign",
             "CNN_seg_noalign",
-            "ViT_sdf_noalign",
         ],
     },
+
     "fbl_variance": {
         "run_ids": [
             "466bd2e86f1741dd9fdc60f79c39925b",
