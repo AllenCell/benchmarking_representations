@@ -232,9 +232,7 @@ def get_mesh_from_image(
     coords = numpy_support.vtk_to_numpy(mesh.GetPoints().GetData())
     centroid = coords.mean(axis=0, keepdims=True)
 
-    print("before translating to centrooid")
     if translate_to_origin is True:
-        print("translating to centrooid")
         # Translate to origin
         coords -= centroid
         mesh.GetPoints().SetData(numpy_support.numpy_to_vtk(coords))
@@ -339,7 +337,7 @@ def get_scale_factor_for_bounds(polydata, resolution):
     bounds = polydata.GetBounds()
     bounds = tuple(
         [
-            b + int(resolution / 3) if b > 0 else b - int(resolution / 3)
+            b + int(resolution / 1.5) if b > 0 else b - int(resolution / 1.5)
             for b in list(bounds)
         ]
     )  # Increasing bounds to prevent mesh from getting clipped

@@ -127,6 +127,12 @@ DATASET_INFO = {
         "image_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
     },
+    "variance_punct_structnorm": {
+        "embedding_save_location": "./variance_punct_structnorm",
+        "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
+    },
 }
 
 METRIC_LIST = [

@@ -24,28 +24,19 @@ def rescale_img(tmp):
 
 
 def _sample(raw, skew_scale=100):
-    # assert len(raw.shape) == 3
     num_points = 2048
 
-    disp = 1
+    mask = np.where(raw > 0, 1, 0)
+
+    disp = 0.001
     outs = np.where(np.ones_like(raw) > 0)
     if len(outs) == 3:
         z, y, x = outs
-        sigma = (1, 2, 2)
     else:
         y, x = outs
-        sigma = (1, 2)
+
     probs = raw.copy()
-    probs_orig = probs.copy()
-
-    # adding this to smooth intensity
-    # probs_orig = ndimage.gaussian_filter(probs_orig, sigma=sigma, order=0)
-    # probs_orig = probs_orig.flatten()
-
-    # compare histograms of real images
-
     probs = probs.flatten()
-
     probs = probs / probs.max()
 
     skewness = skew_scale * (3 * (probs.mean() - np.median(probs))) / probs.std()
@@ -53,12 +44,17 @@ def _sample(raw, skew_scale=100):
 
     probs = np.where(probs < 1e21, probs, 1e21)  # dont let sum of probs blow up
 
+    # set probs to 0 outside mask
+    inds = np.where(mask.flatten() == 0)[0]
+    probs[inds] = 0
+
+    # scale probs so it sums to 1
     probs = probs / probs.sum()
-    idxs = np.random.choice(np.arange(len(probs)), size=1024 * 2, replace=True, p=probs)
+    idxs = np.random.choice(np.arange(len(probs)), size=num_points, replace=True, p=probs)
     x = x[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
     y = y[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
     if len(outs) == 3:
-        z = z[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp * 0.3
+        z = z[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
     else:
         z = np.copy(x)
         z.fill(0)

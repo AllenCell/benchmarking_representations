@@ -80,6 +80,15 @@ MODEL_INFO = {
             "test_equiv",  # varaince equiv punctate
         ],
     },
+    "variance_punct_structnorm": {
+        "run_ids": [
+            "0fd3e79d8aba45cca21b74da182c93f5",
+            # "41cf98f1381f4eb097166beee598f56d",
+        ],
+        "names": [
+            "var_punct_structnorm",  # varaince equiv punctate
+        ],
+    },
     "test4": {
         "run_ids": [
             "2d019514f1394ef4823e585dd2ea0872",
