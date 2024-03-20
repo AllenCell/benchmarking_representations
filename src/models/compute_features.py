@@ -95,9 +95,11 @@ DATASET_INFO = {
         "orig_df": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
         "pc_path": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
     },
-    "npm1_variance": {
-        "embedding_save_location": "./embeddings_npm1_variance",
-        "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+    "npm1_variance":{
+        "embedding_save_location": "./npm1_variance",
+        "orig_df":"/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv",
+        "image_path":"/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv",
+        "pc_path":"/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv"
     },
     "cellpack_pcna": {
         "embedding_save_location": "./embeddings_cellpack_pcna",
@@ -150,6 +152,10 @@ def rename_cellid(df):
     if isinstance(eg_id, str):
         if (eg_id.split(".")[-1] == "ply") or (eg_id.split(".")[-1] == "tiff"):
             df["CellId"] = df["CellId"].apply(lambda x: x.split(".")[0])
+        if "FBL" in eg_id:
+            df["CellId"] = df["CellId"].apply(lambda x: int(x.split("-FBL")[0]))
+        if "NPM" in eg_id:
+            df["CellId"] = df["CellId"].apply(lambda x: int(x.split("-NPM")[0]))
     return df
 
 
@@ -180,13 +186,13 @@ def get_embeddings(run_names, dataset):
 
 
 def get_evolve_data_list(
-    save_folder, num_samples, config_list_evolve, modality_list, dataset
+    save_folder, num_samples, config_list_evolve, modality_list, dataset, pc_is_iae
 ):
     image_path = DATASET_INFO[dataset]["image_path"]
     pc_path = DATASET_INFO[dataset]["pc_path"]
 
     data_evolve, _ = get_evolve_dataset(
-        config_list_evolve, modality_list, num_samples, pc_path, image_path, save_folder
+        config_list_evolve, modality_list, num_samples, pc_path, image_path, save_folder, pc_is_iae
     )
     return data_evolve
 
@@ -218,6 +224,7 @@ def compute_features(
         "compute_evolve_dataloaders": False,
         "sdf_forward_pass": False,
         "sdf_process": [],
+        "pc_is_iae": False
     },
     rot_inv_params: dict = {"squeeze_2d": False, "id": "CellId"},
     stereotypy_params: dict = {
@@ -229,6 +236,7 @@ def compute_features(
         "compute_PCs": True,
     },
     compactness_params: dict = {"method": "mle"},
+    blobby_outlier_max_cc=None,
 ):
     """
     Compute all benchmarking metrics and save
@@ -256,6 +264,7 @@ def compute_features(
         )
         eq_dict.to_csv(path / "equiv.csv")
         metric_list.pop(metric_list.index("Rotation Invariance Error"))
+
     all_ret, df = get_embeddings(run_names, dataset)
 
     if "Stereotypy" in metric_list:
@@ -341,6 +350,7 @@ def compute_features(
                 num_PCs=compactness_params["num_PCs"],
                 max_embed_dim=max_embed_dim,
                 method=compactness_params["method"],
+                blobby_outlier_max_cc=blobby_outlier_max_cc
             )
             ret_dict_compactness.to_csv(path / Path("compactness.csv"))
 
@@ -370,6 +380,7 @@ def compute_features(
                     evolve_params["config_list_evolve"],
                     evolve_params["modality_list_evolve"],
                     dataset,
+                    pc_is_iae=evolve_params["pc_is_iae"]
                 )
             print("Computing evolution")
 
@@ -383,11 +394,11 @@ def compute_features(
                 keys,
                 path / "evolve",
                 use_sample_points_list,
-                "cell_id",
-                None,
-                False,
-                evolve_params["sdf_forward_pass"],
-                evolve_params["sdf_process"],
+                id="cell_id",
+                test_cellids=None,
+                fit_pca=False,
+                eval_meshed_img=evolve_params["eval_meshed_img"],
+                eval_meshed_img_model_type=evolve_params["eval_meshed_img_model_type"],
             )
 
             evolution_dict.to_csv(path / Path("evolve.csv"))
