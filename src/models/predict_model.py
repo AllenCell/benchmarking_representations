@@ -318,7 +318,7 @@ def model_pass(
     emissions_path=None,
     use_sample_points=False,
     eval_scaled_img=False,
-    eval_scaled_img_params=None,
+    eval_scaled_img_params={},
 ):
     if emissions_path is not None:
         emissions_path = Path(emissions_path)

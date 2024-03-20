@@ -232,9 +232,7 @@ def get_mesh_from_image(
     coords = numpy_support.vtk_to_numpy(mesh.GetPoints().GetData())
     centroid = coords.mean(axis=0, keepdims=True)
 
-    print("before translating to centrooid")
     if translate_to_origin is True:
-        print("translating to centrooid")
         # Translate to origin
         coords -= centroid
         mesh.GetPoints().SetData(numpy_support.numpy_to_vtk(coords))
@@ -493,3 +491,11 @@ def get_iae_reconstruction_3d_grid(bb_min=-0.5, bb_max=0.5, resolution=32, paddi
     p = final_grid_size * p
     
     return p
+
+
+def mesh_seg_model_output(xhat):
+    xhat = xhat.squeeze()
+    thresh = threshold_otsu(xhat)
+    bin_recon = (xhat > thresh).astype(float)
+    mesh, _, _ = get_mesh_from_image(bin_recon, sigma=0, lcc=False, denoise=False)
+    return mesh
