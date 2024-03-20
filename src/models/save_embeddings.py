@@ -286,8 +286,8 @@ def save_emissions(
     device: str = "cuda:0",
     loss_eval_list: list = None,
     sample_points_list: list = [],
-    sdf_forward_pass: str = False,
-    sdf_process: list = [],
+    eval_scaled_img: Optional[list] = None,
+    eval_scaled_img_params: Optional[dict] = {},
 ):
     emissions_path = Path(emissions_path)
     emissions_path.mkdir(parents=True, exist_ok=True)
@@ -305,9 +305,12 @@ def save_emissions(
         all_loss = []
         all_splits = []
         this_data = data_list[j_ind]
-        this_sdf_process = []
-        if sdf_forward_pass:
-            this_sdf_process = sdf_process[j_ind]
+        if eval_scaled_img is not None:
+            this_eval_scaled_img = eval_scaled_img[j_ind]
+            this_eval_scaled_img_params = eval_scaled_img_params[j_ind]
+        else:
+            this_eval_scaled_img = eval_scaled_img
+            this_eval_scaled_img_params = eval_scaled_img_params
         this_use_sample_points = sample_points_list[j_ind]
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
@@ -344,8 +347,8 @@ def save_emissions(
                     track_emissions,
                     emissions_path,
                     this_use_sample_points,
-                    sdf_forward_pass,
-                    this_sdf_process,
+                    this_eval_scaled_img,
+                    this_eval_scaled_img_params,
                 )
             all_model_emissions.append(pd.concat(all_emissions, axis=0))
 
