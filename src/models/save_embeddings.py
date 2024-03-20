@@ -9,7 +9,7 @@ import pandas as pd
 from pathlib import Path
 from src.models.predict_model import process_batch_embeddings, process_batch
 import logging
-
+from typing import Optional
 
 def get_pc_loss():
     return instantiate(
@@ -197,8 +197,8 @@ def save_embeddings(
     meta_key: str = None,
     loss_eval_list: list = None,
     sample_points_list: list = [],
-    eval_scaled_img: list = [],
-    eval_scaled_img_params: list = [],
+    eval_scaled_img: Optional[list] = None,
+    eval_scaled_img_params: Optional[dict] = {},
 ):
     Path(save_folder).mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
@@ -216,8 +216,12 @@ def save_embeddings(
         all_splits = []
         this_data = data_list[j_ind]
         this_use_sample_points = sample_points_list[j_ind]
-        this_eval_scaled_img = eval_scaled_img[j_ind]
-        this_eval_scaled_img_params = eval_scaled_img_params[j_ind]
+        if eval_scaled_img is not None:
+            this_eval_scaled_img = eval_scaled_img[j_ind]
+            this_eval_scaled_img_params = eval_scaled_img_params[j_ind]
+        else:
+            this_eval_scaled_img = eval_scaled_img
+            this_eval_scaled_img_params = eval_scaled_img_params
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
             (

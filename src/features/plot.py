@@ -103,7 +103,7 @@ def collect_outputs(path, norm, model_order=None):
     for metric in [
         "recon",
         "classification",
-        "regression",
+        # "regression",
         "equiv",
         "emissions",
         "compactness",

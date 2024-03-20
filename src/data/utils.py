@@ -337,7 +337,7 @@ def get_scale_factor_for_bounds(polydata, resolution):
     bounds = polydata.GetBounds()
     bounds = tuple(
         [
-            b + int(resolution / 3) if b > 0 else b - int(resolution / 3)
+            b + int(resolution / 1.5) if b > 0 else b - int(resolution / 1.5)
             for b in list(bounds)
         ]
     )  # Increasing bounds to prevent mesh from getting clipped
