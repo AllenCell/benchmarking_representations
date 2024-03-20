@@ -416,7 +416,7 @@ def process_batch(
         emissions_path=emissions_path,
         use_sample_points=use_sample_points,
         eval_scaled_img=eval_scaled_img,
-        eval_scaled_img_model_type=eval_scaled_img_params,
+        eval_scaled_img_params=eval_scaled_img_params,
     )
     i = remove(i)
     emissions_df = pd.DataFrame()
