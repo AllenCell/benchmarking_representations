@@ -232,7 +232,7 @@ def model_pass_reconstruct(
                 return np.NaN
             mesh = get_mesh_from_sdf(xhat.squeeze())
             mesh_initial = get_mesh_from_sdf(init_x.squeeze())
-            mesh_final = get_mesh_from_sdf(final_x.squeze())
+            mesh_final = get_mesh_from_sdf(final_x.squeeze())
 
         elif eval_meshed_img_model_type == "seg":
             mesh = mesh_seg_model_output(xhat)
