@@ -489,7 +489,7 @@ def get_iae_reconstruction_3d_grid(bb_min=-0.5, bb_max=0.5, resolution=32, paddi
 
 def mesh_seg_model_output(xhat):
     xhat = xhat.squeeze()
-    thresh = threshold_otsu(xhat)
+    thresh = skfilters.threshold_otsu(xhat)
     bin_recon = (xhat > thresh).astype(float)
     mesh, _, _ = get_mesh_from_image(bin_recon, sigma=0, lcc=False, denoise=False)
     return mesh

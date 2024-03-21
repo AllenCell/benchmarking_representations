@@ -12,7 +12,7 @@ from sklearn.model_selection import (
 from sklearn.linear_model import LogisticRegression
 
 
-def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192, method="mle"):
+def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192, method="mle", blobby_outlier_max_cc=None):
     # all_ret = all_ret.loc[all_ret["split"] == "test"]
     ret_dict_compactness = {
         "model": [],
@@ -22,7 +22,7 @@ def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192, method="mle"
     for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
         val = compactness(this_mo, num_PCs, max_embed_dim, method)
-        percent_same = outlier_detection(this_mo)
+        percent_same = outlier_detection(this_mo, blobby_outlier_max_cc=blobby_outlier_max_cc)
         for i in range(len(val)):
             ret_dict_compactness["model"].append(model)
             ret_dict_compactness["compactness"].append(val[i])
@@ -106,7 +106,7 @@ def compactness(this_mo, num_PCs, max_embed_dim, method):
     return val
 
 
-def outlier_detection(this_mo, outlier_label=0):
+def outlier_detection(this_mo, outlier_label=0, blobby_outlier_max_cc=None):
     """
     Performs agglomerative cluster on outlier column
     Does this with n_clusters = 3, 4, 5
@@ -116,38 +116,41 @@ def outlier_detection(this_mo, outlier_label=0):
     are the same, scaled by the size of that predicted cluster set relative to
     the total population
     """
-    if "flag_comment" in this_mo.columns:
-        print("Outlier column is flag comment")
-        this_mo1 = this_mo.loc[
-            this_mo["flag_comment"].isin(
-                ["cell appears dead or dying", "no EGFP fluorescence"]
-            )
-        ]
-        this_mo1["outlier"] = "Yes"
-        this_mo2 = this_mo.loc[
-            ~this_mo["flag_comment"].isin(
-                ["cell appears dead or dying", "no EGFP fluorescence"]
-            )
-        ]
-        this_mo2["outlier"] = "No"
-        this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
-    elif "Anomaly" in this_mo.columns:
-        print("Outlier column is Anamoly")
-        this_mo1 = this_mo.loc[~this_mo["Anomaly"].isin(["none"])]
-        this_mo1["outlier"] = "Yes"
-        this_mo2 = this_mo.loc[this_mo["Anomaly"].isin(["none"])]
-        this_mo2["outlier"] = "No"
-        this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
-    elif "cell_stage" in this_mo.columns:
-        print("Outlier column is cell stage")
-        this_mo1 = this_mo.loc[~this_mo["cell_stage"].isin(["M0"])]
-        this_mo1["outlier"] = "Yes"
-        this_mo2 = this_mo.loc[this_mo["cell_stage"].isin(["M0"])]
-        this_mo2["outlier"] = "No"
-        this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
-    elif "outlier" not in this_mo.columns:
-        print("Outlier column is outlier")
-        return 0
+    if blobby_outlier_max_cc is not None:
+        this_mo["outlier"] = np.where(this_mo["STR_connectivity_cc"] > blobby_outlier_max_cc, "No", "Yes")
+    else:
+        if "flag_comment" in this_mo.columns:
+            print("Outlier column is flag comment")
+            this_mo1 = this_mo.loc[
+                this_mo["flag_comment"].isin(
+                    ["cell appears dead or dying", "no EGFP fluorescence"]
+                )
+            ]
+            this_mo1["outlier"] = "Yes"
+            this_mo2 = this_mo.loc[
+                ~this_mo["flag_comment"].isin(
+                    ["cell appears dead or dying", "no EGFP fluorescence"]
+                )
+            ]
+            this_mo2["outlier"] = "No"
+            this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
+        elif "Anomaly" in this_mo.columns:
+            print("Outlier column is Anamoly")
+            this_mo1 = this_mo.loc[~this_mo["Anomaly"].isin(["none"])]
+            this_mo1["outlier"] = "Yes"
+            this_mo2 = this_mo.loc[this_mo["Anomaly"].isin(["none"])]
+            this_mo2["outlier"] = "No"
+            this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
+        elif "cell_stage" in this_mo.columns:
+            print("Outlier column is cell stage")
+            this_mo1 = this_mo.loc[~this_mo["cell_stage"].isin(["M0"])]
+            this_mo1["outlier"] = "Yes"
+            this_mo2 = this_mo.loc[this_mo["cell_stage"].isin(["M0"])]
+            this_mo2["outlier"] = "No"
+            this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
+        elif "outlier" not in this_mo.columns:
+            print("Outlier column is outlier")
+            return 0
 
     if this_mo["outlier"].isna().any():
         this_mo["outlier"] = this_mo["outlier"].fillna("No")
