@@ -232,7 +232,11 @@ def get_equiv_dict(
                         if isinstance(this_ids, list):
                             this_ids = this_ids[0]
                         if torch.is_tensor(this_ids):
-                            this_ids = this_ids.item() if this_ids.numel() == 1 else this_ids.tolist()[0]
+                            this_ids = (
+                                this_ids.item()
+                                if this_ids.numel() == 1
+                                else this_ids.tolist()[0]
+                            )
                         eq_dict["id"].append(str(this_ids))
                         eq_dict["theta"].append(theta)
     return pd.DataFrame(eq_dict)

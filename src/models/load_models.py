@@ -82,11 +82,20 @@ MODEL_INFO = {
     },
     "variance_punct_structnorm": {
         "run_ids": [
-            "0fd3e79d8aba45cca21b74da182c93f5",
+            "0fd3e79d8aba45cca21b74da182c93f5",  # this is structure norm
             # "41cf98f1381f4eb097166beee598f56d",
         ],
         "names": [
             "var_punct_structnorm",  # varaince equiv punctate
+        ],
+    },
+    "variance_punct_instancenorm": {
+        "run_ids": [
+            "6a523cd918804acd9ed35b436b607ad4",  # this is structure norm
+            # "41cf98f1381f4eb097166beee598f56d",
+        ],
+        "names": [
+            "var_punct_instancenorm",  # varaince equiv punctate
         ],
     },
     "test4": {
@@ -281,7 +290,6 @@ MODEL_INFO = {
             "CNN_seg_noalign",
         ],
     },
-
     "fbl_variance": {
         "run_ids": [
             "466bd2e86f1741dd9fdc60f79c39925b",

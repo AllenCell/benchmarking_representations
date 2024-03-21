@@ -122,6 +122,9 @@ CONFIG_LIST = {
     "variance_punct_structnorm": [
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_int_updated_morepoints_structurenorm.yaml",
     ],
+    "variance_punct_instancenorm": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_int_updated_morepoints_instancenorm.yaml",
+    ],
 }
 
 

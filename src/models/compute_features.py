@@ -95,11 +95,11 @@ DATASET_INFO = {
         "orig_df": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
         "pc_path": "/allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv",
     },
-    "npm1_variance":{
+    "npm1_variance": {
         "embedding_save_location": "./npm1_variance",
-        "orig_df":"/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv",
-        "image_path":"/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv",
-        "pc_path":"/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv"
+        "orig_df": "/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv",
+        "image_path": "/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv",
+        "pc_path": "/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv",
     },
     "cellpack_pcna": {
         "embedding_save_location": "./embeddings_cellpack_pcna",
@@ -131,6 +131,12 @@ DATASET_INFO = {
     },
     "variance_punct_structnorm": {
         "embedding_save_location": "./variance_punct_structnorm",
+        "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
+    },
+    "variance_punct_instancenorm": {
+        "embedding_save_location": "./variance_punct_instancenorm",
         "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
         "image_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
@@ -192,7 +198,13 @@ def get_evolve_data_list(
     pc_path = DATASET_INFO[dataset]["pc_path"]
 
     data_evolve, _ = get_evolve_dataset(
-        config_list_evolve, modality_list, num_samples, pc_path, image_path, save_folder, pc_is_iae
+        config_list_evolve,
+        modality_list,
+        num_samples,
+        pc_path,
+        image_path,
+        save_folder,
+        pc_is_iae,
     )
     return data_evolve
 
@@ -224,7 +236,7 @@ def compute_features(
         "compute_evolve_dataloaders": False,
         "sdf_forward_pass": False,
         "sdf_process": [],
-        "pc_is_iae": False
+        "pc_is_iae": False,
     },
     rot_inv_params: dict = {"squeeze_2d": False, "id": "CellId"},
     stereotypy_params: dict = {
@@ -350,7 +362,7 @@ def compute_features(
                 num_PCs=compactness_params["num_PCs"],
                 max_embed_dim=max_embed_dim,
                 method=compactness_params["method"],
-                blobby_outlier_max_cc=blobby_outlier_max_cc
+                blobby_outlier_max_cc=blobby_outlier_max_cc,
             )
             ret_dict_compactness.to_csv(path / Path("compactness.csv"))
 
@@ -380,7 +392,7 @@ def compute_features(
                     evolve_params["config_list_evolve"],
                     evolve_params["modality_list_evolve"],
                     dataset,
-                    pc_is_iae=evolve_params["pc_is_iae"]
+                    pc_is_iae=evolve_params["pc_is_iae"],
                 )
             print("Computing evolution")
 

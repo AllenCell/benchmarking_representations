@@ -19,7 +19,7 @@ from src.data.utils import (
     voxelize_recon_and_target_meshes,
     compute_mse_recon_and_target_segs,
     get_mesh_from_image,
-    get_iae_reconstruction_3d_grid
+    get_iae_reconstruction_3d_grid,
 )
 
 try:
@@ -154,8 +154,17 @@ def mae_forward(
 
 
 def multi_proc_scale_img_eval(args):
-    cellid, recon_data, eval_scaled_img_resolution, gt_mesh_dir, mesh_ext, gt_sampled_pts_dir, eval_scaled_img_model_type, scale_factor_dict = args
-    
+    (
+        cellid,
+        recon_data,
+        eval_scaled_img_resolution,
+        gt_mesh_dir,
+        mesh_ext,
+        gt_sampled_pts_dir,
+        eval_scaled_img_model_type,
+        scale_factor_dict,
+    ) = args
+
     target_mesh = trimesh.load(f"{gt_mesh_dir}/{cellid}.{mesh_ext}")
 
     if eval_scaled_img_model_type == "iae":
@@ -174,18 +183,27 @@ def multi_proc_scale_img_eval(args):
         if scale_factor_dict is not None:
             target_scale_factor = scale_factor_dict[int(cellid)]
         else:
-            _, target_scale_factor = get_sdf_from_mesh_vtk(None, vox_resolution=eval_scaled_img_resolution, scale_factor=None, vpolydata=pv.wrap(target_mesh))
-        
+            _, target_scale_factor = get_sdf_from_mesh_vtk(
+                None,
+                vox_resolution=eval_scaled_img_resolution,
+                scale_factor=None,
+                vpolydata=pv.wrap(target_mesh),
+            )
+
         if eval_scaled_img_model_type == "sdf":
             mesh = get_mesh_from_sdf(recon_data, method="skimage")
         elif eval_scaled_img_model_type == "seg":
             thresh = threshold_otsu(recon_data)
             bin_recon = (recon_data > thresh).astype(float)
-            mesh, _, _ = get_mesh_from_image(bin_recon, sigma=0, lcc=False, denoise=False)
+            mesh, _, _ = get_mesh_from_image(
+                bin_recon, sigma=0, lcc=False, denoise=False
+            )
 
         resc_mesh, _ = rescale_meshed_sdfs_to_full([mesh], [target_scale_factor])
 
-    resc_vox_recon, vox_target_meshes = voxelize_recon_and_target_meshes(resc_mesh, [pv.wrap(target_mesh)])
+    resc_vox_recon, vox_target_meshes = voxelize_recon_and_target_meshes(
+        resc_mesh, [pv.wrap(target_mesh)]
+    )
     recon_err_seg = compute_mse_recon_and_target_segs(resc_vox_recon, vox_target_meshes)
     return recon_err_seg
 
@@ -212,7 +230,7 @@ def base_forward(
     Forward pass for base cyto_dl models with codecarbon tracking options
     """
     this_batch = batch.copy()
-    
+
     if "pcloud" in batch.keys():
         key = "pcloud"
     else:
@@ -220,9 +238,11 @@ def base_forward(
 
     if eval_scaled_img and eval_scaled_img_model_type == "iae":
         uni_sample_points = get_iae_reconstruction_3d_grid()
-        uni_sample_points = uni_sample_points.unsqueeze(0).repeat(this_batch[key].shape[0], 1, 1)
+        uni_sample_points = uni_sample_points.unsqueeze(0).repeat(
+            this_batch[key].shape[0], 1, 1
+        )
         this_batch["points"] = uni_sample_points
-        
+
     xhat, z, z_params = model(
         move(this_batch, device), decode=True, inference=True, return_params=True
     )
@@ -270,7 +290,11 @@ def base_forward(
         loss = None
 
     if eval_scaled_img:
-        cellids = batch["cell_id"].detach().cpu().numpy() if isinstance(batch["cell_id"], torch.Tensor) else np.array(batch["cell_id"])
+        cellids = (
+            batch["cell_id"].detach().cpu().numpy()
+            if isinstance(batch["cell_id"], torch.Tensor)
+            else np.array(batch["cell_id"])
+        )
 
         recon = xhat[key].detach().cpu().numpy()
         gt = batch[key].detach().cpu().numpy()
@@ -278,15 +302,40 @@ def base_forward(
 
         if gt_scale_factor_dict_path is not None:
             sc_factor_data = np.load(gt_scale_factor_dict_path, allow_pickle=True)
-            scale_factor_dict = dict(zip(sc_factor_data['keys'], sc_factor_data['values']))
+            scale_factor_dict = dict(
+                zip(sc_factor_data["keys"], sc_factor_data["values"])
+            )
 
-        reshape_vox_size = eval_scaled_img_resolution if eval_scaled_img_model_type == "iae" else recon.squeeze().shape[-1]
-        recon_data_list = [recon.squeeze()[i].reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size) for i in range(len(cellids))]
-        
+        reshape_vox_size = (
+            eval_scaled_img_resolution
+            if eval_scaled_img_model_type == "iae"
+            else recon.squeeze().shape[-1]
+        )
+        recon_data_list = [
+            recon.squeeze()[i].reshape(
+                reshape_vox_size, reshape_vox_size, reshape_vox_size
+            )
+            for i in range(len(cellids))
+        ]
+
         with Pool(processes=8) as pool:
-            args = [(cellid, recon_data, eval_scaled_img_resolution, gt_mesh_dir, mesh_ext, gt_sampled_pts_dir, eval_scaled_img_model_type, scale_factor_dict if gt_scale_factor_dict_path is not None else None) for cellid, recon_data in zip(cellids, recon_data_list)]
+            args = [
+                (
+                    cellid,
+                    recon_data,
+                    eval_scaled_img_resolution,
+                    gt_mesh_dir,
+                    mesh_ext,
+                    gt_sampled_pts_dir,
+                    eval_scaled_img_model_type,
+                    scale_factor_dict
+                    if gt_scale_factor_dict_path is not None
+                    else None,
+                )
+                for cellid, recon_data in zip(cellids, recon_data_list)
+            ]
             errs = pool.map(multi_proc_scale_img_eval, args)
-        
+
         loss = np.array(errs).squeeze()
 
     if track_emissions:
@@ -307,7 +356,7 @@ def base_forward(
         loss,
         None,
     )
-    
+
 
 def model_pass(
     batch,
@@ -326,7 +375,7 @@ def model_pass(
     else:
         emissions_path = Path(".")
         emissions_csv = "./emissions.csv"
-        
+
     logging.disable(sys.maxsize)
     try:
         if os.path.isfile(emissions_csv):
@@ -379,7 +428,7 @@ def model_pass(
             emissions_csv,
             use_sample_points,
             eval_scaled_img,
-            **eval_scaled_img_params
+            **eval_scaled_img_params,
         )
 
 

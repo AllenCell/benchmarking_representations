@@ -280,6 +280,7 @@ def plot_pc(
     views=["xy"],
     xlim=[-10, 10],
     ylim=[-10, 10],
+    mark_center=False,
 ):
     """
     Plot point clouds saved as csv's in a directory
@@ -334,9 +335,14 @@ def plot_pc(
                 c=cmap(intensity),
                 # s=3 * intensity,
                 # s=0.5 * intensity,
-                s=0.1 * intensity,
-                alpha=alpha,
+                # facecolor=cmap(intensity),
+                s=0.5 * intensity,
+                # s=1,
+                # facecolor=cmap(intensity),
+                alpha=0.5,
             )
+            if mark_center:
+                this_axes.scatter([0], [0], c="r", s=0.2, alpha=1, marker="+")
             this_axes.set_xlim(xlim)
             this_axes.set_ylim(ylim)
             this_axes.set_title(f"{sub_key}_{this_label}")

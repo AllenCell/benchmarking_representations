@@ -11,6 +11,7 @@ from src.models.predict_model import process_batch_embeddings, process_batch
 import logging
 from typing import Optional
 
+
 def get_pc_loss():
     return instantiate(
         yaml.safe_load(

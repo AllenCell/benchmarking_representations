@@ -25,7 +25,7 @@ from src.data.utils import (
     get_image_from_mesh,
     rescale_meshed_sdfs_to_full,
     center_polydata,
-    get_iae_reconstruction_3d_grid
+    get_iae_reconstruction_3d_grid,
 )
 from escnn.nn.modules.masking_module import build_mask
 from cyto_dl.image.transforms import RotationMask
@@ -345,7 +345,6 @@ def save_pcloud(xhat, path, name, z_max, z_ind=2):
         cols = ["x", "y", "z", "s"]
     else:
         cols = ["x", "y", "z"]
-
     if z_max is None:
         this_recon = pd.DataFrame(xhat, columns=cols)
         this_recon.to_csv(path / f"{name}.csv")
@@ -439,23 +438,23 @@ def make_canonical_shapes(
 
 
 def make_canonical_shapes(
-    model, 
+    model,
     df,
-    device, 
-    path, 
-    slice_key, 
-    sub_slice_list, 
-    max_embed_dim, 
-    key, 
-    z_max=None, 
-    z_ind=2, 
-    model_type='pcloud', 
-    return_meshes=False, 
-    sample_closest_cell=False, 
-    mask_output=False, 
-    mask_size=35, 
-    mask_background=0
-):  
+    device,
+    path,
+    slice_key,
+    sub_slice_list,
+    max_embed_dim,
+    key,
+    z_max=None,
+    z_ind=2,
+    model_type="pcloud",
+    return_meshes=False,
+    sample_closest_cell=False,
+    mask_output=False,
+    mask_size=35,
+    mask_background=0,
+):
     model = model.eval()
     cols = [i for i in df.columns if "mu" in i]
     all_xhat = []
@@ -464,10 +463,7 @@ def make_canonical_shapes(
     for stage in sub_slice_list:
         this_stage_df = df.loc[df[slice_key] == stage]
         this_stage_mu = (
-            this_stage_df[cols]
-            .iloc[:, :max_embed_dim]
-            .dropna(axis=0)
-            .values
+            this_stage_df[cols].iloc[:, :max_embed_dim].dropna(axis=0).values
         )
         if sample_closest_cell:
             mean_mu = this_stage_mu.mean(axis=0)
@@ -481,20 +477,20 @@ def make_canonical_shapes(
             z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
             z_inf = z_inf.to(device)
             z_inf = z_inf.float()
-            
+
             decoder = model.decoder[key]
 
             if model_type == "iae":
                 uni_sample_points = get_iae_reconstruction_3d_grid()
                 uni_sample_points = uni_sample_points.unsqueeze(0)
-                xhat, _ = decoder(
-                    uni_sample_points.to(device), z_inf
-                )
+                xhat, _ = decoder(uni_sample_points.to(device), z_inf)
                 reshape_vox_size = int(np.cbrt(xhat.shape[1]))
-                xhat = xhat.reshape(reshape_vox_size,reshape_vox_size,reshape_vox_size)
+                xhat = xhat.reshape(
+                    reshape_vox_size, reshape_vox_size, reshape_vox_size
+                )
             else:
                 xhat = decoder(z_inf)
-            
+
             if mask_output:
                 mask = RotationMask(
                     "so3",
@@ -503,18 +499,17 @@ def make_canonical_shapes(
                     background=mask_background,
                 )
                 xhat = mask(xhat)
-                
+
             xhat = xhat.detach().cpu().numpy()
 
             if sample_closest_cell:
                 all_cellids.append(this_stage_df.iloc[closest_idx].name)
-            
-            if model_type == 'pcloud':
+
+            if model_type == "pcloud":
                 if len(xhat.shape) > 3:
                     xhat = sample_points(xhat.detach().cpu().numpy())
-
                 xhat = save_pcloud(xhat[0], path, stage, z_max, z_ind)
-            elif model_type == 'sdf':
+            elif model_type == "sdf":
                 xhat = xhat.squeeze()
                 if return_meshes:
                     mesh = get_mesh_from_sdf(xhat, method="skimage")
@@ -525,10 +520,9 @@ def make_canonical_shapes(
                 bin_recon = (xhat > thresh).astype(float)
                 # xhat = bin_recon
                 if return_meshes:
-                    mesh,_,_ = get_mesh_from_image(bin_recon, 
-                                   sigma=0,
-                                   lcc=False, 
-                                   denoise=False)
+                    mesh, _, _ = get_mesh_from_image(
+                        bin_recon, sigma=0, lcc=False, denoise=False
+                    )
                     all_meshes.append(pv.wrap(mesh))
             elif model_type == "iae":
                 if return_meshes:

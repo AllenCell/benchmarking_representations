@@ -50,7 +50,9 @@ def _sample(raw, skew_scale=100):
 
     # scale probs so it sums to 1
     probs = probs / probs.sum()
-    idxs = np.random.choice(np.arange(len(probs)), size=num_points, replace=True, p=probs)
+    idxs = np.random.choice(
+        np.arange(len(probs)), size=num_points, replace=True, p=probs
+    )
     x = x[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
     y = y[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
     if len(outs) == 3:
