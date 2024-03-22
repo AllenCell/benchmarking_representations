@@ -18,59 +18,100 @@ def remove(batch):
     return batch
 
 
-def rescale_img(tmp):
-    tmp = np.where(tmp >= 0, tmp, 0)
-    return tmp
-
-
 def _sample(raw, skew_scale=100):
     num_points = 2048
 
-    mask = np.where(raw > 0, 1, 0)
+    mask = torch.where(raw > 0, 1, 0).type_as(raw)
 
     disp = 0.001
-    outs = np.where(np.ones_like(raw) > 0)
+    outs = torch.where(torch.ones_like(raw) > 0)
     if len(outs) == 3:
         z, y, x = outs
     else:
         y, x = outs
 
-    probs = raw.copy()
+    probs = raw.clone()
     probs = probs.flatten()
     probs = probs / probs.max()
 
-    skewness = skew_scale * (3 * (probs.mean() - np.median(probs))) / probs.std()
-    probs = np.exp(skewness * probs)
+    skewness = skew_scale * (3 * (probs.mean() - torch.median(probs))) / probs.std()
+    probs = torch.exp(skewness * probs)
 
-    probs = np.where(probs < 1e21, probs, 1e21)  # dont let sum of probs blow up
+    probs = torch.where(probs < 1e21, probs, 1e21)  # dont let sum of probs blow up
 
     # set probs to 0 outside mask
-    inds = np.where(mask.flatten() == 0)[0]
+    inds = torch.where(mask.flatten() == 0)[0]
     probs[inds] = 0
 
     # scale probs so it sums to 1
     probs = probs / probs.sum()
+
     idxs = np.random.choice(
-        np.arange(len(probs)), size=num_points, replace=True, p=probs
+        np.arange(len(probs)),
+        size=num_points,
+        replace=True,
+        p=probs.detach().cpu().numpy(),
     )
-    x = x[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
-    y = y[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
+    x = x[idxs].detach().cpu() + 2 * (torch.rand(len(idxs)) - 0.5) * disp
+    y = y[idxs].detach().cpu() + 2 * (torch.rand(len(idxs)) - 0.5) * disp
     if len(outs) == 3:
-        z = z[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
+        z = z[idxs].detach().cpu() + 2 * (torch.rand(len(idxs)).type_as(x) - 0.5) * disp
     else:
-        z = np.copy(x)
+        z = x.clone().detach().cpu()
         z.fill(0)
-    new_cents = np.stack([z, y, x], axis=1).astype(float)
+    new_cents = torch.stack([z, y, x], axis=1).float()
     assert new_cents.shape[0] == num_points
     return new_cents
 
 
-def sample_points(orig):
+# def _sample(raw, skew_scale=100):
+#     num_points = 2048
+
+#     mask = np.where(raw > 0, 1, 0)
+
+#     disp = 0.001
+#     outs = np.where(np.ones_like(raw) > 0)
+#     if len(outs) == 3:
+#         z, y, x = outs
+#     else:
+#         y, x = outs
+
+#     probs = raw.copy()
+#     probs = probs.flatten()
+#     probs = probs / probs.max()
+
+#     skewness = skew_scale * (3 * (probs.mean() - np.median(probs))) / probs.std()
+#     probs = np.exp(skewness * probs)
+
+#     probs = np.where(probs < 1e21, probs, 1e21)  # dont let sum of probs blow up
+
+#     # set probs to 0 outside mask
+#     inds = np.where(mask.flatten() == 0)[0]
+#     probs[inds] = 0
+
+#     # scale probs so it sums to 1
+#     probs = probs / probs.sum()
+#     idxs = np.random.choice(
+#         np.arange(len(probs)), size=num_points, replace=True, p=probs
+#     )
+#     x = x[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
+#     y = y[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
+#     if len(outs) == 3:
+#         z = z[idxs] + 2 * (np.random.rand(len(idxs)) - 0.5) * disp
+#     else:
+#         z = np.copy(x)
+#         z.fill(0)
+#     new_cents = np.stack([z, y, x], axis=1).astype(float)
+#     assert new_cents.shape[0] == num_points
+#     return new_cents
+
+
+def sample_points(orig, skew_scale):
     pcloud = []
     for i in range(orig.shape[0]):
-        raw = rescale_img(orig[i, 0])
+        raw = orig[i, 0]
         try:
-            new_cents = _sample(raw, 300)
+            new_cents = _sample(raw, skew_scale)
         except:
             print("exception")
             new_cents = _sample(raw, 100)
@@ -79,9 +120,9 @@ def sample_points(orig):
     return torch.tensor(pcloud)
 
 
-def apply_sample_points(data, use_sample_points):
+def apply_sample_points(data, use_sample_points, skew_scale):
     if use_sample_points:
-        return sample_points(data)
+        return sample_points(data, skew_scale)
     else:
         return data
 

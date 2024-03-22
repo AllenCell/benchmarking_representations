@@ -247,8 +247,7 @@ def compute_features(
         "stratify_col": None,
         "compute_PCs": True,
     },
-    compactness_params: dict = {"method": "mle",
-                                "blobby_outlier_max_cc": None},
+    compactness_params: dict = {"method": "mle", "blobby_outlier_max_cc": None},
 ):
     """
     Compute all benchmarking metrics and save
@@ -362,7 +361,7 @@ def compute_features(
                 num_PCs=compactness_params["num_PCs"],
                 max_embed_dim=max_embed_dim,
                 method=compactness_params["method"],
-                blobby_outlier_max_cc=compactness_params["blobby_outlier_max_cc"]
+                blobby_outlier_max_cc=compactness_params["blobby_outlier_max_cc"],
             )
             ret_dict_compactness.to_csv(path / Path("compactness.csv"))
 

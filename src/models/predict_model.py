@@ -45,33 +45,38 @@ def vit_forward(
     end,
     emissions_csv,
     use_sample_points=False,
+    skew_scale=100,
 ):
     """
     Forward pass for vit with codecarbon tracking option
     """
-    use_sample_points = True
+    # use_sample_points = True
+    model = model
     image = torch.tensor(image)
     features, backward_indexes, patch_size = model.backbone.encoder(image)
     predicted_img, mask = model.backbone.decoder(features, backward_indexes, patch_size)
 
     features = features.reshape(image.shape[0], features.shape[0], -1)
 
-    if use_sample_points:
-        input_x = (
-            torch.tensor(sample_points(image.detach().cpu().numpy())).clone().to(device)
-        )
-        pred_x = (
-            torch.tensor(sample_points(predicted_img.detach().cpu().numpy()))
-            .clone()
-            .to(device)
-        )
-    else:
-        input_x = torch.tensor(image.detach().cpu().numpy()).clone().to(device)
-        pred_x = torch.tensor(predicted_img.detach().cpu().numpy()).clone().to(device)
+    features = features[:, 1:, :].mean(axis=1)
 
+    if track_emissions:
+        emissions: float = tracker.stop()
+        emissions_df = pd.read_csv(emissions_csv)
+    if use_sample_points:
+        image = torch.tensor(
+            apply_sample_points(image, use_sample_points, skew_scale)
+        ).to(device)
+        predicted_img = torch.tensor(
+            apply_sample_points(predicted_img, use_sample_points, skew_scale)
+        ).to(device)
+    else:
+        print("skippoing sample spoints")
+
+    # print("sample out")
     if this_loss is not None:
         rcl_per_input_dimension = this_loss(
-            pred_x.contiguous(), input_x.to(device).contiguous()
+            predicted_img.contiguous(), image.to(device).contiguous()
         )
         loss = (
             rcl_per_input_dimension
@@ -84,8 +89,6 @@ def vit_forward(
         loss = None
 
     if track_emissions:
-        emissions: float = tracker.stop()
-        emissions_df = pd.read_csv(emissions_csv)
         return (
             predicted_img.detach().cpu().numpy(),
             features.detach().cpu().numpy(),
@@ -164,7 +167,6 @@ def multi_proc_scale_img_eval(args):
         eval_scaled_img_model_type,
         scale_factor_dict,
     ) = args
-
     target_mesh = trimesh.load(f"{gt_mesh_dir}/{cellid}.{mesh_ext}")
 
     if eval_scaled_img_model_type == "iae":
@@ -218,6 +220,7 @@ def base_forward(
     end,
     emissions_csv,
     use_sample_points=False,
+    skew_scale=100,
     eval_scaled_img=False,
     eval_scaled_img_model_type=None,
     eval_scaled_img_resolution=32,
@@ -258,14 +261,16 @@ def base_forward(
         xhat[key] = xhat[key][:, :, :3]
         this_batch[key] = this_batch[key][:, :, :3]
 
+    if track_emissions:
+        emissions: float = tracker.stop()
+        emissions_df = pd.read_csv(emissions_csv)
+
     if use_sample_points:
         this_batch[key] = torch.tensor(
-            apply_sample_points(
-                this_batch[key].detach().cpu().numpy(), use_sample_points
-            )
+            apply_sample_points(this_batch[key], use_sample_points, skew_scale)
         ).to(device)
         xhat[key] = torch.tensor(
-            apply_sample_points(xhat[key].detach().cpu().numpy(), use_sample_points)
+            apply_sample_points(xhat[key], use_sample_points, skew_scale)
         ).to(device)
 
     if this_loss is not None and not eval_scaled_img:
@@ -311,37 +316,31 @@ def base_forward(
             if eval_scaled_img_model_type == "iae"
             else recon.squeeze().shape[-1]
         )
+        recon = recon[:, 0, ...]  # remove channel dimension
         recon_data_list = [
-            recon.squeeze()[i].reshape(
-                reshape_vox_size, reshape_vox_size, reshape_vox_size
-            )
+            recon[i].reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size)
             for i in range(len(cellids))
         ]
 
+        args = [
+            (
+                cellid,
+                recon_data,
+                eval_scaled_img_resolution,
+                gt_mesh_dir,
+                mesh_ext,
+                gt_sampled_pts_dir,
+                eval_scaled_img_model_type,
+                (scale_factor_dict if gt_scale_factor_dict_path is not None else None),
+            )
+            for cellid, recon_data in zip(cellids, recon_data_list)
+        ]
         with Pool(processes=8) as pool:
-            args = [
-                (
-                    cellid,
-                    recon_data,
-                    eval_scaled_img_resolution,
-                    gt_mesh_dir,
-                    mesh_ext,
-                    gt_sampled_pts_dir,
-                    eval_scaled_img_model_type,
-                    scale_factor_dict
-                    if gt_scale_factor_dict_path is not None
-                    else None,
-                )
-                for cellid, recon_data in zip(cellids, recon_data_list)
-            ]
             errs = pool.map(multi_proc_scale_img_eval, args)
 
         loss = np.array(errs).squeeze()
 
     if track_emissions:
-        emissions: float = tracker.stop()
-        emissions_df = pd.read_csv(emissions_csv)
-
         return (
             xhat[key].detach().cpu().numpy(),
             z_params[embed_key].detach().cpu().numpy(),
@@ -366,6 +365,7 @@ def model_pass(
     track_emissions=False,
     emissions_path=None,
     use_sample_points=False,
+    skew_scale=100,
     eval_scaled_img=False,
     eval_scaled_img_params={},
 ):
@@ -404,6 +404,8 @@ def model_pass(
             tracker,
             end,
             emissions_csv,
+            use_sample_points,
+            skew_scale,
         )
     if hasattr(model, "network"):
         return mae_forward(
@@ -427,6 +429,7 @@ def model_pass(
             end,
             emissions_csv,
             use_sample_points,
+            skew_scale,
             eval_scaled_img,
             **eval_scaled_img_params,
         )
@@ -449,6 +452,7 @@ def process_batch(
     track,
     emissions_path,
     use_sample_points,
+    skew_scale,
     eval_scaled_img,
     eval_scaled_img_params,
 ):
@@ -464,6 +468,7 @@ def process_batch(
         track_emissions=track,
         emissions_path=emissions_path,
         use_sample_points=use_sample_points,
+        skew_scale=skew_scale,
         eval_scaled_img=eval_scaled_img,
         eval_scaled_img_params=eval_scaled_img_params,
     )
@@ -510,6 +515,7 @@ def process_batch_embeddings(
     emissions_path,
     meta_key=None,
     use_sample_points=False,
+    skew_scale=100,
     eval_scaled_img=False,
     eval_scaled_img_params=None,
 ):
@@ -525,6 +531,7 @@ def process_batch_embeddings(
         track_emissions=track,
         emissions_path=emissions_path,
         use_sample_points=use_sample_points,
+        skew_scale=skew_scale,
         eval_scaled_img=eval_scaled_img,
         eval_scaled_img_params=eval_scaled_img_params,
     )

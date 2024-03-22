@@ -51,6 +51,7 @@ def process_dataloader(
     device,
     meta_key,
     use_sample_points,
+    skew_scale,
     sdf_forward_pass,
     sdf_process,
 ):
@@ -78,6 +79,7 @@ def process_dataloader(
             emissions_path,
             meta_key,
             use_sample_points,
+            skew_scale,
             sdf_forward_pass,
             sdf_process,
         )
@@ -100,6 +102,7 @@ def compute_embeddings(
     device,
     meta_key,
     use_sample_points,
+    skew_scale,
     sdf_forward_pass,
     sdf_process,
 ):
@@ -127,6 +130,7 @@ def compute_embeddings(
             device,
             meta_key,
             use_sample_points,
+            skew_scale,
             sdf_forward_pass,
             sdf_process,
         )
@@ -154,6 +158,7 @@ def compute_embeddings(
             device,
             meta_key,
             use_sample_points,
+            skew_scale,
             sdf_forward_pass,
             sdf_process,
         )
@@ -181,6 +186,7 @@ def compute_embeddings(
             device,
             meta_key,
             use_sample_points,
+            skew_scale,
             sdf_forward_pass,
             sdf_process,
         )
@@ -198,8 +204,9 @@ def save_embeddings(
     meta_key: str = None,
     loss_eval_list: list = None,
     sample_points_list: list = [],
+    skew_scale: int = 100,
     eval_scaled_img: Optional[list] = None,
-    eval_scaled_img_params: Optional[dict] = {},
+    eval_scaled_img_params: Optional[list] = {},
 ):
     Path(save_folder).mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger()
@@ -217,12 +224,6 @@ def save_embeddings(
         all_splits = []
         this_data = data_list[j_ind]
         this_use_sample_points = sample_points_list[j_ind]
-        if eval_scaled_img is not None:
-            this_eval_scaled_img = eval_scaled_img[j_ind]
-            this_eval_scaled_img_params = eval_scaled_img_params[j_ind]
-        else:
-            this_eval_scaled_img = eval_scaled_img
-            this_eval_scaled_img_params = eval_scaled_img_params
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
             (
@@ -247,8 +248,9 @@ def save_embeddings(
                 device,
                 meta_key,
                 this_use_sample_points,
-                this_eval_scaled_img,
-                this_eval_scaled_img_params,
+                skew_scale,
+                eval_scaled_img[j_ind],
+                eval_scaled_img_params[j_ind],
             )
 
             all_splits = [x for xs in all_splits for x in xs]
@@ -287,8 +289,9 @@ def save_emissions(
     device: str = "cuda:0",
     loss_eval_list: list = None,
     sample_points_list: list = [],
+    skew_scale: int = 100,
     eval_scaled_img: Optional[list] = None,
-    eval_scaled_img_params: Optional[dict] = {},
+    eval_scaled_img_params: Optional[list] = {},
 ):
     emissions_path = Path(emissions_path)
     emissions_path.mkdir(parents=True, exist_ok=True)
@@ -306,12 +309,6 @@ def save_emissions(
         all_loss = []
         all_splits = []
         this_data = data_list[j_ind]
-        if eval_scaled_img is not None:
-            this_eval_scaled_img = eval_scaled_img[j_ind]
-            this_eval_scaled_img_params = eval_scaled_img_params[j_ind]
-        else:
-            this_eval_scaled_img = eval_scaled_img
-            this_eval_scaled_img_params = eval_scaled_img_params
         this_use_sample_points = sample_points_list[j_ind]
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
@@ -348,8 +345,9 @@ def save_emissions(
                     track_emissions,
                     emissions_path,
                     this_use_sample_points,
-                    this_eval_scaled_img,
-                    this_eval_scaled_img_params,
+                    skew_scale,
+                    eval_scaled_img[j_ind],
+                    eval_scaled_img_params[j_ind],
                 )
             all_model_emissions.append(pd.concat(all_emissions, axis=0))
 

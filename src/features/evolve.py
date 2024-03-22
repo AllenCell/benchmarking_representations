@@ -19,7 +19,7 @@ from src.data.utils import (
     voxelize_recon_and_target_meshes,
     voxelize_recon_meshes,
     get_mesh_bbox_shape,
-    mesh_seg_model_output
+    mesh_seg_model_output,
 )
 from sklearn.metrics import jaccard_score as jaccard_similarity_score
 
@@ -178,7 +178,7 @@ def model_pass_reconstruct(
     use_sample_points=True,
     eval_meshed_img=False,
     eval_meshed_img_model_type=None,
-    eval_meshed_img_embeds=None
+    eval_meshed_img_embeds=None,
 ):
     model = model.to(device)
     z = torch.tensor(z).float().to(device)
@@ -196,17 +196,15 @@ def model_pass_reconstruct(
 
         if len(z.shape) < 2:
             z = z.unsqueeze(dim=0)
-        
+
         if isinstance(model.decoder[key], LatentLocalDecoder):
             uni_sample_points = get_iae_reconstruction_3d_grid().unsqueeze(0).to(device)
             init_z, final_z = eval_meshed_img_embeds
-            init_x, _ = decoder(uni_sample_points, 
-                                torch.tensor(init_z).to(device))
-            final_x, _ = decoder(uni_sample_points, 
-                                torch.tensor(final_z).to(device))
+            init_x, _ = decoder(uni_sample_points, torch.tensor(init_z).to(device))
+            final_x, _ = decoder(uni_sample_points, torch.tensor(final_z).to(device))
             xhat, _ = decoder(uni_sample_points, z)
 
-            #TODO another way to make this work??
+            # TODO another way to make this work??
             # to get recons, need uniform GT SDFs at 32**3
             #  - get init_z and final z from dataloader
             #  - pass init_z + uni / final_z + uni
@@ -219,14 +217,18 @@ def model_pass_reconstruct(
 
         if eval_meshed_img_model_type == "iae":
             reshape_vox_size = int(np.cbrt(xhat.shape[1]))
-            xhat = xhat.reshape(reshape_vox_size,reshape_vox_size,reshape_vox_size)
-            init_x = init_x.reshape(reshape_vox_size,reshape_vox_size,reshape_vox_size)
-            final_x = final_x.reshape(reshape_vox_size,reshape_vox_size,reshape_vox_size)
+            xhat = xhat.reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size)
+            init_x = init_x.reshape(
+                reshape_vox_size, reshape_vox_size, reshape_vox_size
+            )
+            final_x = final_x.reshape(
+                reshape_vox_size, reshape_vox_size, reshape_vox_size
+            )
 
             mesh = get_mesh_from_sdf(xhat)
             mesh_initial = get_mesh_from_sdf(init_x)
             mesh_final = get_mesh_from_sdf(final_x)
-        
+
         elif eval_meshed_img_model_type == "sdf":
             if xhat.min() > 0:
                 return np.NaN
@@ -246,14 +248,15 @@ def model_pass_reconstruct(
         target_bounds = [
             max(i, j) for i, j in zip(target_bounds_initial, target_bounds_final)
         ]
-        recon_int, recon_initial, recon_final = voxelize_recon_meshes([mesh, mesh_initial, mesh_final],
-                                            target_bounds)
+        recon_int, recon_initial, recon_final = voxelize_recon_meshes(
+            [mesh, mesh_initial, mesh_final], target_bounds
+        )
         recon_initial = np.where(recon_initial > 0.5, 1, 0)
         recon_int = np.where(recon_int > 0.5, 1, 0)
         recon_final = np.where(recon_final > 0.5, 1, 0)
 
         mse_total = 1 - jaccard_similarity_score(
-        recon_final.flatten(), recon_initial.flatten(), pos_label=1
+            recon_final.flatten(), recon_initial.flatten(), pos_label=1
         )
         mse_intial = 1 - jaccard_similarity_score(
             recon_initial.flatten(), recon_int.flatten(), pos_label=1
@@ -303,7 +306,9 @@ def model_pass_reconstruct(
         elif hasattr(model, "backbone"):
             init_x = torch.tensor(init_x).to(device)
             final_x = torch.tensor(final_x).to(device)
-            _, backward_indexes1, patch_size1 = model.backbone.encoder(init_x.contiguous())
+            _, backward_indexes1, patch_size1 = model.backbone.encoder(
+                init_x.contiguous()
+            )
             z = z.reshape(1, -1, 256)
             xhat, mask = model.backbone.decoder(z, backward_indexes1, patch_size1)
             xhat = apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
@@ -313,8 +318,12 @@ def model_pass_reconstruct(
             #         save_path,
             #         f"{run_name}_{this_id}_{fraction}",
             #     )
-            init_x = apply_sample_points(init_x.detach().cpu().numpy(), use_sample_points)
-            final_x = apply_sample_points(final_x.detach().cpu().numpy(), use_sample_points)
+            init_x = apply_sample_points(
+                init_x.detach().cpu().numpy(), use_sample_points
+            )
+            final_x = apply_sample_points(
+                final_x.detach().cpu().numpy(), use_sample_points
+            )
             init_rcl = loss_eval(xhat.contiguous(), init_x.contiguous()).mean()
             final_rcl = loss_eval(xhat.contiguous(), final_x.contiguous()).mean()
             total_rcl = loss_eval(final_x.contiguous(), init_x.contiguous()).mean()
@@ -330,7 +339,9 @@ def model_pass_reconstruct(
             xhat, _ = model.decoder[key](torch.tensor(init_x[1]).to(device), z)
             init_rcl = loss_eval(xhat.contiguous(), init_x_sdf.contiguous()).mean()
             final_rcl = loss_eval(xhat.contiguous(), final_x_sdf.contiguous()).mean()
-            total_rcl = loss_eval(final_x_sdf.contiguous(), init_x_sdf.contiguous()).mean()
+            total_rcl = loss_eval(
+                final_x_sdf.contiguous(), init_x_sdf.contiguous()
+            ).mean()
             return (init_rcl + final_rcl) / total_rcl
         else:
             init_x = torch.tensor(init_x).to(device)
@@ -343,10 +354,14 @@ def model_pass_reconstruct(
                 xhat = xhat[:, :, :3]
             else:
                 init_x = torch.tensor(
-                    apply_sample_points(init_x.detach().cpu().numpy(), use_sample_points)
+                    apply_sample_points(
+                        init_x.detach().cpu().numpy(), use_sample_points
+                    )
                 ).type_as(z)
                 final_x = torch.tensor(
-                    apply_sample_points(final_x.detach().cpu().numpy(), use_sample_points)
+                    apply_sample_points(
+                        final_x.detach().cpu().numpy(), use_sample_points
+                    )
                 ).type_as(z)
                 xhat = torch.tensor(
                     apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
@@ -496,7 +511,7 @@ def get_evolution_dict(
                             this_use_sample_points,
                             this_eval_meshed_img,
                             this_eval_meshed_img_model_type,
-                            [init_embed, final_embed]
+                            [init_embed, final_embed],
                         )
                         evolution_dict["model"].append(run_names[j])
 

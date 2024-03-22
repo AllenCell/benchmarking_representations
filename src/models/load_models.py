@@ -203,12 +203,26 @@ MODEL_INFO = {
             "so3_pointcloud",
         ],
     },
+    # "cellpack_npm1_spheres": {
+    #     "run_ids": [
+    #         "711b27416d274e84850a607e09d21c26",
+    #         "a303f36e2fcb4e2f89f1bad1e171e3f6",
+    #         "58b4431719a340ab8cafddc16abc8826",
+    #         "1430ad66f450454d9164098c1ea1daa9",  # might need to change
+    #     ],
+    #     "names": [
+    #         "classical_image_seg",
+    #         "so3_image_seg",
+    #         "classical_image_sdf",
+    #         "so3_imag_sdf",
+    #     ],
+    # },
     "cellpack_npm1_spheres": {
         "run_ids": [
-            "711b27416d274e84850a607e09d21c26",
-            "a303f36e2fcb4e2f89f1bad1e171e3f6",
-            "58b4431719a340ab8cafddc16abc8826",
-            "1430ad66f450454d9164098c1ea1daa9",  # might need to change
+            "41543c3442d04a8e8493736c9e46fabc",
+            "bbaf3b318edd416cbc305d6cb4bb5ee3",
+            "d41a1313f06a44f9896048eefbde8e1b",
+            "1902326e9c0c4fedb3e14ed35a1be52f",  # might need to change
         ],
         "names": [
             "classical_image_seg",

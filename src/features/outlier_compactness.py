@@ -12,7 +12,9 @@ from sklearn.model_selection import (
 from sklearn.linear_model import LogisticRegression
 
 
-def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192, method="mle", blobby_outlier_max_cc=None):
+def get_embedding_metrics(
+    all_ret, num_PCs=None, max_embed_dim=192, method="mle", blobby_outlier_max_cc=None
+):
     # all_ret = all_ret.loc[all_ret["split"] == "test"]
     ret_dict_compactness = {
         "model": [],
@@ -22,7 +24,9 @@ def get_embedding_metrics(all_ret, num_PCs=None, max_embed_dim=192, method="mle"
     for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
         val = compactness(this_mo, num_PCs, max_embed_dim, method)
-        percent_same = outlier_detection(this_mo, blobby_outlier_max_cc=blobby_outlier_max_cc)
+        percent_same = outlier_detection(
+            this_mo, blobby_outlier_max_cc=blobby_outlier_max_cc
+        )
         for i in range(len(val)):
             ret_dict_compactness["model"].append(model)
             ret_dict_compactness["compactness"].append(val[i])
@@ -117,7 +121,9 @@ def outlier_detection(this_mo, outlier_label=0, blobby_outlier_max_cc=None):
     the total population
     """
     if blobby_outlier_max_cc is not None:
-        this_mo["outlier"] = np.where(this_mo["STR_connectivity_cc"] > blobby_outlier_max_cc, "No", "Yes")
+        this_mo["outlier"] = np.where(
+            this_mo["STR_connectivity_cc"] > blobby_outlier_max_cc, "No", "Yes"
+        )
     else:
         if "flag_comment" in this_mo.columns:
             print("Outlier column is flag comment")
