@@ -13,7 +13,12 @@ from sklearn.linear_model import LogisticRegression
 
 
 def get_embedding_metrics(
-    all_ret, num_PCs=None, max_embed_dim=192, method="mle", blobby_outlier_max_cc=None
+    all_ret,
+    num_PCs=None,
+    max_embed_dim=192,
+    method="mle",
+    blobby_outlier_max_cc=None,
+    check_duplicates=None,
 ):
     # all_ret = all_ret.loc[all_ret["split"] == "test"]
     ret_dict_compactness = {
@@ -21,8 +26,28 @@ def get_embedding_metrics(
         "compactness": [],
         "percent_same": [],
     }
+
+    if check_duplicates:
+        all_ids = []
+        for model in tqdm(
+            all_ret["model"].unique(), total=len(all_ret["model"].unique())
+        ):
+            this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
+            cols = [i for i in this_mo.columns if "mu" in i]
+            inds = (
+                this_mo[cols]
+                .iloc[:, :max_embed_dim]
+                .drop_duplicates()
+                .dropna(axis=1)
+                .index.values
+            )
+            all_ids.append(set(this_mo.iloc[inds]["CellId"].values))
+        final_ids = set.intersection(*all_ids)
+
     for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
+        if check_duplicates:
+            this_mo = this_mo.loc[this_mo["CellId"].isin(final_ids)]
         val = compactness(this_mo, num_PCs, max_embed_dim, method)
         percent_same = outlier_detection(
             this_mo, blobby_outlier_max_cc=blobby_outlier_max_cc

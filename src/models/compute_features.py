@@ -109,9 +109,12 @@ DATASET_INFO = {
     },
     "cellpack_npm1_spheres": {
         "embedding_save_location": "./embeddings_cellpack_npm1_spheres",
-        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
-        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
-        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
+        # "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug_filter.csv",
+        # "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug_filter.csv",
+        # "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug_filter.csv",
     },
     "test5": {
         # "embedding_save_location": "./test5",
@@ -119,9 +122,9 @@ DATASET_INFO = {
         # "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
         # "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
         "embedding_save_location": "./test5",
-        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
-        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
-        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
     },
     "test6": {
         "embedding_save_location": "./test6",
@@ -137,6 +140,12 @@ DATASET_INFO = {
     },
     "variance_punct_instancenorm": {
         "embedding_save_location": "./variance_punct_instancenorm",
+        "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
+    },
+    "variance_all_punctate": {
+        "embedding_save_location": "./variance_all_punctate",
         "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
         "image_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
@@ -234,9 +243,10 @@ def compute_features(
         "config_list_evolve": [],
         "num_evolve_samples": [],
         "compute_evolve_dataloaders": False,
-        "sdf_forward_pass": False,
-        "sdf_process": [],
+        "eval_meshed_img_model_type": False,
+        "eval_meshed_img": [],
         "pc_is_iae": False,
+        "skew_scale": 100,
     },
     rot_inv_params: dict = {"squeeze_2d": False, "id": "CellId"},
     stereotypy_params: dict = {
@@ -247,7 +257,11 @@ def compute_features(
         "stratify_col": None,
         "compute_PCs": True,
     },
-    compactness_params: dict = {"method": "mle", "blobby_outlier_max_cc": None},
+    compactness_params: dict = {
+        "method": "mle",
+        "blobby_outlier_max_cc": None,
+        "check_duplicates": False,
+    },
 ):
     """
     Compute all benchmarking metrics and save
@@ -256,7 +270,7 @@ def compute_features(
     path = Path(save_folder)
     path.mkdir(parents=True, exist_ok=True)
     loss_eval = get_pc_loss_chamfer() if loss_eval_list is None else loss_eval_list
-    max_batches = 4
+    max_batches = 4000
 
     if "Rotation Invariance Error" in metric_list:
         print("Computing rotation invariance")
@@ -277,7 +291,6 @@ def compute_features(
         metric_list.pop(metric_list.index("Rotation Invariance Error"))
 
     all_ret, df = get_embeddings(run_names, dataset)
-
     if "Stereotypy" in metric_list:
         print("Computing stereotypy")
         outs = get_stereotypy_stratified(
@@ -362,6 +375,7 @@ def compute_features(
                 max_embed_dim=max_embed_dim,
                 method=compactness_params["method"],
                 blobby_outlier_max_cc=compactness_params["blobby_outlier_max_cc"],
+                check_duplicates=compactness_params["check_duplicates"],
             )
             ret_dict_compactness.to_csv(path / Path("compactness.csv"))
 
@@ -410,6 +424,7 @@ def compute_features(
                 fit_pca=False,
                 eval_meshed_img=evolve_params["eval_meshed_img"],
                 eval_meshed_img_model_type=evolve_params["eval_meshed_img_model_type"],
+                skew_scale=evolve_params["skew_scale"],
             )
 
             evolution_dict.to_csv(path / Path("evolve.csv"))

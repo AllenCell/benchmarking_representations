@@ -179,6 +179,7 @@ def model_pass_reconstruct(
     eval_meshed_img=False,
     eval_meshed_img_model_type=None,
     eval_meshed_img_embeds=None,
+    skew_scale=100,
 ):
     model = model.to(device)
     z = torch.tensor(z).float().to(device)
@@ -311,19 +312,15 @@ def model_pass_reconstruct(
             )
             z = z.reshape(1, -1, 256)
             xhat, mask = model.backbone.decoder(z, backward_indexes1, patch_size1)
-            xhat = apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
+            xhat = apply_sample_points(xhat, use_sample_points, skew_scale)
             # if save_path:
             #     save_pcloud(
             #         xhat[0].detach().cpu().numpy(),
             #         save_path,
             #         f"{run_name}_{this_id}_{fraction}",
             #     )
-            init_x = apply_sample_points(
-                init_x.detach().cpu().numpy(), use_sample_points
-            )
-            final_x = apply_sample_points(
-                final_x.detach().cpu().numpy(), use_sample_points
-            )
+            init_x = apply_sample_points(init_x, use_sample_points, skew_scale)
+            final_x = apply_sample_points(final_x, use_sample_points, skew_scale)
             init_rcl = loss_eval(xhat.contiguous(), init_x.contiguous()).mean()
             final_rcl = loss_eval(xhat.contiguous(), final_x.contiguous()).mean()
             total_rcl = loss_eval(final_x.contiguous(), init_x.contiguous()).mean()
@@ -354,17 +351,13 @@ def model_pass_reconstruct(
                 xhat = xhat[:, :, :3]
             else:
                 init_x = torch.tensor(
-                    apply_sample_points(
-                        init_x.detach().cpu().numpy(), use_sample_points
-                    )
+                    apply_sample_points(init_x, use_sample_points, skew_scale)
                 ).type_as(z)
                 final_x = torch.tensor(
-                    apply_sample_points(
-                        final_x.detach().cpu().numpy(), use_sample_points
-                    )
+                    apply_sample_points(final_x, use_sample_points, skew_scale)
                 ).type_as(z)
                 xhat = torch.tensor(
-                    apply_sample_points(xhat.detach().cpu().numpy(), use_sample_points)
+                    apply_sample_points(xhat, use_sample_points, skew_scale)
                 ).type_as(z)
             # if save_path and len(xhat.shape) == 3:
             #     save_pcloud(
@@ -394,6 +387,7 @@ def get_evolution_dict(
     fit_pca: bool = False,
     eval_meshed_img: list = [],
     eval_meshed_img_model_type: list = [],
+    skew_scale: int = 100,
 ):
     """
     all_models - list of models
@@ -512,6 +506,7 @@ def get_evolution_dict(
                             this_eval_meshed_img,
                             this_eval_meshed_img_model_type,
                             [init_embed, final_embed],
+                            skew_scale,
                         )
                         evolution_dict["model"].append(run_names[j])
 

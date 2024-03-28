@@ -149,7 +149,7 @@ def get_equiv_dict(
     """
     eq_dict = {
         "model": [],
-        "loss": [],
+        # "loss": [],
         "value": [],
         "id": [],
         "theta": [],
@@ -225,7 +225,7 @@ def get_equiv_dict(
                         )
 
                         eq_dict["model"].append(run_names[jm])
-                        eq_dict["loss"].append(loss)
+                        # eq_dict["loss"].append(loss)
                         eq_dict["value"].append(norm_diff)
                         eq_dict["value2"].append(norm_diff2)
                         eq_dict["value3"].append(norm_diff3)

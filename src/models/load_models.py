@@ -82,7 +82,7 @@ MODEL_INFO = {
     },
     "variance_punct_structnorm": {
         "run_ids": [
-            "0fd3e79d8aba45cca21b74da182c93f5",  # this is structure norm
+            "0fd3e79d8aba45cca21b74da182c93f5",
             # "41cf98f1381f4eb097166beee598f56d",
         ],
         "names": [
@@ -91,11 +91,27 @@ MODEL_INFO = {
     },
     "variance_punct_instancenorm": {
         "run_ids": [
-            "6a523cd918804acd9ed35b436b607ad4",  # this is structure norm
+            "6a523cd918804acd9ed35b436b607ad4",
             # "41cf98f1381f4eb097166beee598f56d",
         ],
         "names": [
             "var_punct_instancenorm",  # varaince equiv punctate
+        ],
+    },
+    "variance_all_punctate": {
+        "run_ids": [
+            "cba0e754ceff4092a51cbb6017176e4f",
+            "496e2cfa42234378967a88cee66891c9",
+            "c3f4f99f2bd24578873b6913476cc25e",
+            "9b7b078a61bd40d6baf65b0626e9ce76",
+            "6a523cd918804acd9ed35b436b607ad4",
+        ],
+        "names": [
+            "vit",
+            "classical_image",
+            "so3_image",
+            "2048_ed_dgcnn",
+            "2048_int_ed_vndgcnn",  # varaince equiv punctate
         ],
     },
     "test4": {
@@ -217,12 +233,40 @@ MODEL_INFO = {
     #         "so3_imag_sdf",
     #     ],
     # },
+    # "cellpack_npm1_spheres_v2": {
+    #     "run_ids": [
+    #         "41543c3442d04a8e8493736c9e46fabc",
+    #         "bbaf3b318edd416cbc305d6cb4bb5ee3",
+    #         "d41a1313f06a44f9896048eefbde8e1b",
+    #         "1902326e9c0c4fedb3e14ed35a1be52f",  # might need to change
+    #     ],
+    #     "names": [
+    #         "classical_image_seg",
+    #         "so3_image_seg",
+    #         "classical_image_sdf",
+    #         "so3_imag_sdf",
+    #     ],
+    # },
+    # "cellpack_npm1_spheres": {
+    #     "run_ids": [
+    #         "32a676472bee40a9829d3faebefc6e3f",
+    #         "7df9951dfdb644eeb062d106e46027c6",
+    #         "0d07d409f3db433b882848c7860ea987",
+    #         "3042fc0f1877412c9f7a055085cec4b9",  # might need to change
+    #     ],
+    #     "names": [
+    #         "classical_image_seg",
+    #         "so3_image_seg",
+    #         "classical_image_sdf",
+    #         "so3_imag_sdf",
+    #     ],
+    # },
     "cellpack_npm1_spheres": {
         "run_ids": [
-            "41543c3442d04a8e8493736c9e46fabc",
-            "bbaf3b318edd416cbc305d6cb4bb5ee3",
-            "d41a1313f06a44f9896048eefbde8e1b",
-            "1902326e9c0c4fedb3e14ed35a1be52f",  # might need to change
+            "97961073eabb453a99acbbabd01d1613",
+            "353332d81e5c402989c59d164cea6513",
+            "973f9fa0d79a4512896d972641e6d2e0",
+            "3042fc0f1877412c9f7a055085cec4b9",  # might need to change
         ],
         "names": [
             "classical_image_seg",
@@ -233,7 +277,7 @@ MODEL_INFO = {
     },
     "test5": {
         "run_ids": [
-            "11fa061e42b343f396768c4333e32d82",  # might need to change
+            "3042fc0f1877412c9f7a055085cec4b9",  # might need to change
         ],
         "names": [
             "so3_imag_sdf",
@@ -367,7 +411,7 @@ MODEL_INFO = {
 TRACKING_URI = "https://mlflow.a100.int.allencell.org"
 
 
-def load_models(dataset):
+def load_models(dataset, split="val"):
     models = MODEL_INFO[dataset]
     model_sizes = []
     all_models = []
@@ -376,7 +420,7 @@ def load_models(dataset):
             load_model_from_checkpoint(
                 TRACKING_URI,
                 i,
-                path="checkpoints/val/loss/best.ckpt",
+                path=f"checkpoints/{split}/loss/best.ckpt",
                 strict=False,
             )
         )

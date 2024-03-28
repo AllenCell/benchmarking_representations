@@ -120,7 +120,7 @@ def sample_points(orig, skew_scale):
     return torch.tensor(pcloud)
 
 
-def apply_sample_points(data, use_sample_points, skew_scale):
+def apply_sample_points(data, use_sample_points, skew_scale=100):
     if use_sample_points:
         return sample_points(data, skew_scale)
     else:

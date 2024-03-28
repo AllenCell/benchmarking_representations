@@ -364,77 +364,82 @@ def save_pcloud(xhat, path, name, z_max, z_ind=2):
     return xhat
 
 
-def make_canonical_shapes(
-    model,
-    df,
-    device,
-    path,
-    slice_key,
-    sub_slice_list,
-    max_embed_dim,
-    key,
-    z_max=None,
-    z_ind=2,
-    model_type="pcloud",
-    mask_output=False,
-    sample_closest_cell=False,
-):
-    model = model.eval()
-    cols = [i for i in df.columns if "mu" in i]
-    all_xhat = []
-    for stage in sub_slice_list:
-        this_stage_mu = (
-            df.loc[df[slice_key] == stage][cols]
-            .iloc[:, :max_embed_dim]
-            .dropna(axis=1)
-            .values
-        )
+# def make_canonical_shapes(
+#     model,
+#     df,
+#     device,
+#     path,
+#     slice_key,
+#     sub_slice_list,
+#     max_embed_dim,
+#     key,
+#     z_max=None,
+#     z_ind=2,
+#     model_type="pcloud",
+#     mask_output=False,
+#     sample_closest_cell=False,
+#     mask_background=2,
+# ):
+#     model = model.eval()
+#     cols = [i for i in df.columns if "mu" in i]
+#     all_xhat = []
+#     for stage in sub_slice_list:
+#         this_stage_mu = (
+#             df.loc[df[slice_key] == stage][cols]
+#             .iloc[:, :max_embed_dim]
+#             .dropna(axis=1)
+#             .values
+#         )
 
-        if sample_closest_cell:
-            mean_mu = this_stage_mu.mean(axis=0)
-            dist = (this_stage_mu - mean_mu) ** 2
-            dist = np.sum(dist, axis=1)
-            idx = np.argmin(dist)
-            this_stage_mu = np.expand_dims(this_stage_mu[idx], axis=0)
-        with torch.no_grad():
-            # z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
-            # idx = np.random.randint(this_stage_mu.shape[0], size=50)
-            # this_stage_mu = this_stage_mu[idx]
-            z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
-            z_inf = z_inf.to(device)
-            z_inf = z_inf.float()
-            decoder = model.decoder[key]
-            xhat = decoder(z_inf)
-            if mask_output:
-                mask = RotationMask(
-                    "so3",
-                    3,
-                    64,
-                    background=2,
-                )
-                xhat = mask(xhat)
-            xhat = xhat.detach().cpu().numpy()
-            if model_type == "pcloud":
-                if len(xhat.shape) > 3:
-                    xhat = sample_points(xhat.detach().cpu().numpy())
+#         if sample_closest_cell:
+#             mean_mu = this_stage_mu.mean(axis=0)
+#             dist = (this_stage_mu - mean_mu) ** 2
+#             dist = np.sum(dist, axis=1)
+#             idx = np.argmin(dist)
+#             this_stage_mu = np.expand_dims(this_stage_mu[idx], axis=0)
+#         import ipdb
+#         ipdb.set_trace()
+#         with torch.no_grad():
+#             # z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
+#             # idx = np.random.randint(this_stage_mu.shape[0], size=50)
+#             # this_stage_mu = this_stage_mu[idx]
+#             z_inf = torch.tensor(this_stage_mu).mean(axis=0).unsqueeze(axis=0)
+#             z_inf = z_inf.to(device)
+#             z_inf = z_inf.float()
+#             decoder = model.decoder[key]
+#             xhat = decoder(z_inf)
+#             import ipdb
+#             ipdb.set_trace()
+#             if mask_output:
+#                 mask = RotationMask(
+#                     "so3",
+#                     3,
+#                     64,
+#                     background=mask_background,
+#                 )
+#                 xhat = mask(xhat)
+#             xhat = xhat.detach().cpu().numpy()
+#             if model_type == "pcloud":
+#                 if len(xhat.shape) > 3:
+#                     xhat = sample_points(xhat.detach().cpu().numpy())
 
-                xhat = save_pcloud(xhat[0], path, stage, z_max, z_ind)
-            elif model_type == "sdf":
-                mesh = get_mesh_from_sdf(xhat.squeeze(), method="skimage")
-                xhat = get_image_from_mesh(mesh, (64, 64, 64), 0)
-                # scaled_mesh, scale_factor = get_scaled_mesh(mesh, 400, None)
-                # # scale_factor = 3
-                # resc_mesh_sdfs, rev_scale_factors = rescale_meshed_sdfs_to_full([scaled_mesh], [scale_factor])
-                # resc_vox_recon = voxelize_recon_meshes(resc_mesh_sdfs)
-                # resc_vox_recon = voxelize_recon_meshes([mesh])
-                # xhat = resc_vox_recon[0]
-                # min_shape = min(xhat.shape[0], xhat.shape[1], xhat.shape[2])
-                # # print(min_shape, scale_factor)
-                # mask = (build_mask(min_shape, dim=3, margin=0).squeeze().unsqueeze(0))
-                # xhat = xhat[:min_shape, :min_shape, :min_shape]
-                # xhat = xhat * mask.detach().cpu().numpy()
-            all_xhat.append(xhat)
-    return all_xhat
+#                 xhat = save_pcloud(xhat[0], path, stage, z_max, z_ind)
+#             elif model_type == "sdf":
+#                 mesh = get_mesh_from_sdf(xhat.squeeze(), method="skimage")
+#                 xhat = get_image_from_mesh(mesh, (64, 64, 64), 0)
+#                 # scaled_mesh, scale_factor = get_scaled_mesh(mesh, 400, None)
+#                 # # scale_factor = 3
+#                 # resc_mesh_sdfs, rev_scale_factors = rescale_meshed_sdfs_to_full([scaled_mesh], [scale_factor])
+#                 # resc_vox_recon = voxelize_recon_meshes(resc_mesh_sdfs)
+#                 # resc_vox_recon = voxelize_recon_meshes([mesh])
+#                 # xhat = resc_vox_recon[0]
+#                 # min_shape = min(xhat.shape[0], xhat.shape[1], xhat.shape[2])
+#                 # # print(min_shape, scale_factor)
+#                 # mask = (build_mask(min_shape, dim=3, margin=0).squeeze().unsqueeze(0))
+#                 # xhat = xhat[:min_shape, :min_shape, :min_shape]
+#                 # xhat = xhat * mask.detach().cpu().numpy()
+#             all_xhat.append(xhat)
+#     return all_xhat
 
 
 def make_canonical_shapes(

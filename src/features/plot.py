@@ -16,7 +16,7 @@ METRIC_DICT = {
     "classification": {"metric": ["top_1_acc"], "min": [False]},
     "emissions": {"metric": ["emissions", "inference_time"], "min": [True, True]},
     "evolve": {"metric": ["energy", "closest_embedding_distance"], "min": [True, True]},
-    "equiv": {"metric": ["value"], "min": [True]},
+    "equiv": {"metric": ["value3"], "min": [True]},
     "compactness": {"metric": ["compactness", "percent_same"], "min": [True, False]},
     "model_sizes": {"metric": ["model_size"], "min": [True]},
 }
@@ -74,6 +74,7 @@ def collect_outputs(path, norm, model_order=None):
         "so3_image_seg",
         "classical_image_sdf",
         "so3_imag_sdf",
+        "2048_int_ed_vndgcnn_jitter",
     ]
 
     run_names = [
@@ -95,6 +96,7 @@ def collect_outputs(path, norm, model_order=None):
         "SO3 Seg ImageAE",
         "SDF ImageAE",
         "SO3 SDF ImageAE",
+        "SO3 PointcloudAE Jitter",
     ]
     rep_dict = {i: j for i, j in zip(run_names_orig, run_names)}
 
@@ -103,7 +105,7 @@ def collect_outputs(path, norm, model_order=None):
     for metric in [
         "recon",
         "classification",
-        # "regression",
+        "regression",
         "equiv",
         "emissions",
         "compactness",
@@ -112,6 +114,9 @@ def collect_outputs(path, norm, model_order=None):
     ]:
         this_df = pd.read_csv(path + f"{metric}.csv")
         this_df["model"] = this_df["model"].replace(rep_dict)
+        if metric == "evolve":
+            this_df = this_df.replace({np.inf: np.NaN})
+            this_df = this_df.dropna()
 
         if "split" in this_df.columns:
             this_metrics = METRIC_DICT[metric]["metric"]
@@ -162,7 +167,7 @@ def collect_outputs(path, norm, model_order=None):
         "top_1_acc": "Classification",
         "compactness": "Compactness",
         "percent_same": "Outlier Detection",
-        "value": "Rotation Invariance Error",
+        "value3": "Rotation Invariance Error",
         "closest_embedding_distance": "Embedding Distance",
         "energy": "Evolution Energy",
         "emissions": "Emissions",
@@ -175,6 +180,9 @@ def collect_outputs(path, norm, model_order=None):
 
 
 def plot(save_folder, df, models, title, colors_list=None, norm="std"):
+    import matplotlib as mpl
+
+    mpl.rcParams["pdf.fonttype"] = 42
     df = df.dropna()
     df = df.loc[df["model"].isin(models)]
     path = Path(save_folder)
@@ -226,6 +234,9 @@ def plot(save_folder, df, models, title, colors_list=None, norm="std"):
         colors = ["#636EFA", "#00CC96", "#AB63FA", "#EF553B"]
     elif len(models) == 2:
         colors = ["#636EFA", "#EF553B"]
+    else:
+        pal = sns.color_palette("pastel")
+        colors = pal.as_hex()
     opacity = 1
     fill = "toself"
     fill = "none"
@@ -267,7 +278,7 @@ def plot(save_folder, df, models, title, colors_list=None, norm="std"):
 
     fig.write_image(path / f"{title}.png", scale=2)
     fig.write_image(path / f"{title}.pdf", scale=2)
-    fig.write_image(path / f"{title}.eps", scale=2)
+    # fig.write_image(path / f"{title}.eps", scale=2)
     # fig.write_image(path / f"{title}.pdf")
 
 

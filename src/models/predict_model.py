@@ -70,10 +70,6 @@ def vit_forward(
         predicted_img = torch.tensor(
             apply_sample_points(predicted_img, use_sample_points, skew_scale)
         ).to(device)
-    else:
-        print("skippoing sample spoints")
-
-    # print("sample out")
     if this_loss is not None:
         rcl_per_input_dimension = this_loss(
             predicted_img.contiguous(), image.to(device).contiguous()
@@ -233,7 +229,6 @@ def base_forward(
     Forward pass for base cyto_dl models with codecarbon tracking options
     """
     this_batch = batch.copy()
-
     if "pcloud" in batch.keys():
         key = "pcloud"
     else:

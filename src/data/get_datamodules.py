@@ -113,8 +113,8 @@ CONFIG_LIST = {
         # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf.yaml",
     ],
     "test5": [
+        # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf_baseline_smallpad.yaml",
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf_baseline.yaml",
-        # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_seg_baseline.yaml",
     ],
     "test6": [
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_int_updated_morepoints.yaml",
@@ -123,6 +123,13 @@ CONFIG_LIST = {
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_int_updated_morepoints_structurenorm.yaml",
     ],
     "variance_punct_instancenorm": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_int_updated_morepoints_instancenorm.yaml",
+    ],
+    "variance_all_punctate": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/image2.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/image2.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/image2.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_updated_morepoints.yaml",
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_int_updated_morepoints_instancenorm.yaml",
     ],
 }
