@@ -112,9 +112,12 @@ DATASET_INFO = {
         "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
         "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
         "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
-        # "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug_filter.csv",
-        # "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug_filter.csv",
-        # "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug_filter.csv",
+    },
+    "cellpack_npm1_spheres_final": {
+        "embedding_save_location": "./cellpack_npm1_spheres_final",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
     },
     "test5": {
         # "embedding_save_location": "./test5",
@@ -122,9 +125,9 @@ DATASET_INFO = {
         # "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
         # "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
         "embedding_save_location": "./test5",
-        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
-        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
-        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
     },
     "test6": {
         "embedding_save_location": "./test6",
@@ -247,6 +250,7 @@ def compute_features(
         "eval_meshed_img": [],
         "pc_is_iae": False,
         "skew_scale": 100,
+        "only_embedding": False,
     },
     rot_inv_params: dict = {"squeeze_2d": False, "id": "CellId"},
     stereotypy_params: dict = {
@@ -425,6 +429,9 @@ def compute_features(
                 eval_meshed_img=evolve_params["eval_meshed_img"],
                 eval_meshed_img_model_type=evolve_params["eval_meshed_img_model_type"],
                 skew_scale=evolve_params["skew_scale"],
+                only_embedding=evolve_params["only_embedding"],
             )
-
-            evolution_dict.to_csv(path / Path("evolve.csv"))
+            if evolve_params["only_embedding"]:
+                evolution_dict.to_csv(path / Path("evolve_only_embedding.csv"))
+            else:
+                evolution_dict.to_csv(path / Path("evolve.csv"))

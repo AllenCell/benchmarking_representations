@@ -653,7 +653,7 @@ def latent_walk(
             random_sample = np.concatenate(random_sample, axis=0)
         all_features = np.concatenate([all_features, random_sample], axis=0)
 
-    pca = PCA(n_components=256)
+    pca = PCA(n_components=latent_dim)
     pca_features = pca.fit_transform(all_features)
     pca_std_list = pca_features.std(axis=0)
 

@@ -388,6 +388,7 @@ def get_evolution_dict(
     eval_meshed_img: list = [],
     eval_meshed_img_model_type: list = [],
     skew_scale: int = 100,
+    only_embedding: bool = False,
 ):
     """
     all_models - list of models
@@ -490,24 +491,26 @@ def get_evolution_dict(
                         intermediate_embed = (
                             init_embed + (final_embed - init_embed) * fraction
                         )
-                        energy = model_pass_reconstruct(
-                            intermediate_embed,
-                            all_models[j],
-                            device,
-                            init_input,
-                            final_input,
-                            this_loss,
-                            keys[j],
-                            fraction,
-                            this_save,
-                            [initial_id, final_id],
-                            run_names[j],
-                            this_use_sample_points,
-                            this_eval_meshed_img,
-                            this_eval_meshed_img_model_type,
-                            [init_embed, final_embed],
-                            skew_scale,
-                        )
+                        energy = 0
+                        if not only_embedding:
+                            energy = model_pass_reconstruct(
+                                intermediate_embed,
+                                all_models[j],
+                                device,
+                                init_input,
+                                final_input,
+                                this_loss,
+                                keys[j],
+                                fraction,
+                                this_save,
+                                [initial_id, final_id],
+                                run_names[j],
+                                this_use_sample_points,
+                                this_eval_meshed_img,
+                                this_eval_meshed_img_model_type,
+                                [init_embed, final_embed],
+                                skew_scale,
+                            )
                         evolution_dict["model"].append(run_names[j])
 
                         if isinstance(initial_id, list):
@@ -536,15 +539,30 @@ def get_evolution_dict(
                             if fit_pca:
                                 intermediate_embed = pca.transform(intermediate_embed)
 
-                        all_dist = []
-                        for i in range(intermediate_embed.shape[0]):
-                            dist = (
-                                this_all_embeds[:, :embed_dim]
-                                - intermediate_embed[i, :embed_dim]
-                            ) ** 2
-                            dist = np.sqrt(np.sum(dist, axis=1)).min()
-                            all_dist.append(dist)
-                        evolution_dict["closest_embedding_distance"].append(
-                            np.mean(all_dist)
+                        # all_dist = distance_from_all(
+                        #     intermediate_embed, this_all_embeds, embed_dim
+                        # )
+                        all_dist = distance_from_references(
+                            intermediate_embed, init_embed, final_embed, embed_dim
                         )
+                        evolution_dict["closest_embedding_distance"].append(all_dist)
     return pd.DataFrame(evolution_dict)
+
+
+def distance_from_all(intermediate_embed, this_all_embeds, embed_dim):
+    all_dist = []
+    for i in range(intermediate_embed.shape[0]):
+        dist = (this_all_embeds[:, :embed_dim] - intermediate_embed[i, :embed_dim]) ** 2
+        dist = np.sqrt(np.sum(dist, axis=1)).min()
+        all_dist.append(dist)
+    return np.mean(all_dist)
+
+
+def distance_from_references(intermediate_embed, init_embed, final_embed, embed_dim):
+    assert intermediate_embed.shape[0] == 1
+    assert init_embed.shape[0] == 1
+    assert init_embed.shape[0] == 1
+    dist1 = (init_embed[0, :embed_dim] - intermediate_embed[0, :embed_dim]) ** 2
+    dist2 = (final_embed[0, :embed_dim] - intermediate_embed[0, :embed_dim]) ** 2
+    dist_ref = (final_embed[0, :embed_dim] - init_embed[0, :embed_dim]) ** 2
+    return (dist1 + dist2) / dist_ref

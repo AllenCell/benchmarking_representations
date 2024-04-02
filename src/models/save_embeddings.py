@@ -255,7 +255,10 @@ def save_embeddings(
 
             all_splits = [x for xs in all_splits for x in xs]
             all_data_ids = [x for xs in all_data_ids for x in xs]
-            all_loss = [x for xs in all_loss for x in xs]
+            if not all(v is None for v in all_loss):
+                all_loss = [x for xs in all_loss for x in xs]
+            else:
+                all_loss = 0
 
             all_embeds = np.concatenate(all_embeds, axis=0)
             all_embeds2 = all_embeds

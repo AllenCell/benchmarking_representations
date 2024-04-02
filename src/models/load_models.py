@@ -275,9 +275,23 @@ MODEL_INFO = {
             "so3_imag_sdf",
         ],
     },
+    "cellpack_npm1_spheres_final": {
+        "run_ids": [
+            "feaf2a78f04d4b41a004aaa4987eb9a5",
+            "500cf1127d5f43beb8d31f8d5e457c49",
+            "f1ae94b14698405eb96c9133d303cb99",
+            "33dfe744a3ed4acbae3111346b5e9172",  # might need to change
+        ],
+        "names": [
+            "classical_image_seg",
+            "so3_image_seg",
+            "classical_image_sdf",
+            "so3_imag_sdf",
+        ],
+    },
     "test5": {
         "run_ids": [
-            "3042fc0f1877412c9f7a055085cec4b9",  # might need to change
+            "5ece709eec224244958386bd64ca1098",  # might need to change
         ],
         "names": [
             "so3_imag_sdf",

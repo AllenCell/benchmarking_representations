@@ -20,6 +20,41 @@ from vtk.util.numpy_support import vtk_to_numpy
 import math
 
 
+def voxelize_scaled_mesh(mesh):
+    # Find mesh coordinates
+    coords = vtk_to_numpy(mesh.GetPoints().GetData())
+
+    # Find bounds of the mesh
+    rmin = (coords.min(axis=0) - 0.5).astype(int)
+    rmax = (coords.max(axis=0) + 0.5).astype(int)
+
+    # Width, height and depth
+    w = int(2 + (rmax[0] - rmin[0]))
+    h = int(2 + (rmax[1] - rmin[1]))
+    d = int(2 + (rmax[2] - rmin[2]))
+
+    # Create image data
+    imagedata = vtk.vtkImageData()
+    imagedata.SetDimensions([w, h, d])
+    imagedata.SetExtent(0, w - 1, 0, h - 1, 0, d - 1)
+    imagedata.SetOrigin(rmin)
+    imagedata.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
+
+    # Set all values to 1
+    imagedata.GetPointData().GetScalars().FillComponent(0, 1)
+
+    # Create an empty 3D numpy array to sum up
+    # voxelization of all meshes
+    img = np.zeros((d, h, w), dtype=np.uint8)
+
+    seg = voxelize_mesh(
+        imagedata=imagedata, shape=(d, h, w), mesh=mesh, origin=rmin
+    )
+    img[seg > 0] = 1
+
+    return img
+
+
 def get_mesh_from_sdf(sdf, method="skimage", cast_pyvista=True):
     """
     This function reconstructs a mesh from signed distance function
