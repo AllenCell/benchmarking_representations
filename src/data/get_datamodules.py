@@ -48,9 +48,9 @@ CONFIG_LIST = {
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance/nuc_bound/punctate_int_updated_morepoints.yaml",
     ],
     "cellpainting": [
-        "../data/configs/inference_cellpainting_configs/pointcloud_3.yaml",
-        "../data/configs/inference_cellpainting_configs/pointcloud_4.yaml",
-        "../data/configs/inference_cellpainting_configs/image_full.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpainting/compound_reprocessed2.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpainting/compound_scalar_reprocessed2.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpainting/image.yaml",
     ],
     "mito": [
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/mito/base_3.yaml",
@@ -93,10 +93,9 @@ CONFIG_LIST = {
         "../data/configs/inference_fbl_variance/image_sdf_noalign.yaml",
         "../data/configs/inference_fbl_variance/image_seg_noalign.yaml",
     ],
-    # "cellpack": [
-    #     "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/default.yaml",
-    #     "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/npm1.yaml",
-    # ],
+    "npm1_test": [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/implicit_test/npm1.yaml",
+    ],
     "cellpack": [
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/upsample_all.yaml",
         # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/default.yaml",
@@ -113,6 +112,12 @@ CONFIG_LIST = {
         # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf.yaml",
     ],
     "cellpack_npm1_spheres_final": [
+        # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_seg_baseline.yaml",
+        # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf_baseline.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_seg.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf.yaml",
+    ],
+    "cellpack_npm1_spheres_final_norot": [
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_seg_baseline.yaml",
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf_baseline.yaml",
         # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_seg.yaml",
@@ -120,7 +125,7 @@ CONFIG_LIST = {
     ],
     "test5": [
         # "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf_baseline_smallpad.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_seg_baseline.yaml",
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/spheres_image_sdf.yaml",
     ],
     "test6": [
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_int_updated_morepoints.yaml",
@@ -141,7 +146,7 @@ CONFIG_LIST = {
 }
 
 
-def get_data(dataset_name, batch_size):
+def get_data(dataset_name, batch_size, debug=False):
     config_list = CONFIG_LIST[dataset_name]
     data = []
     for config_path in config_list:
@@ -151,5 +156,10 @@ def get_data(dataset_name, batch_size):
                 config["batch_size"] = batch_size
                 if "shuffle" in config.keys():
                     config["shuffle"] = False
+                if debug:
+                    config['subsample'] = {}
+                    config['subsample']['train'] = 1
+                    config['subsample']['valid'] = 1
+                    config['subsample']['test'] = 1
             data.append(instantiate(config))
     return data

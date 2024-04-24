@@ -36,7 +36,7 @@ class proba_logreg(LogisticRegression):
         return LogisticRegression.predict_proba(self, X)
 
 
-def get_classification(this_mo, target_col):
+def get_classification(this_mo, target_col, cols=None):
     """
     Logistic regression given dataframe of embeddings
     and target column name
@@ -65,7 +65,8 @@ def get_classification(this_mo, target_col):
     multi_class = "multinomial"
     if np.unique(this_mo[target_col]).shape[0] == 2:
         multi_class = "ovr"
-    cols = [i for i in this_mo.columns if "mu" in i]
+    if cols is None:
+        cols = [i for i in this_mo.columns if "mu" in i]
 
     clf = proba_logreg(
         random_state=20,

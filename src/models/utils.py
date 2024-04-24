@@ -58,7 +58,8 @@ def _sample(raw, skew_scale=100):
         z = z[idxs].detach().cpu() + 2 * (torch.rand(len(idxs)).type_as(x) - 0.5) * disp
     else:
         z = x.clone().detach().cpu()
-        z.fill(0)
+        # z = z.as_tensor()
+        z.fill_(0)
     new_cents = torch.stack([z, y, x], axis=1).float()
     assert new_cents.shape[0] == num_points
     return new_cents

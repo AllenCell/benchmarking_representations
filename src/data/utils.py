@@ -47,9 +47,7 @@ def voxelize_scaled_mesh(mesh):
     # voxelization of all meshes
     img = np.zeros((d, h, w), dtype=np.uint8)
 
-    seg = voxelize_mesh(
-        imagedata=imagedata, shape=(d, h, w), mesh=mesh, origin=rmin
-    )
+    seg = voxelize_mesh(imagedata=imagedata, shape=(d, h, w), mesh=mesh, origin=rmin)
     img[seg > 0] = 1
 
     return img

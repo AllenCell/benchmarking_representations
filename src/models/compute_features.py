@@ -45,6 +45,12 @@ DATASET_INFO = {
         "image_path": "/allen/aics/modeling/ritvik/variance_punctate/one_step/manifest.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest.parquet",
     },
+    "npm1_test": {
+        "embedding_save_location": "./npm1_test",
+        "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/computefeatures/manifest.csv",
+        "image_path": "",
+        "pc_path": "",
+    },
     "test4": {
         "embedding_save_location": "./test4",
         "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
@@ -64,11 +70,17 @@ DATASET_INFO = {
         "image_path": "/allen/aics/modeling/ritvik/variance_punctate/one_step/manifest.parquet",
         "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest.parquet",
     },
+    # "cellpainting": {
+    #     "embedding_save_location": "./cellpainting_embeddings_test",
+    #     "orig_df": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/singlecell_pointclouds/manifest_all_compound_mergeimage.parquet",
+    #     "image_path": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/single_cell_images/manifest_all_compound.parquet",
+    #     "pc_path": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/singlecell_pointclouds/manifest_all_compound.parquet",
+    # },
     "cellpainting": {
-        "embedding_save_location": "./cellpainting_embeddings_test",
-        "orig_df": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/singlecell_pointclouds/manifest_all_compound_mergeimage.parquet",
-        "image_path": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/single_cell_images/manifest_all_compound.parquet",
-        "pc_path": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/singlecell_pointclouds/manifest_all_compound.parquet",
+        "embedding_save_location": "./cellpainting_v2",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/single_cell_images/manifest_all_compound2.parquet",
+        "image_path": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/single_cell_images/manifest_all_compound2.parquet",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/single_cell_images/manifest_all_compound2.parquet",
     },
     "pcna_vit": {
         "embedding_save_location": "./embeddings_pcna_vit",
@@ -114,7 +126,15 @@ DATASET_INFO = {
         "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_filter2.csv",
     },
     "cellpack_npm1_spheres_final": {
-        "embedding_save_location": "./cellpack_npm1_spheres_final",
+        "embedding_save_location": "./cellpack_npm1_spheres_final/test/",
+        # "embedding_save_location": "./embeddings_cellpack_npm1_spheres/",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_rot.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_rot.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_rot.csv",
+    },
+    "cellpack_npm1_spheres_final_norot": {
+        "embedding_save_location": "./cellpack_npm1_spheres_final/test_norot/",
+        # "embedding_save_location": "./embeddings_cellpack_npm1_spheres/",
         "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
         "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
         "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
@@ -125,9 +145,9 @@ DATASET_INFO = {
         # "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
         # "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_aug.csv",
         "embedding_save_location": "./test5",
-        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
-        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
-        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest.csv",
+        "orig_df": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_rot.csv",
+        "image_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_rot.csv",
+        "pc_path": "/allen/aics/modeling/ritvik/projects/data/cellpack_npm1_spheres/manifest_rot.csv",
     },
     "test6": {
         "embedding_save_location": "./test6",
@@ -251,6 +271,7 @@ def compute_features(
         "pc_is_iae": False,
         "skew_scale": 100,
         "only_embedding": False,
+        "fit_pca": False,
     },
     rot_inv_params: dict = {"squeeze_2d": False, "id": "CellId"},
     stereotypy_params: dict = {
@@ -425,13 +446,13 @@ def compute_features(
                 use_sample_points_list,
                 id="cell_id",
                 test_cellids=None,
-                fit_pca=False,
+                fit_pca=evolve_params["fit_pca"],
                 eval_meshed_img=evolve_params["eval_meshed_img"],
                 eval_meshed_img_model_type=evolve_params["eval_meshed_img_model_type"],
                 skew_scale=evolve_params["skew_scale"],
                 only_embedding=evolve_params["only_embedding"],
             )
             if evolve_params["only_embedding"]:
-                evolution_dict.to_csv(path / Path("evolve_only_embedding.csv"))
+                evolution_dict.to_csv(path / Path("embedding_interpolate.csv"))
             else:
                 evolution_dict.to_csv(path / Path("evolve.csv"))

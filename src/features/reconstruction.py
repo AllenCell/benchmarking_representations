@@ -354,8 +354,9 @@ def save_pcloud(xhat, path, name, z_max, z_ind=2):
         ratio = z_max
         inds = np.where(xhat[:, z_ind] < ratio * max_num)[0]
         xhat = xhat[inds]
-        inds = np.where(xhat[:, z_ind] > -ratio * max_num)[0]
-        xhat = xhat[inds]
+        # inds = np.where(xhat[:, z_ind] > -ratio * max_num)[0]
+        # xhat = xhat[inds]
+        # print(xhat.max())
 
         # this_recon = pv.PolyData(xhat[:, :3])
         # this_recon.save(path / f"{name}_center.ply", texture=xhat[:, :].astype(np.uint8))
@@ -465,17 +466,28 @@ def make_canonical_shapes(
     all_xhat = []
     all_meshes = []
     all_cellids = []
+    all_closest_real_meshes = []
     for stage in sub_slice_list:
-        this_stage_df = df.loc[df[slice_key] == stage]
+        this_stage_df = df.loc[df[slice_key] == stage].reset_index(drop=True)
         this_stage_mu = (
             this_stage_df[cols].iloc[:, :max_embed_dim].dropna(axis=0).values
         )
+        closest_real_mesh = None
         if sample_closest_cell:
             mean_mu = this_stage_mu.mean(axis=0)
             dist = (this_stage_mu - mean_mu) ** 2
             dist = np.sum(dist, axis=1)
             closest_idx = np.argmin(dist)
+
+            real_input = this_stage_df.iloc[closest_idx]['seg_path']
+            from skimage.io import imread
+            from src.data.utils import mesh_seg_model_output
+
+            img = imread(real_input)
+            img[16, 16, 16] = 1
+            closest_real_mesh = mesh_seg_model_output(img)
             this_stage_mu = np.expand_dims(this_stage_mu[closest_idx], axis=0)
+        all_closest_real_meshes.append(closest_real_mesh)
 
         with torch.no_grad():
             print(this_stage_mu.shape)
@@ -536,7 +548,7 @@ def make_canonical_shapes(
 
             all_xhat.append(xhat)
     if sample_closest_cell:
-        return all_xhat, all_meshes, all_cellids
+        return all_xhat, all_meshes, all_cellids, all_closest_real_meshes
     return all_xhat, all_meshes
 
 

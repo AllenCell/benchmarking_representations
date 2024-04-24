@@ -193,6 +193,10 @@ def get_equiv_dict(
                         batch_input = {
                             this_key: torch.tensor(this_input_rot).to(device).float()
                         }
+                        if 'points' in i.keys():
+                            batch_input["points"] = i['points']
+                            batch_input['points.df'] = i['points.df']
+
                         if hasattr(this_model, "decoder"):
                             if LatentLocalDecoder is not None:
                                 if isinstance(
@@ -213,7 +217,11 @@ def get_equiv_dict(
 
                         if jl == 0:
                             baseline = z
-
+                        if len(z.shape) > 2:
+                            z = np.linalg.norm(z, axis=-1)
+                        
+                        if len(baseline.shape) > 2:
+                            baseline = np.linalg.norm(baseline, axis=-1)
                         baseline = baseline[:, :max_embed_dim]
                         z = z[:, :max_embed_dim]
                         norm_diff = np.linalg.norm(z - baseline)

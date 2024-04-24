@@ -55,8 +55,8 @@ MODEL_INFO = {
     },
     "test": {
         "run_ids": [
-            # "ac43b8bbeb3a493bacc69927c8f21276",
-            "1c1ca294eb6d4c3092cbfa062dea934a",
+            "ac43b8bbeb3a493bacc69927c8f21276",
+            # "1c1ca294eb6d4c3092cbfa062dea934a",
         ],
         "names": [
             "test_equiv",  # pcna
@@ -153,18 +153,34 @@ MODEL_INFO = {
             "2048_int_ed_vndgcnn_more",
         ],
     },
+    # "cellpainting": {
+    #     "run_ids": [
+    #         "1e5df13f946144c9831149b3b1330201",
+    #         "1c21252fcdc84c9cb92c2c87b549afc3",
+    #         "a6d9ca26a9fb450684176761ad0bc2ba",
+    #         "ccfb115c7ad04714855224d7d48e8605",
+    #     ],
+    #     "names": [
+    #         "2048_ed_dgcnn",
+    #         "2048_int_ed_vndgcnn",
+    #         "classical_image",
+    #         "so2_image",
+    #     ],
+    # },
     "cellpainting": {
         "run_ids": [
-            "1e5df13f946144c9831149b3b1330201",
-            "1c21252fcdc84c9cb92c2c87b549afc3",
-            "a6d9ca26a9fb450684176761ad0bc2ba",
-            "ccfb115c7ad04714855224d7d48e8605",
+            "0deca556b2da4344ab8a03e86df12d2c",
+            "b53286e931364b0ebb5783ae5aa9969f",
+            "cf269be5d85a4c27afd94a9a4b9e865a",
+            "a8104e80d78743b8976db424a2199e96",
+            "cd353763f95d4e2e80fd323ae4ff798c",
         ],
         "names": [
             "2048_ed_dgcnn",
             "2048_int_ed_vndgcnn",
             "classical_image",
             "so2_image",
+            "vit",
         ],
     },
     # "cellpack": {
@@ -203,6 +219,14 @@ MODEL_INFO = {
         ],
         "names": [
             "equiv",
+        ],
+    },
+    "npm1_test": {
+        "run_ids": [
+            "b88c7f31a44347ba918edce252337468",  # this is good
+        ],
+        "names": [
+            "equiv_vnn",
         ],
     },
     "cellpack_pcna": {
@@ -277,10 +301,24 @@ MODEL_INFO = {
     },
     "cellpack_npm1_spheres_final": {
         "run_ids": [
-            "feaf2a78f04d4b41a004aaa4987eb9a5",
-            "500cf1127d5f43beb8d31f8d5e457c49",
-            "f1ae94b14698405eb96c9133d303cb99",
-            "33dfe744a3ed4acbae3111346b5e9172",  # might need to change
+            "aac3f3d5676a4336863123423df8f911",
+            "5a5eb175c7ca489db919f0412582f909",
+            "dc233a1c8f254657b631b54c2b605999",
+            "e3b0531b8ba04395b7addd692d020fc2",  # might need to change
+        ],
+        "names": [
+            "classical_image_seg",
+            "so3_image_seg",
+            "classical_image_sdf",
+            "so3_imag_sdf",
+        ],
+    },
+    "cellpack_npm1_spheres_final_norot": {
+        "run_ids": [
+            "aac3f3d5676a4336863123423df8f911",
+            "5a5eb175c7ca489db919f0412582f909",
+            "dc233a1c8f254657b631b54c2b605999",
+            "e3b0531b8ba04395b7addd692d020fc2",  # might need to change
         ],
         "names": [
             "classical_image_seg",
@@ -291,7 +329,7 @@ MODEL_INFO = {
     },
     "test5": {
         "run_ids": [
-            "5ece709eec224244958386bd64ca1098",  # might need to change
+            "fdacb545b8b04848a3d03a3e99394efd",  # might need to change
         ],
         "names": [
             "so3_imag_sdf",

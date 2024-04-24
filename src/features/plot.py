@@ -14,6 +14,7 @@ METRIC_DICT = {
     "recon": {"metric": ["loss"], "min": [True]},
     "regression": {"metric": ["test_r2"], "min": [False]},
     "classification": {"metric": ["top_1_acc"], "min": [False]},
+    "cell_stage_classification2": {"metric": ["percent_same"], "min": [False]},
     "emissions": {"metric": ["emissions", "inference_time"], "min": [True, True]},
     "evolve": {"metric": ["energy", "closest_embedding_distance"], "min": [True, True]},
     "equiv": {"metric": ["value3"], "min": [True]},
@@ -105,6 +106,7 @@ def collect_outputs(path, norm, model_order=None):
     for metric in [
         "recon",
         "classification",
+        # "cell_stage_classification2",
         "regression",
         "equiv",
         "emissions",
@@ -112,6 +114,7 @@ def collect_outputs(path, norm, model_order=None):
         "evolve",
         "model_sizes",
     ]:
+        print(metric)
         this_df = pd.read_csv(path + f"{metric}.csv")
         this_df["model"] = this_df["model"].replace(rep_dict)
         if metric == "evolve":
@@ -165,6 +168,7 @@ def collect_outputs(path, norm, model_order=None):
         "loss": "Reconstruction",
         "test_r2": "Feature Regression",
         "top_1_acc": "Classification",
+        "top_2_acc": "Classification",
         "compactness": "Compactness",
         "percent_same": "Outlier Detection",
         "value3": "Rotation Invariance Error",
@@ -365,6 +369,7 @@ def plot_pc(
         # fig.canvas.draw()
         # image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
         # image = image.reshape(*reversed(fig.canvas.get_width_height()), 3)
+        print(Path(f"{key}_{sub_key}_clean.png"))
         fig.savefig(
             Path(directory) / Path(f"{key}_{sub_key}_clean.png"),
             bbox_inches="tight",

@@ -10,6 +10,7 @@ from pathlib import Path
 from src.models.predict_model import process_batch_embeddings, process_batch
 import logging
 from typing import Optional
+import cyto_dl
 
 
 def get_pc_loss():
@@ -259,11 +260,17 @@ def save_embeddings(
                 all_loss = [x for xs in all_loss for x in xs]
             else:
                 all_loss = 0
-
             all_embeds = np.concatenate(all_embeds, axis=0)
             all_embeds2 = all_embeds
+
+            this_run_name = run_names[j_ind]
             if len(all_embeds.shape) > 2:
-                all_embeds2 = all_embeds[:, 1:, :].mean(axis=1)
+                if isinstance(model, cyto_dl.models.vae.PointCloudVAE):
+                    np.save(Path(save_folder) / f"{this_run_name}.npy", all_embeds)
+                    # all_embeds2 = all_embeds.reshape(all_embeds.shape[0], -1)
+                    all_embeds2 = np.linalg.norm(all_embeds, axis=-1)
+                else:
+                    all_embeds2 = all_embeds[:, 1:, :].mean(axis=1)
 
             tmp_df = pd.DataFrame()
             tmp_df["CellId"] = all_data_ids

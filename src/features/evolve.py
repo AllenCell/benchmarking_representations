@@ -539,12 +539,12 @@ def get_evolution_dict(
                             if fit_pca:
                                 intermediate_embed = pca.transform(intermediate_embed)
 
-                        # all_dist = distance_from_all(
-                        #     intermediate_embed, this_all_embeds, embed_dim
-                        # )
-                        all_dist = distance_from_references(
-                            intermediate_embed, init_embed, final_embed, embed_dim
+                        all_dist = distance_from_all(
+                            intermediate_embed, this_all_embeds, embed_dim
                         )
+                        # all_dist = distance_from_references(
+                        #     intermediate_embed, init_embed, final_embed, embed_dim
+                        # )
                         evolution_dict["closest_embedding_distance"].append(all_dist)
     return pd.DataFrame(evolution_dict)
 
@@ -554,6 +554,7 @@ def distance_from_all(intermediate_embed, this_all_embeds, embed_dim):
     for i in range(intermediate_embed.shape[0]):
         dist = (this_all_embeds[:, :embed_dim] - intermediate_embed[i, :embed_dim]) ** 2
         dist = np.sqrt(np.sum(dist, axis=1)).min()
+        # dist = np.sqrt(np.sum(dist, axis=1)).sum()
         all_dist.append(dist)
     return np.mean(all_dist)
 
@@ -565,4 +566,4 @@ def distance_from_references(intermediate_embed, init_embed, final_embed, embed_
     dist1 = (init_embed[0, :embed_dim] - intermediate_embed[0, :embed_dim]) ** 2
     dist2 = (final_embed[0, :embed_dim] - intermediate_embed[0, :embed_dim]) ** 2
     dist_ref = (final_embed[0, :embed_dim] - init_embed[0, :embed_dim]) ** 2
-    return (dist1 + dist2) / dist_ref
+    return np.sqrt(np.sum((dist1 + dist2) / dist_ref, axis=0))

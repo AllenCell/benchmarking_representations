@@ -240,7 +240,6 @@ def base_forward(
             this_batch[key].shape[0], 1, 1
         )
         this_batch["points"] = uni_sample_points
-
     xhat, z, z_params = model(
         move(this_batch, device), decode=True, inference=True, return_params=True
     )
