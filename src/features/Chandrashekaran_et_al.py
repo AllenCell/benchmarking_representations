@@ -1,7 +1,7 @@
 import pandas as pd
 import pycytominer
 import numpy as np
-import utils
+from src.cellprofiler import utils
 
 def get_metadata():
     meta_path = '/allen/aics/modeling/ritvik/projects/2023_Chandrasekaran_submitted/metadata/platemaps/2020_11_04_CPJUMP1/platemap/JUMP-Target-1_compound_platemap.txt'
