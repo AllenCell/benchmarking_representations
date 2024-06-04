@@ -1,0 +1,3 @@
+_target_: pointcloudutils.networks.LocalDecoder
+num_features: 20
+hidden_size: 512
