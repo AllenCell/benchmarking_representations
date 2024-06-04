@@ -164,18 +164,19 @@ def run_map_calculation(experiment_df, df_final, get_featuredata, batch_size, nu
             # Create consensus profiles
             modality_1_consensus_df = utils.consensus(modality_1_df, replicate_feature)
 
-            # Filter out non-replicable compounds
-            # replicable_compounds = list(
-            #     replicability_map_df[
-            #         (replicability_map_df.Description == description)
-            #         & (replicability_map_df.above_q_threshold == True)
-            #     ][replicate_feature]
-            # )
+            #Filter out non-replicable compounds
+            replicable_compounds = list(
+                replicability_map_df[
+                    (replicability_map_df.Description == description)
+                    & (replicability_map_df.above_q_threshold == True)
+                ][replicate_feature]
+            )
             replicable_compounds = list(
                 replicability_map_df[
                     (replicability_map_df.Description == description)
                 ][replicate_feature]
             )
+            print('get rep compounds')
             modality_1_consensus_df = modality_1_consensus_df.query(
                 "Metadata_broad_sample==@replicable_compounds"
             ).reset_index(drop=True)
@@ -232,6 +233,7 @@ def run_map_calculation(experiment_df, df_final, get_featuredata, batch_size, nu
             for (
                 modality_2_perturbation
             ) in all_modality_2_experiments_df.Perturbation.unique():
+                print('here')
                 modality_2_experiments_df = all_modality_2_experiments_df.query(
                     "Perturbation==@modality_2_perturbation"
                 )
@@ -456,4 +458,4 @@ def run_map_calculation(experiment_df, df_final, get_featuredata, batch_size, nu
                         modality_1_timepoint,
                         modality_2_timepoint,
                     )
-    return replicability_map_df, matching_map_df
+    return replicability_map_df, matching_map_df, replicability_fr_df

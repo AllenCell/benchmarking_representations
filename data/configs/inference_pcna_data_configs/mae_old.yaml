@@ -3,17 +3,28 @@ _convert_: all
 path: /allen/aics/modeling/ritvik/pcna/manifest.parquet
 split_column: split
 # cache_dir: /storage/benji.the.kid/cache/rep_learning_vit/pcna
-batch_size: 1
+batch_size: 32
 transforms:
   - _target_: cyto_dl.dataframe.transforms.GroupCols
     groups:
-      image: vit_image_path
+      image: cropped_registered_path_nucmask
       cell_id: CellId
   - _target_: monai.transforms.LoadImaged
     keys: image
     reader:
       - _target_: cyto_dl.image.io.SkimageReader
-        expand_dims: True
+        channels:
+          - 2
+  - _target_: cyto_dl.image.transforms.ContrastAdjustd
+    keys:
+      - image
+    low: 0
+    high: 6000
+    background: 0
+  - _target_: monai.transforms.ScaleIntensityd
+    keys:
+      - image
+    channel_wise: true
   - _target_: monai.transforms.ToTensord
     keys:
       - image

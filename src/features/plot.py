@@ -14,11 +14,13 @@ METRIC_DICT = {
     "recon": {"metric": ["loss"], "min": [True]},
     "regression": {"metric": ["test_r2"], "min": [False]},
     "classification": {"metric": ["top_1_acc"], "min": [False]},
-    "cell_stage_classification2": {"metric": ["percent_same"], "min": [False]},
+    "cell_stage_classification2": {"metric": ["top_1_acc"], "min": [False]},
     "emissions": {"metric": ["emissions", "inference_time"], "min": [True, True]},
     "evolve": {"metric": ["energy", "closest_embedding_distance"], "min": [True, True]},
     "equiv": {"metric": ["value3"], "min": [True]},
-    "compactness": {"metric": ["compactness", "percent_same"], "min": [True, False]},
+    # "compactness": {"metric": ["compactness", "percent_same"], "min": [True, False]},
+    "compactness": {"metric": ["compactness"], "min": [True]},
+    # "outlier": {"metric": ["top_1_acc"], "min": [False]},
     "model_sizes": {"metric": ["model_size"], "min": [True]},
 }
 
@@ -106,8 +108,9 @@ def collect_outputs(path, norm, model_order=None):
     for metric in [
         "recon",
         "classification",
-        # "cell_stage_classification2",
-        "regression",
+        "cell_stage_classification2",
+        # "regression",
+        # "outlier",
         "equiv",
         "emissions",
         "compactness",
@@ -130,6 +133,7 @@ def collect_outputs(path, norm, model_order=None):
                 id_vars=["model"],
                 value_vars=this_metrics,
             )
+            tmp_agg['variable'] = metric + '_' + tmp_agg['variable'].iloc[0]
             df_non_agg.append(tmp_agg)
             this_df = (
                 this_df.loc[this_df["split"] == "test"]
@@ -144,6 +148,7 @@ def collect_outputs(path, norm, model_order=None):
                 id_vars=["model"],
                 value_vars=this_metrics,
             )
+            tmp_agg['variable'] = tmp_agg['variable'].apply(lambda x: metric + '_' + x)
             df_non_agg.append(tmp_agg.reset_index())
             this_df = this_df.groupby(["model"]).mean(numeric_only=True).reset_index()
 
@@ -159,24 +164,25 @@ def collect_outputs(path, norm, model_order=None):
                 id_vars=["model"],
                 value_vars=[this_metrics[i]],
             )
+            this_df2['variable'] = metric + '_' + this_df2['variable'].iloc[0]
             df_list.append(this_df2)
-
     df = pd.concat(df_list, axis=0).reset_index(drop=True)
     df_non_agg = pd.concat(df_non_agg, axis=0).reset_index(drop=True)
-
     rep_dict_var = {
-        "loss": "Reconstruction",
-        "test_r2": "Feature Regression",
-        "top_1_acc": "Classification",
-        "top_2_acc": "Classification",
-        "compactness": "Compactness",
-        "percent_same": "Outlier Detection",
-        "value3": "Rotation Invariance Error",
-        "closest_embedding_distance": "Embedding Distance",
-        "energy": "Evolution Energy",
-        "emissions": "Emissions",
-        "inference_time": "Inference Time",
-        "model_size": "Model Size",
+        "recon_loss": "Reconstruction",
+        "regression_test_r2": "Feature Regression",
+        "classification_top_1_acc": "Classification",
+        "cell_stage_classification2_top_1_acc": "Interphase/Mitotic classification",
+        "classification_top_2_acc": "Classification",
+        "compactness_compactness": "Compactness",
+        "compactness_percent_same": "Outlier Detection",
+        "outlier_top_1_acc": "Outlier Detection",
+        "equiv_value3": "Rotation Invariance Error",
+        "evolve_closest_embedding_distance": "Embedding Distance",
+        "evolve_energy": "Evolution Energy",
+        "emissions_emissions": "Emissions",
+        "emissions_inference_time": "Inference Time",
+        "model_sizes_model_size": "Model Size",
     }
     df["variable"] = df["variable"].replace(rep_dict_var)
     df_non_agg["variable"] = df_non_agg["variable"].replace(rep_dict_var)
@@ -204,9 +210,17 @@ def plot(save_folder, df, models, title, colors_list=None, norm="std"):
         "Rotation Invariance Error",
         "Embedding Distance",
     ]
+    if "Interphase/Mitotic classification" in df['variable'].unique():
+        expressive_metrics = [
+            "Compactness",
+            "Outlier Detection",
+            "Classification",
+            "Interphase/Mitotic classification",
+            "Rotation Invariance Error",
+            "Embedding Distance",
+        ]
     if "Feature Regression" in df["variable"].unique():
         expressive_metrics = expressive_metrics + ["Feature Regression"]
-
     cat_order = gen_metrics + emission_metrics + expressive_metrics
     missing_cols = set(cat_order).symmetric_difference(set(df["variable"].values))
     cat_order = [i for i in cat_order if i not in missing_cols]
@@ -313,7 +327,10 @@ def plot_pc(
         dft[key] = names[idx]
         df = pd.concat([df, dft], ignore_index=True)
 
-    df, cmap = normalize_intensities_and_get_colormap(df=df, pcts=[5, 95])
+    if "inorm" not in df.columns:
+        df, cmap = normalize_intensities_and_get_colormap(df=df, pcts=[5, 95])
+    else:
+        cmap = 'inferno'
 
     for sub_key in df[key].unique():
         df_sub = df.loc[df[key] == sub_key]

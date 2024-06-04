@@ -47,7 +47,12 @@ def get_classification(this_mo, target_col, cols=None):
                 ["M1M2", "unclear", "M3", "M4M5", "M6M7_complete", "M6M7_single"]
             )
         ]
-        this_mo = this_mo.reset_index(drop=True)
+        order = ['G1', 'earlyS', 'earlyS-midS', 'midS','midS-lateS', 'lateS', 'lateS-G2', 'G2']
+        ordered_mo = []
+        for ord in order:
+            this2 = this_mo.loc[this_mo['cell_stage_fine'] == ord].reset_index(drop=True)
+            ordered_mo.append(this2)
+        this_mo = pd.concat(ordered_mo, axis=0).reset_index(drop=True)
         this_mo["cell_stage_numeric"] = pd.factorize(this_mo["cell_stage_fine"])[0]
         assert this_mo["cell_stage_numeric"].isna().any() == False
         target_col = "cell_stage_numeric"

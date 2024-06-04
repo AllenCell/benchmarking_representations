@@ -6,7 +6,10 @@ benchmarking different methods for extracting unsupervised representations from 
 ## Installation
 
 ```bash
-pip install -r requirements.txt
+pip install numpy
+pip install cyto-dl[all] git+https://github.com/AllenCellModeling/cyto-dl@br_release
+pip install -e .
+pip install -e ./pointcloudutils
 ```
 
 Project Organization

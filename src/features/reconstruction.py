@@ -354,8 +354,8 @@ def save_pcloud(xhat, path, name, z_max, z_ind=2):
         ratio = z_max
         inds = np.where(xhat[:, z_ind] < ratio * max_num)[0]
         xhat = xhat[inds]
-        # inds = np.where(xhat[:, z_ind] > -ratio * max_num)[0]
-        # xhat = xhat[inds]
+        inds = np.where(xhat[:, z_ind] > -ratio * max_num)[0]
+        xhat = xhat[inds]
         # print(xhat.max())
 
         # this_recon = pv.PolyData(xhat[:, :3])

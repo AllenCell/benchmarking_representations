@@ -13,9 +13,7 @@ from skimage import filters as skfilters
 from skimage import morphology as skmorpho
 from skimage.measure import label
 
-from aicsshparam import shtools, shparam
-
-from aicscytoparam.cytoparam import voxelize_mesh
+from aicsshparam.shtools import voxelize_mesh
 from vtk.util.numpy_support import vtk_to_numpy
 import math
 

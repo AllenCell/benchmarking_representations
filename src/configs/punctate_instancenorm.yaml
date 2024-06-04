@@ -1,0 +1,9 @@
+embedding_save_location: "./variance_punct_instancenorm"
+orig_df: /allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv
+image_path: /allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet
+pc_path: /allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet
+run_ids: ["6a523cd918804acd9ed35b436b607ad4"]
+names: [var_punct_instancenorm]
+data_paths: [
+        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_int_updated_morepoints_instancenorm.yaml",
+    ]
