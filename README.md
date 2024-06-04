@@ -1,7 +1,7 @@
 # benchmarking_representations
 
-benchmarking different methods for extracting unsupervised representations from images
-
+Code for training and evaluating morphology appropriate representation learning methods.
+ 
 ## Installation
 
 ```bash
@@ -67,15 +67,22 @@ export CYTODL_CONFIG_PATH=./br/configs/
 ```
 ______________________________________________________________________
 
-## Figure 2 - CellPACK synthetic data
+## Steps to download data, train models, run benchmarking analysis
 
-To download data and train models, run steps 1 and 2. To skip this and run benchmarking analysis, skip to step 3. 
+To download data and train models, run steps 1, 2 and 3. To skip this and run benchmarking analysis on pre-computed embeddings, skip to step 4. 
 
-1. [Optional] Download data
+1. [Optional] Datasets are hosted on quilt. Download raw data at the following links 
+
 ```bash
+[cellPACK synthetic dataset] 
+[DNA replication foci dataset] https://open.quiltdata.com/b/allencell/packages/aics/nuclear_project_dataset_4
+[WTC-11 hIPSc single cell image dataset v1] https://staging.allencellquilt.org/b/allencell/tree/aics/hipsc_single_cell_image_dataset/
+[Nucleolar drug perturbation dataset]
 ```
 
-Update downloaded paths in the following data yaml files
+2. [Optional] Once data is downloaded, run preprocessing scripts to create the final image and point cloud datasets. Preprocessing 
+
+update paths in the data yaml files. For the cellPACK data, these yaml files are located here
 
 ```
 ├── configs
@@ -84,6 +91,18 @@ Update downloaded paths in the following data yaml files
 │   │   │   ├── image.yaml      <- Datamodule for cellPACK images 
 │   │   │   ├── pc.yaml       <- Datamodule for cellPACK point clouds
 │   │   │   ├── pc_jitter.yaml       <- Datamodule for cellPACK point clouds with jitter
+```
+
+Similarly, for PCNA data these yaml files are located here - 
+
+```
+├── configs
+│   ├── data
+│   │   ├── pcna        
+│   │   │   ├── image.yaml      <- Datamodule for PCNA images 
+│   │   │   ├── pc.yaml       <- Datamodule for PCNA point clouds
+│   │   │   ├── pc_intensity.yaml       <- Datamodule for PCNA point clouds with intensity
+│   │   │   ├── pc_intensity_jitter.yaml       <- Datamodule for PCNA point clouds with intensity and jitter
 ```
  
 2. [Optional] Train models using cyto_dl. Experiment configs for point cloud and image models are located here - 
@@ -109,5 +128,11 @@ python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthm
 3. [Optional] Alternatively, download pre-computed embeddings.
 
 4. Run benchmarking notebook
+
+```bash
+jupyter notebook br/notebooks/fig2.ipynb
+```
+
+
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
