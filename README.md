@@ -65,7 +65,49 @@ export CYTODL_CONFIG_PATH=./br/configs/
 │
 ├── pyproject.toml           <- makes project pip installable (pip install -e .) so br can be imported
 ```
-
 ______________________________________________________________________
+
+## Figure 2 - CellPACK synthetic data
+
+To download data and train models, run steps 1 and 2. To skip this and run benchmarking analysis, skip to step 3. 
+
+1. [Optional] Download data
+```bash
+```
+
+Update downloaded paths in the following data yaml files
+
+```
+├── configs
+│   ├── data
+│   │   ├── cellpack        
+│   │   │   ├── image.yaml      <- Datamodule for cellPACK images 
+│   │   │   ├── pc.yaml       <- Datamodule for cellPACK point clouds
+│   │   │   ├── pc_jitter.yaml       <- Datamodule for cellPACK point clouds with jitter
+```
+ 
+2. [Optional] Train models using cyto_dl. Experiment configs for point cloud and image models are located here - 
+```
+├── configs
+│   ├── experiment
+│   │   ├── cellpack        
+│   │   │   ├── image_equiv.yaml      <- SO3 image model experiment
+│   │   │   ├── pc_equiv.yaml       <- SO3 point cloud model experiment
+```
+
+Here is an example of training an SO3 point cloud model 
+```bash
+python br/models/train.py experiment=cellpack/pc_equiv ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
+```
+
+Override parts of the experiment config via command line or manually in the configs. For example, to train a classical model, run
+
+```bash
+python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthmovers_sphere ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
+```
+
+3. [Optional] Alternatively, download pre-computed embeddings.
+
+4. Run benchmarking notebook
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
