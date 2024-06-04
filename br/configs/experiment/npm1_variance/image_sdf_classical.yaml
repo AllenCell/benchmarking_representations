@@ -4,8 +4,8 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: npm1/image_sdf.yaml
-  - override /model: image/classical_sdf_32.yaml
+  - override /data: other_polymorphic/image_sdf.yaml
+  - override /model: image/classical_sdf_35.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
   - override /logger: mlflow.yaml

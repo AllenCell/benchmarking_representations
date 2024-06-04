@@ -13,7 +13,7 @@ defaults:
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 
-experiment_name: npm1_variance
+experiment_name: other_polymorphic
 tags: ["equivariance"]
 
 seed: 42
@@ -23,7 +23,6 @@ data:
 
 model: 
   x_label: image
-  group: so3
   
 
 trainer:

@@ -4,7 +4,7 @@ import yaml
 import yaml
 import os
 
-CONFIG_PATH = CYTODL_CONFIG_PATH
+CONFIG_PATH = CYTODL_CONFIG_PATH + "/results/"
 
 configs = os.listdir(CONFIG_PATH)
 DATA_LIST = {}

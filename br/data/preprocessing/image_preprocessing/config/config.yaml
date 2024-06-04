@@ -1,0 +1,24 @@
+defaults:
+  - _self_
+  - step: _base
+  - report: _base
+
+n_workers: 20
+verbose: true
+force: false
+raise_errors: true
+samples_per_structure:
+
+output_dir: "/allen/aics/modeling/ritvik/pcna_nuc_mask"
+input_manifest: /allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv
+
+remote_provider:
+
+output_root: /tmp/variance_preprocessing_workflow
+hydra:
+  run:
+    dir: ${output_root}/${now:%Y-%m-%d}/${now:%H-%M-%S_%f}
+  sweep:
+    dir: ${output_root}/${now:%Y-%m-%d}
+    subdir: ${now:%H-%M-%S_%f}
+

@@ -1,0 +1,34 @@
+import os
+from snakemake.remote.S3 import RemoteProvider as S3RemoteProvider
+from hydra import compose, initialize
+from hydra.utils import instantiate
+from omegaconf import OmegaConf
+
+with initialize(version_base=None, config_path="config"):
+    _cfg = compose(config_name="config")
+    # TODO: think about overrides here
+    # config = compose(config_name="config", overrides=...)
+    # print(OmegaConf.to_yaml(config, resolve=True))
+    #
+    #
+    cfg = OmegaConf.merge(_cfg, config)
+
+remote_provider = instantiate(cfg.remote_provider)
+
+input_manifest = cfg.input_manifest
+
+rule all:
+    input:
+        input_manifest,
+    output:
+        os.path.join(cfg.output_dir, "one_step/manifest.parquet"),
+    shell:
+        "python scripts/run_step.py step=one_step ++input_manifest={input}"
+
+rule one_step:
+    input:
+        input_manifest
+    output:
+        os.path.join(cfg.output_dir, "one_step/manifest.parquet")
+    shell:
+        "python scripts/run_step.py step=one_step ++input_manifest={input}"

@@ -3,9 +3,9 @@ latent_dim: 512
 spatial_dims: 3
 in_shape:
 - 1
-- 32
-- 32
-- 32
+- 35
+- 35
+- 35
 channels:
 - 8
 - 16
@@ -32,15 +32,15 @@ bias: true
 beta: 0
 reconstruction_loss:
   _target_: torch.nn.MSELoss
-  reduction: none
+  reduction: mean
 prior: null
 embedding_prior: identity
 last_act: null
 optimizer:
   _partial_: true
-  _target_: torch.optim.adam.Adam
+  _target_: torch.optim.Adam
   lr: 0.001
-background_value: 2
+background_value: 0
 kernel_sizes:
 - 3
 - 3
@@ -59,6 +59,7 @@ encoder_padding:
 - null
 first_conv_padding_mode: replicate
 num_res_units: 2
+num_dec_res_units: 0
 decoder_channels:
 - 512
 - 256

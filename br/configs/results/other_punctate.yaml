@@ -3,23 +3,23 @@ orig_df: /allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analys
 image_path: /allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet
 pc_path: /allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet
 run_ids: [
-            "cba0e754ceff4092a51cbb6017176e4f",
             "496e2cfa42234378967a88cee66891c9",
             "c3f4f99f2bd24578873b6913476cc25e",
             "9b7b078a61bd40d6baf65b0626e9ce76",
             "6a523cd918804acd9ed35b436b607ad4",
+            "0fd3e79d8aba45cca21b74da182c93f5",
         ]
 names: [
-            "vit",
             "classical_image",
             "so3_image",
             "2048_ed_dgcnn",
             "2048_int_ed_vndgcnn",  # varaince equiv punctate
+            "2048_int_ed_vndgcnn_structnorm",
         ]
 data_paths: [
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/image2.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/image2.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/image2.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_updated_morepoints.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/variance_all_punctate/punctate_int_updated_morepoints_instancenorm.yaml",
+    "./br/configs/data/other_punctate/image.yaml",
+    "./br/configs/data/other_punctate/image.yaml",
+    "./br/configs/data/other_punctate/pc.yaml",
+    "./br/configs/data/other_punctate/pc_intensity.yaml",
+    "./br/configs/data/other_punctate/pc_intensity_structurenorm.yaml",
     ],

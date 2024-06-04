@@ -2,12 +2,12 @@ from cyto_dl.models.utils.mlflow import load_model_from_checkpoint, get_config
 import yaml
 import os
 
-CONFIG_PATH = '/allen/aics/modeling/ritvik/projects/benchmarking_representations/src/configs/'
+CONFIG_PATH = CYTODL_CONFIG_PATH + "/results/"
 
 configs = os.listdir(CONFIG_PATH)
 MODEL_INFO = {}
 for config in configs:
-    data = config.split('.')[0]
+    data = config.split(".")[0]
     with open(CONFIG_PATH + config) as stream:
         a = yaml.safe_load(stream)
         MODEL_INFO[data] = a

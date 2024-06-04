@@ -14,7 +14,7 @@ shuffle: false
 transforms:
   - _target_: cyto_dl.dataframe.transforms.GroupCols
     groups:
-      pcloud: pcloud_path_instance_norm
+      pcloud: pcloud_path_structure_norm
       cell_id: CellId
 
   - _target_: cyto_dl.point_cloud.io.ReadPointCloud

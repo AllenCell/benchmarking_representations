@@ -5,7 +5,7 @@
 
 defaults:
   - override /data: npm1/image_seg.yaml
-  - override /model: image/classical_seg_32.yaml
+  - override /model: image/classical_seg_35.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
   - override /logger: mlflow.yaml

@@ -21,5 +21,5 @@ data_paths: [
         "./br/configs/data/pcna/pc_intensity.yaml",
         "./br/configs/data/pcna/image.yaml",
         "./br/configs/data/pcna/image.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_int_updated_morepoints.yaml",     
+        "./br/configs/data/pcna/pc_intensity_jitter.yaml",
     ],

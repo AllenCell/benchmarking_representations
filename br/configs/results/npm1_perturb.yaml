@@ -3,18 +3,18 @@ orig_df:
 image_path: 
 pc_path: 
 run_ids: [
-            "aec9d28492a7402ebf335240531968a5",
-            "b39653afa5d042a6a105df95d6fecb13",
-            "2675e1d1f8904396a745d3757a2ad64f",
-            "3a035fe44e234e6ebc2d0fa48e18c1a4",
-            "c1f61ed4aea34e5abdb2d711b818cb28",
+            "656168ce30614e00ad7fde249f239138",
+            "820f3e0af53c4a21a8f4b40aa7f7758c",
+            "688851f1bd3747c59dce25627db2b55b",
+            "1ed54b284fbf42d3ad99d388a7bdacfc",
+            "afd757c799194b18a39c67c66346717d"
         ]
 names: [
-            "IAE_comb_SO3_ld512_AE_gridlossW2_PT",
-            "CNN_sdf_SO3_PT",
-            "CNN_seg_SO3_PT",
-            "CNN_sdf_noalign_PT",
-            "CNN_seg_noalign_PT",
+            "VN_equiv",
+            "CNN_sdf_noalign_global",
+            "CNN_seg_noalign_global",
+            "CNN_sdf_SO3_global",
+            "CNN_seg_SO3_global"
         ]
 data_paths: [
         "../data/configs/inference_npm1_perturb/pointcloud_sdf_noalign.yaml",

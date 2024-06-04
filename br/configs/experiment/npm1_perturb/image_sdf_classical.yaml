@@ -4,7 +4,7 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: npm1/image_sdf.yaml
+  - override /data: npm1_perturb/image_sdf.yaml
   - override /model: image/classical_sdf_35.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
@@ -13,7 +13,7 @@ defaults:
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 
-experiment_name: npm1_variance
+experiment_name: npm1_perturb
 tags: ["equivariance"]
 
 seed: 42
@@ -23,7 +23,6 @@ data:
 
 model: 
   x_label: image
-  group: so3
   
 
 trainer:

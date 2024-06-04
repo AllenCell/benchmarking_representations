@@ -1,7 +1,0 @@
-embedding_save_location: "./blobby"
-orig_df: /allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/computefeatures/manifest.csv
-image_path: 
-pc_path: 
-run_ids: ['f00ec5e5271d44048d78ca43ea270fb9']
-names: ['equiv_vn']
-data_paths: ["/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/implicit_test/blobby.yaml"]
