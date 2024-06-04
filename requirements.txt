@@ -1,9 +1,0 @@
-torch-scatter
-plotly
-ipykernel
-mitsuba
-plyfile
-codecarbon
-trimesh
-pyvista
-PyMCubes
