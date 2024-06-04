@@ -15,8 +15,8 @@ names: [
             "so3_pointcloud",
         ]
 data_paths: [
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/image.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/image.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/upsample_all.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/cellpack/upsample_all.yaml",
+        ".br/configs/data/cellpack/image.yaml",
+        ".br/configs/data/cellpack/image.yaml",
+        ".br/configs/data/cellpack/pc.yaml",
+        ".br/configs/data/cellpack/pc.yaml",
     ],

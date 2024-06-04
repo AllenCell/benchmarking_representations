@@ -1,0 +1,49 @@
+_target_: cyto_dl.models.vae.PointCloudVAE
+encoder:
+  pcloud:
+    _target_: cyto_dl.nn.point_cloud.DGCNN
+    num_features: 512
+    hidden_dim: 342
+    hidden_conv2d_channels:
+    - 342
+    - 342
+    - 342
+    - 342
+    hidden_conv1d_channels:
+    - 2736
+    - 512
+    k: 20
+    mode: vector
+    scalar_inds: null
+    include_cross: true
+    include_coords: true
+    symmetry_breaking_axis: null
+    generate_grid_feats: false
+    neural_implicit: true
+prior:
+  pcloud:
+    _target_: cyto_dl.models.vae.priors.IdentityPrior
+    dimensionality: 512
+decoder:
+  pcloud:
+    _target_: pointcloudutils.networks.DecoderInner
+    dim: 3
+    c_dim: 512
+    hidden_size: 342
+    leaky: false
+reconstruction_loss:
+  pcloud:
+    _aux: l1
+    _target_: pointcloudutils.losses.L1Loss
+x_label: pcloud
+point_label: points
+latent_dim: 512
+scale: 1
+get_rotation: false
+beta: 0
+optimizer:
+  _partial_: true
+  _target_: torch.optim.adam.Adam
+  lr: 0.0002
+embedding_prior: identity
+target_key: points.df

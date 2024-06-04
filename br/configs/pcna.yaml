@@ -3,7 +3,6 @@ orig_df: /allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PC
 image_path: /allen/aics/modeling/ritvik/pcna/manifest.parquet
 pc_path: /allen/aics/modeling/ritvik/pcna/manifest.parquet
 run_ids: [
-            "f6fbe34d298c41af8b07b7ddd30aaea8",
             "0c1bbf0c54f343a083e9c26b476c9469",
             "1c1ca294eb6d4c3092cbfa062dea934a",
             "bc9a169ca7c943debcb3352bb80b19ac",
@@ -11,7 +10,6 @@ run_ids: [
             "ac43b8bbeb3a493bacc69927c8f21276",
         ]
 names: [
-            "vit",
             "2048_ed_dgcnn",  # more
             "2048_int_ed_vndgcnn",  # more
             "classical_image",
@@ -19,10 +17,9 @@ names: [
             "2048_int_ed_vndgcnn_jitter",
         ]
 data_paths: [
-        "../data/configs/inference_pcna_data_configs/mae.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_updated_morepoints.yaml",
-        "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_int_updated_morepoints.yaml",
-        "../data/configs/inference_pcna_data_configs/image_resize.yaml",
-        "../data/configs/inference_pcna_data_configs/image_full.yaml",
+        "./br/configs/data/pcna/pc.yaml",
+        "./br/configs/data/pcna/pc_intensity.yaml",
+        "./br/configs/data/pcna/image.yaml",
+        "./br/configs/data/pcna/image.yaml",
         "/allen/aics/modeling/ritvik/projects/cytodl-internal-configs/data/pcna/nuc_bound/pcna_int_updated_morepoints.yaml",     
     ],

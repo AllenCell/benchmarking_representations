@@ -4,32 +4,31 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: cellpack/pc_jitter.yaml
-  - override /model: pc/earthmovers_sphere.yaml
+  - override /data: npm1/image_sdf.yaml
+  - override /model: image/classical_sdf_32.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
   - override /logger: mlflow.yaml
-  # - override /hydra: private/joblib
 
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 
-experiment_name: cellpack
-tags: ["equivariance", "pcna-dataset", "point-cloud"]
+experiment_name: npm1_variance
+tags: ["equivariance"]
 
 seed: 42
 
-model:
-  x_label: pcloud
+data: 
+  batch_size: 4
 
-data:
-  batch_size: 32
-  max_ids: 4
+model: 
+  x_label: image
+  
 
 trainer:
   check_val_every_n_epoch: 1
   min_epochs: 400
-  max_epochs: 800
+  max_epochs: 2000
   accelerator: gpu
   devices: [0]
 

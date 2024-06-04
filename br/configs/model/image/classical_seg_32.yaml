@@ -1,0 +1,75 @@
+_target_: cyto_dl.models.vae.ImageVAE
+latent_dim: 512
+spatial_dims: 3
+in_shape:
+- 1
+- 32
+- 32
+- 32
+channels:
+- 8
+- 16
+- 32
+- 64
+- 128
+- 256
+- 512
+strides:
+- 1
+- 1
+- 2
+- 2
+- 2
+- 2
+- 2
+x_label: image
+id_label: null
+kernel_size: 3
+act: relu
+norm: batch
+dropout: null
+bias: true
+beta: 0
+reconstruction_loss:
+  _target_: torch.nn.MSELoss
+  reduction: none
+prior: null
+embedding_prior: identity
+last_act: null
+optimizer:
+  _partial_: true
+  _target_: torch.optim.adam.Adam
+  lr: 0.001
+background_value: 0
+kernel_sizes:
+- 3
+- 3
+- 3
+- 3
+- 3
+- 3
+- 3
+encoder_padding:
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+first_conv_padding_mode: replicate
+num_res_units: 2
+decoder_channels:
+- 512
+- 256
+- 128
+- 64
+- 32
+- 16
+decoder_strides:
+- 2
+- 2
+- 2
+- 2
+- 1
+- 1

@@ -1,0 +1,29 @@
+_target_: cyto_dl.datamodules.DataframeDatamodule
+_convert_: all
+
+path: /allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet
+split_column: split
+
+batch_size: 32
+num_workers: 20
+persistent_workers: true
+shuffle: false
+# we're not using fsspec for now so this isn't necessary
+# multiprocessing_context: spawn
+
+transforms:
+  - _target_: cyto_dl.dataframe.transforms.GroupCols
+    groups:
+      pcloud: pcloud_path_structure_norm
+      cell_id: CellId
+
+  - _target_: cyto_dl.point_cloud.io.ReadPointCloud
+    keys: pcloud
+    remote: false
+    scale: 0.1
+    scalar_scale: 100
+    sample: 2048
+    num_cols: 4
+    norm: false
+    flip_dims: true
+    rotate: False
