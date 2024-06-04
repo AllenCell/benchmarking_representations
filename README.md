@@ -1,5 +1,4 @@
-benchmarking_representations
-==============================
+# benchmarking_representations
 
 benchmarking different methods for extracting unsupervised representations from images
 
@@ -12,55 +11,61 @@ pip install -e .
 pip install -e ./pointcloudutils
 ```
 
-Project Organization
-------------
+## Set env variables
 
-    ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data` or `make train`
-    ├── README.md          <- The top-level README for developers using this project.
-    ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
-    │
-    ├── docs               <- A default Sphinx project; see sphinx-doc.org for details
-    │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-jqp-initial-data-exploration`.
-    │
-    ├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-    │
-    ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-    │   └── figures        <- Generated graphics and figures to be used in reporting
-    │
-    ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-    │                         generated with `pip freeze > requirements.txt`
-    │
-    ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
-    │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │
-    │   ├── features       <- Scripts to turn raw data into features for modeling
-    │   │   └── build_features.py
-    │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
-    │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
-    │
-    └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
+```bash
+[optional] export CUDA_VISIBLE_DEVICES=...
+export CYTODL_CONFIG_PATH=./br/configs/
+```
 
+## Project Organization
 
---------
+```
+├── LICENSE
+├── README.md          <- The top-level README for developers using this project.
+
+├── br                <- Source code for use in this project.
+│   ├── configs          <- Training configs for each experiment
+│   │   ├── callbacks       <- e.g. Early stopping, model checkpoint etc
+│   │   ├── data        <- Datamodules for each dataset
+│   │   ├── experiment      <- training config for an experiment combining data, models, logger etc
+│   │   └── model            <- config for Pytorch Lightning model
+│   │   ├── trainer       <- trainer parameters for Pytorch Lightning
+│   │   ├── logger        <- Choice of logger to save results
+│   │   ├── hydra      <- Hydra params to perform experiment sweeps
+│
+│   ├── data
+│   │   ├── preprocessing        <- Preprocessing scripts to generate point clouds and SDFs
+│   │   ├── get_datamodules.py      <- Get final list of datamodules per dataset
+│
+│   ├── models             <- Training and inference scripts
+│   │   ├── train.py       <- Training script using cyto_dl given an experiment config
+│   │   ├── predict_model.py        <- Inference functions
+│   │   ├── save_embeddings.py      <- Save embeddings using inference functions
+│   │   ├── load_models.py      <- Load trained models based on checkpoint paths
+│   │   ├── compute_features.py      <- Compute multi-metric features for each model based on saved embeddings
+│
+│   ├── features             <- Metrics for benchmarking each model
+│   │   ├── archetype.py       <- Archetype analysis functions
+│   │   ├── classification.py        <- Test set classification accuracies using logistic regression classifiers
+│   │   ├── outlier_compactness.py      <- Intrinsic dimensionality calculation and outlier classification
+│   │   ├── reconstruction.py      <- Functions for reconstruction viz across models
+│   │   ├── regression.py      <- Linear regression test set r^2 
+│   │   ├── rotation_invariance.py      <- Sensitivity to four 90 degree rotations in embedding space
+│   │   ├── plot.py      <- Polar plot viz across metrics
+│
+├── notebooks          <- Jupyter notebooks. 
+│
+├── pointcloudutils
+│   ├── pointcloudutils
+│   │   ├── datamodules        <- Custom datamodules
+│   │   │   ├── cellpack.py      <- CellPACK data specific datamodule
+│   │   ├── networks        <- Custom networks
+│   │   │   ├── simple_inner.py      <- Inner product decoder for SDF reconstruction
+│
+├── pyproject.toml           <- makes project pip installable (pip install -e .) so br can be imported
+```
+
+______________________________________________________________________
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
