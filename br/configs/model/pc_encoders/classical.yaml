@@ -2,7 +2,7 @@ _target_: cyto_dl.nn.point_cloud.DGCNN
 # num_features: ${eval:${model.private.prior.dimensionality}}
 num_features: ${model.private.prior.dimensionality}
 hidden_dim: 64
-hidden_conv2d_channels:  [64, 64, 64, 64]
+hidden_conv2d_channels: [64, 64, 64, 64]
 hidden_conv1d_channels: [512, 512]
 k: 20
 mode: scalar

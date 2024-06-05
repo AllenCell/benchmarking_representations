@@ -7,44 +7,44 @@ num_workers: 10
 multiprocessing_context: spawn
 persistent_workers: true
 transforms:
-- _target_: cyto_dl.dataframe.transforms.GroupCols
-  groups:
-    image: sdf_path_noalign
-    cell_id: CellId
-- _target_: cyto_dl.image.io.ReadNumpyFile
-  keys:
-  - image
-  remote: false
-- _target_: monai.transforms.AddChanneld
-  keys: image
-- _target_: monai.transforms.ThresholdIntensityd
-  keys:
-  - image
-  threshold: 2
-  above: false
-  cval: 2
-- _target_: monai.transforms.ThresholdIntensityd
-  keys:
-  - image
-  threshold: -2
-  above: true
-  cval: -2
-- _target_: monai.transforms.SpatialPadd
-  keys:
-  - image
-  spatial_size:
-  - 33
-  - 33
-  - 33
-  value: 2
-- _target_: cyto_dl.image.transforms.RotationMaskd
-  keys:
-  - image
-  group: so3
-  spatial_dims: 3
-  mask_side: 33
-  background: 2
-- _target_: monai.transforms.ToTensord
-  keys:
-  - image
-  track_meta: false
+  - _target_: cyto_dl.dataframe.transforms.GroupCols
+    groups:
+      image: sdf_path_noalign
+      cell_id: CellId
+  - _target_: cyto_dl.image.io.ReadNumpyFile
+    keys:
+      - image
+    remote: false
+  - _target_: monai.transforms.AddChanneld
+    keys: image
+  - _target_: monai.transforms.ThresholdIntensityd
+    keys:
+      - image
+    threshold: 2
+    above: false
+    cval: 2
+  - _target_: monai.transforms.ThresholdIntensityd
+    keys:
+      - image
+    threshold: -2
+    above: true
+    cval: -2
+  - _target_: monai.transforms.SpatialPadd
+    keys:
+      - image
+    spatial_size:
+      - 33
+      - 33
+      - 33
+    value: 2
+  - _target_: cyto_dl.image.transforms.RotationMaskd
+    keys:
+      - image
+    group: so3
+    spatial_dims: 3
+    mask_side: 33
+    background: 2
+  - _target_: monai.transforms.ToTensord
+    keys:
+      - image
+    track_meta: false

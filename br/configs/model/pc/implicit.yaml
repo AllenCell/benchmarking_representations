@@ -5,13 +5,13 @@ encoder:
     num_features: 512
     hidden_dim: 342
     hidden_conv2d_channels:
-    - 342
-    - 342
-    - 342
-    - 342
+      - 342
+      - 342
+      - 342
+      - 342
     hidden_conv1d_channels:
-    - 2736
-    - 512
+      - 2736
+      - 512
     k: 20
     mode: vector
     scalar_inds: null

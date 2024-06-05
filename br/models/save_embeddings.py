@@ -1,22 +1,23 @@
-import os
-from hydra.utils import instantiate
-import yaml
-import torch
-import numpy as np
-import torch
-from tqdm import tqdm
-import pandas as pd
-from pathlib import Path
-from src.models.predict_model import process_batch_embeddings, process_batch
 import logging
+import os
+from pathlib import Path
 from typing import Optional
+
 import cyto_dl
+import numpy as np
+import pandas as pd
+import torch
+import yaml
+from hydra.utils import instantiate
+from tqdm import tqdm
+
+from br.models.predict_model import process_batch, process_batch_embeddings
 
 
 def get_pc_loss():
     return instantiate(
         yaml.safe_load(
-            """    
+            """
     _aux: earthmovers
     _target_: cyto_dl.nn.losses.GeomLoss
     p: 1
@@ -29,7 +30,7 @@ def get_pc_loss():
 def get_pc_loss_chamfer():
     return instantiate(
         yaml.safe_load(
-            """    
+            """
             _target_: cyto_dl.nn.losses.ChamferLoss
             """
         )
@@ -59,13 +60,7 @@ def process_dataloader(
     for j, i in enumerate(tqdm(dataloader)):
         if (debug) and j > 1:
             break
-        (
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            all_metadata,
-        ) = process_batch_embeddings(
+        (all_embeds, all_data_ids, all_splits, all_loss, all_metadata,) = process_batch_embeddings(
             model,
             loss_eval,
             device,
@@ -109,13 +104,7 @@ def compute_embeddings(
 ):
     if "train" in split_list:
         print("Processing train")
-        (
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            all_metadata,
-        ) = process_dataloader(
+        (all_embeds, all_data_ids, all_splits, all_loss, all_metadata,) = process_dataloader(
             this_data.train_dataloader(),
             model,
             loss_eval,
@@ -137,13 +126,7 @@ def compute_embeddings(
         )
     if "val" in split_list:
         print("Processing val")
-        (
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            all_metadata,
-        ) = process_dataloader(
+        (all_embeds, all_data_ids, all_splits, all_loss, all_metadata,) = process_dataloader(
             this_data.val_dataloader(),
             model,
             loss_eval,
@@ -165,13 +148,7 @@ def compute_embeddings(
         )
     if "test" in split_list:
         print("Processing test")
-        (
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            all_metadata,
-        ) = process_dataloader(
+        (all_embeds, all_data_ids, all_splits, all_loss, all_metadata,) = process_dataloader(
             this_data.test_dataloader(),
             model,
             loss_eval,
@@ -227,13 +204,7 @@ def save_embeddings(
         this_use_sample_points = sample_points_list[j_ind]
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
-            (
-                all_embeds,
-                all_data_ids,
-                all_splits,
-                all_loss,
-                all_metadata,
-            ) = compute_embeddings(
+            (all_embeds, all_data_ids, all_splits, all_loss, all_metadata,) = compute_embeddings(
                 model,
                 this_data,
                 split_list,

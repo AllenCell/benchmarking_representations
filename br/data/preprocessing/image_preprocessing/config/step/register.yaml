@@ -1,0 +1,14 @@
+defaults:
+  - _base
+
+step:
+  _target_: variance_preprocessing.steps.Register
+  input_col: aligned_image
+  quantile: 0.95
+  membrane_seg_channel: membrane_segmentation
+  output_format: ome.zarr
+  downscale_num_levels: 4
+  downscale_factor: 2.0
+  output_dir: ${output_dir}/register
+
+input: ${output_dir}/align/manifest.parquet

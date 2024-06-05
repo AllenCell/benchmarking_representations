@@ -1,22 +1,35 @@
+from multiprocessing import Pool
+
 import numpy as np
 import pandas as pd
-from multiprocessing import Pool
-from upath import UPath as Path
 from tqdm import tqdm
+from upath import UPath as Path
 
-from ..utils import write_ome_zarr, write_image
+from ..utils import write_image, write_ome_zarr
+
 
 def iterdicts(df):
     for tup in df.itertuples():
         yield tup._asdict()
 
+
 class Step:
     cell_id_col: str
 
-    def __init__(self, n_workers=-1, aggregate_func=None, output_dir=None,
-                 verbose=False, force=False, raise_errors=True, cell_id_col="",
-                 fov_id_col="", structure_name_col="", output_format="ome.tiff",
-                 **kwargs):
+    def __init__(
+        self,
+        n_workers=-1,
+        aggregate_func=None,
+        output_dir=None,
+        verbose=False,
+        force=False,
+        raise_errors=True,
+        cell_id_col="",
+        fov_id_col="",
+        structure_name_col="",
+        output_format="ome.tiff",
+        **kwargs,
+    ):
         if aggregate_func is None:
             aggregate_func = pd.DataFrame.from_records
         self.aggregate_func = aggregate_func
@@ -28,7 +41,6 @@ class Step:
         self.structure_name_col = structure_name_col
         self.raise_errors = raise_errors
         self.output_format = output_format
-        self.verbose = True
 
         if cell_id_col == "":
             raise ValueError("Must specify cell id column")
@@ -52,31 +64,23 @@ class Step:
             if self.raise_errors:
                 raise e
 
-            return {
-                self.cell_id_col: row[self.cell_id_col],
-                "success": False,
-                "exception": str(e)
-            }
+            return {self.cell_id_col: row[self.cell_id_col], "success": False, "exception": str(e)}
 
-    def store_image(self, img, channel_names, cell_id, output_dir, **kwargs):
-        Path(output_dir).mkdir(exist_ok=True, parents=True)
-
+    def store_image(self, img, channel_names, pps, cell_id, **kwargs):
         if self.output_format == "ome.zarr":
-            output_path = Path(output_dir) / f"{cell_id}.ome.zarr"
-            import ipdb
-            ipdb.set_trace()
-            write_ome_zarr(img, output_path,
-                           channel_names=channel_names, **kwargs)
+            output_path = Path(self.output_dir) / f"{cell_id}.ome.zarr"
+            write_ome_zarr(img, output_path, channel_names=channel_names, **kwargs)
         else:
-            output_path = Path(output_dir) / f"{cell_id}.ome.tiff"
+            output_path = Path(self.output_dir) / f"{cell_id}.ome.tiff"
 
             if len(img.shape) == 3:
                 img = np.expand_dims(img, 1)
-            write_image(img, output_path,
-                        channel_names=channel_names, **kwargs)
+
+            write_image(
+                img, output_path, channel_names=channel_names, physical_pixel_sizes=pps, **kwargs
+            )
 
         return str(output_path)
-
 
     def run(self, manifest, n_workers=None):
         prev_result = None
@@ -95,8 +99,7 @@ class Step:
             with Pool(self.n_workers) as p:
                 jobs = p.imap_unordered(self.__call__, iterdicts(manifest))
                 if self.verbose:
-                    jobs = tqdm(jobs, total=len(manifest),
-                                desc="processing cells", leave=False)
+                    jobs = tqdm(jobs, total=len(manifest), desc="processing cells", leave=False)
                 result = list(jobs)
         else:
             jobs = manifest.itertuples()

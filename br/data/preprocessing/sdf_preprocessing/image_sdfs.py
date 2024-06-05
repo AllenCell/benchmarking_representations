@@ -1,11 +1,12 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 from aicsimageio import AICSImage
 from monai.transforms import FillHoles
+
 from br.data.utils import (
     get_mesh_from_image,
-    get_sdf_from_mesh,
     get_scaled_seg_from_mesh,
+    get_sdf_from_mesh,
 )
 
 path = PATH_TO_SINGLE_CELL_DATA

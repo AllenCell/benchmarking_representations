@@ -1,6 +1,7 @@
-from cyto_dl.models.utils.mlflow import load_model_from_checkpoint, get_config
-import yaml
 import os
+
+import yaml
+from cyto_dl.models.utils.mlflow import get_config, load_model_from_checkpoint
 
 CONFIG_PATH = CYTODL_CONFIG_PATH + "/results/"
 

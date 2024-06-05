@@ -17,8 +17,8 @@ transforms:
   - _target_: monai.transforms.LoadImaged
     keys: [image]
     reader:
-    - _target_: cyto_dl.image.io.SkimageReader
-      expand_dims: True
+      - _target_: cyto_dl.image.io.SkimageReader
+        expand_dims: True
   - _target_: monai.transforms.ToTensord
     keys: [image]
     track_meta: false

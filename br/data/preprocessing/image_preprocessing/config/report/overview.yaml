@@ -1,0 +1,13 @@
+defaults:
+  - _base
+
+report:
+  _target_: variance_preprocessing.reports.Overview
+  fov_id_col: FOVId
+  fov_path_col: fov_path
+  name: overview
+  output_dir: ${report.output_dir}
+  verbose: false
+
+input: ${output_dir}/processed/manifest.parquet
+output_dir: ${output_dir}/overview

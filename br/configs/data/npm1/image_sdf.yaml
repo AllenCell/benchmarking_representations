@@ -5,38 +5,38 @@ split_column: split
 batch_size: 64
 num_workers: 4
 transforms:
-- _target_: cyto_dl.dataframe.transforms.GroupCols
-  groups:
-    image: sdf_path_noalign_32res_global
-    cell_id: CellId
-- _target_: cyto_dl.image.io.ReadNumpyFile
-  keys:
-  - image
-  remote: false
-- _target_: cyto_dl.image.transforms.AddChannel
-  keys:
-  - image
-- _target_: monai.transforms.ThresholdIntensityd
-  keys:
-  - image
-  threshold: 2
-  above: false
-  cval: 2
-- _target_: monai.transforms.ThresholdIntensityd
-  keys:
-  - image
-  threshold: -2
-  above: true
-  cval: -2
-- _target_: monai.transforms.SpatialPadd
-  keys:
-  - image
-  spatial_size:
-  - 35
-  - 35
-  - 35
-  value: 2
-- _target_: monai.transforms.ToTensord
-  keys:
-  - image
-  track_meta: false
+  - _target_: cyto_dl.dataframe.transforms.GroupCols
+    groups:
+      image: sdf_path_noalign_32res_global
+      cell_id: CellId
+  - _target_: cyto_dl.image.io.ReadNumpyFile
+    keys:
+      - image
+    remote: false
+  - _target_: cyto_dl.image.transforms.AddChannel
+    keys:
+      - image
+  - _target_: monai.transforms.ThresholdIntensityd
+    keys:
+      - image
+    threshold: 2
+    above: false
+    cval: 2
+  - _target_: monai.transforms.ThresholdIntensityd
+    keys:
+      - image
+    threshold: -2
+    above: true
+    cval: -2
+  - _target_: monai.transforms.SpatialPadd
+    keys:
+      - image
+    spatial_size:
+      - 35
+      - 35
+      - 35
+    value: 2
+  - _target_: monai.transforms.ToTensord
+    keys:
+      - image
+    track_meta: false

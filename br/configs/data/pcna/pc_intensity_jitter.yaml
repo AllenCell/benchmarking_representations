@@ -17,8 +17,8 @@ transforms:
     groups:
       pcloud: pcloud_path_updated_morepoints
       cell_id: CellId
-      shcoeff: 
-        contains: 'shcoeffs_'
+      shcoeff:
+        contains: "shcoeffs_"
       cell_cycle: cell_cycle_int
     dtypes:
       shcoeff: float32

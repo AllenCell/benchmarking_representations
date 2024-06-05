@@ -1,33 +1,25 @@
-import os
 import glob
-import pandas as pd
-import numpy as np
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils import check_array, as_float_array
-from sklearn.base import TransformerMixin, BaseEstimator
-import scipy
-from sklearn.metrics import average_precision_score
-from sklearn.metrics.pairwise import cosine_similarity
-from tqdm import tqdm
-import random
-from copairs.map import aggregate
-from copairs.compute import cosine_indexed
-import copairs.compute_np as backend
 import itertools
-from copairs.matching import Matcher, MatcherMultilabel, dict_to_dframe
-from functools import partial
+import os
+
+import copairs.compute_np as backend
+import numpy as np
+import pandas as pd
+from copairs.compute import cosine_indexed
 from copairs.map import (
-    create_matcher,
-    flatten_str_list,
-    get_rel_k_list,
+    aggregate,
     build_rank_list_multi,
     build_rank_lists,
+    create_matcher,
     results_to_dframe,
 )
+from copairs.matching import dict_to_dframe
+from sklearn.metrics import average_precision_score
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 def load_data(exp, plate, filetype):
-    """load all data from a single experiment into a single dataframe"""
+    """load all data from a single experiment into a single dataframe."""
     path = os.path.join("../profiles", f"{exp}", f"{plate}", f"*_{filetype}")
     files = glob.glob(path)
     df = pd.concat(pd.read_csv(_, low_memory=False) for _ in files)
@@ -35,27 +27,27 @@ def load_data(exp, plate, filetype):
 
 
 def get_metacols(df):
-    """return a list of metadata columns"""
+    """return a list of metadata columns."""
     return [c for c in df.columns if c.startswith("Metadata_")]
 
 
 def get_featurecols(df):
-    """returna  list of featuredata columns"""
+    """returna  list of featuredata columns."""
     return [c for c in df.columns if not c.startswith("Metadata")]
 
 
 def get_metadata(df):
-    """return dataframe of just metadata columns"""
+    """return dataframe of just metadata columns."""
     return df[get_metacols(df)]
 
 
 def get_featuredata(df):
-    """return dataframe of just featuredata columns"""
+    """return dataframe of just featuredata columns."""
     return df[get_featurecols(df)]
 
 
 def remove_negcon_and_empty_wells(df):
-    """return dataframe of non-negative control wells"""
+    """return dataframe of non-negative control wells."""
     df = (
         df.query('Metadata_control_type!="negcon"')
         .dropna(subset=["Metadata_broad_sample"])
@@ -65,13 +57,13 @@ def remove_negcon_and_empty_wells(df):
 
 
 def remove_empty_wells(df):
-    """return dataframe of non-empty wells"""
+    """return dataframe of non-empty wells."""
     df = df.dropna(subset=["Metadata_broad_sample"]).reset_index(drop=True)
     return df
 
 
 def concat_profiles(df1, df2):
-    """Concatenate dataframes"""
+    """Concatenate dataframes."""
     if df1.shape[0] == 0:
         df1 = df2.copy()
     else:
@@ -175,9 +167,9 @@ def create_matching_df(
     _matching_map_df = concat_profiles(_matching_map_df, _map_df)
 
     _matching_fr_df["fr"] = _matching_fr_df["fr"].astype(float)
-    _matching_map_df["mean_average_precision"] = _matching_map_df[
-        "mean_average_precision"
-    ].astype(float)
+    _matching_map_df["mean_average_precision"] = _matching_map_df["mean_average_precision"].astype(
+        float
+    )
 
     return _matching_map_df, _matching_fr_df
 
@@ -220,24 +212,18 @@ def create_gene_compound_matching_df(
         },
         index=[len(_gene_compound_matching_fr_df)],
     )
-    _gene_compound_matching_fr_df = concat_profiles(
-        _gene_compound_matching_fr_df, _fr_df
-    )
+    _gene_compound_matching_fr_df = concat_profiles(_gene_compound_matching_fr_df, _fr_df)
 
     _map_df["Description"] = f"{_description}"
     _map_df["Modality1"] = f"{_modality_1}_{_time_1}"
     _map_df["Modality2"] = f"{_modality_2}_{_time_2}"
     _map_df["Cell"] = f"{_cell}"
-    _gene_compound_matching_map_df = concat_profiles(
-        _gene_compound_matching_map_df, _map_df
-    )
+    _gene_compound_matching_map_df = concat_profiles(_gene_compound_matching_map_df, _map_df)
 
-    _gene_compound_matching_fr_df["fr"] = _gene_compound_matching_fr_df["fr"].astype(
-        float
-    )
-    _gene_compound_matching_map_df[
+    _gene_compound_matching_fr_df["fr"] = _gene_compound_matching_fr_df["fr"].astype(float)
+    _gene_compound_matching_map_df["mean_average_precision"] = _gene_compound_matching_map_df[
         "mean_average_precision"
-    ] = _gene_compound_matching_map_df["mean_average_precision"].astype(float)
+    ].astype(float)
 
     return _gene_compound_matching_map_df, _gene_compound_matching_fr_df
 
@@ -259,28 +245,22 @@ def consensus(profiles_df, group_by_feature):
     metadata_df = get_metadata(profiles_df).drop_duplicates(subset=[group_by_feature])
 
     feature_cols = [group_by_feature] + get_featurecols(profiles_df)
-    profiles_df = (
-        profiles_df[feature_cols].groupby([group_by_feature]).median().reset_index()
-    )
+    profiles_df = profiles_df[feature_cols].groupby([group_by_feature]).median().reset_index()
 
     profiles_df = metadata_df.merge(profiles_df, on=group_by_feature)
 
     return profiles_df
 
     def cleanup(self):
-        """
-        Remove rows and columns that are all NaN
-        """
-        keep = list((self.truth_matrix.sum(axis=1) > 0))
+        """Remove rows and columns that are all NaN."""
+        keep = list(self.truth_matrix.sum(axis=1) > 0)
         self.corr["keep"] = keep
         self.map1["keep"] = keep
         self.truth_matrix["keep"] = keep
 
         self.corr = self.corr.loc[self.corr.keep].drop(columns=["keep"])
         self.map1 = self.map1.loc[self.map1.keep].drop(columns=["keep"])
-        self.truth_matrix = self.truth_matrix.loc[self.truth_matrix.keep].drop(
-            columns=["keep"]
-        )
+        self.truth_matrix = self.truth_matrix.loc[self.truth_matrix.keep].drop(columns=["keep"])
 
 
 def time_point(modality, time_point):
@@ -447,9 +427,7 @@ def calculate_fraction_retrieved(agg_result):
     -------
     fraction_retrieved : float of fraction positive
     """
-    fraction_retrieved = len(agg_result.query("above_q_threshold==True")) / len(
-        agg_result
-    )
+    fraction_retrieved = len(agg_result.query("above_q_threshold==True")) / len(agg_result)
     return fraction_retrieved
 
 
@@ -459,6 +437,7 @@ def compute_similarities(pairs, feats, batch_size, anti_match=False):
     if anti_match:
         dist_df["dist"] = np.abs(dist_df["dist"])
     return pairs.merge(dist_df, on=["ix1", "ix2"])
+
 
 def run_pipeline(
     meta,
@@ -475,9 +454,7 @@ def run_pipeline(
     # Critical!, otherwise the indexing wont work
     meta = meta.reset_index(drop=True).copy()
 
-    matcher = create_matcher(
-        meta, pos_sameby, pos_diffby, neg_sameby, neg_diffby, multilabel_col
-    )
+    matcher = create_matcher(meta, pos_sameby, pos_diffby, neg_sameby, neg_diffby, multilabel_col)
 
     dict_pairs = matcher.get_all_pairs(sameby=pos_sameby, diffby=pos_diffby)
     pos_pairs = dict_to_dframe(dict_pairs, pos_sameby)
@@ -494,16 +471,12 @@ def run_pipeline(
     ap_scores = np.concatenate(ap_scores.values)
     null_dists = backend.compute_null_dists(rel_k_list, null_size)
     p_values = backend.compute_p_values(null_dists, ap_scores, null_size)
-    result = results_to_dframe(
-        meta, rel_k_list.index, p_values, ap_scores, multilabel_col
-    )
+    result = results_to_dframe(meta, rel_k_list.index, p_values, ap_scores, multilabel_col)
     return result
 
 
-class PrecisionScores(object):
-    """
-    Calculate the precision scores for information retrieval.
-    """
+class PrecisionScores:
+    """Calculate the precision scores for information retrieval."""
 
     def __init__(
         self,
@@ -608,11 +581,7 @@ class PrecisionScores(object):
             ]
         width = int(np.log10(len(_profile))) + 1
         _perturbation_id_df = pd.DataFrame(
-            {
-                self.sample_id_feature: [
-                    f"sample_{i:0{width}}" for i in range(len(_metadata_df))
-                ]
-            }
+            {self.sample_id_feature: [f"sample_{i:0{width}}" for i in range(len(_metadata_df))]}
         )
         _metadata_df = pd.concat([_metadata_df, _perturbation_id_df], axis=1)
         _profile = pd.concat([_metadata_df, _feature_df], axis=1)
@@ -655,9 +624,7 @@ class PrecisionScores(object):
         ).drop([self.sample_id_feature], axis=1)
         _truth_matrix["value"] = [
             len(np.intersect1d(x[0].split("|"), x[1].split("|"))) > 0
-            for x in zip(
-                _truth_matrix[f"{self.feature}_x"], _truth_matrix[f"{self.feature}_y"]
-            )
+            for x in zip(_truth_matrix[f"{self.feature}_x"], _truth_matrix[f"{self.feature}_y"])
         ]
         if self.within and self.mode == "replicability":
             _truth_matrix["value"] = np.where(
@@ -674,9 +641,7 @@ class PrecisionScores(object):
             )
 
         _truth_matrix = (
-            _truth_matrix.pivot("level_1", "level_0", "value")
-            .reset_index()
-            .set_index("level_1")
+            _truth_matrix.pivot("level_1", "level_0", "value").reset_index().set_index("level_1")
         )
         _truth_matrix.index.name = None
         _truth_matrix = _truth_matrix.rename_axis(None, axis=1)
@@ -697,9 +662,7 @@ class PrecisionScores(object):
 
             # compute corrected average precision
             random_baseline_ap = _y_true.sum() / len(_y_true)
-            _score.append(
-                average_precision_score(_y_true, _y_pred) - random_baseline_ap
-            )
+            _score.append(average_precision_score(_y_true, _y_pred) - random_baseline_ap)
 
         _ap_sample_df = self.map1.copy()
         _ap_sample_df["ap"] = _score
@@ -710,9 +673,9 @@ class PrecisionScores(object):
                 .reset_index(drop=True)
             )
         else:
-            _ap_sample_df = _ap_sample_df.drop(
-                columns=[self.control_type_feature]
-            ).reset_index(drop=True)
+            _ap_sample_df = _ap_sample_df.drop(columns=[self.control_type_feature]).reset_index(
+                drop=True
+            )
 
         return _ap_sample_df
 
@@ -795,9 +758,7 @@ class PrecisionScores(object):
 
         if self.mode == "replicability":
             self.map1 = (
-                _corr_df[
-                    ["level_1", f"{self.feature}_y", f"{self.control_type_feature}_y"]
-                ]
+                _corr_df[["level_1", f"{self.feature}_y", f"{self.control_type_feature}_y"]]
                 .copy()
                 .rename(
                     columns={
@@ -811,9 +772,7 @@ class PrecisionScores(object):
                 .reset_index(drop=True)
             )
             self.map2 = (
-                _corr_df[
-                    ["level_0", f"{self.feature}_x", f"{self.control_type_feature}_x"]
-                ]
+                _corr_df[["level_0", f"{self.feature}_x", f"{self.control_type_feature}_x"]]
                 .copy()
                 .rename(
                     columns={
@@ -872,9 +831,7 @@ class PrecisionScores(object):
                 .reset_index(drop=True)
             )
 
-        _corr_df = (
-            _corr_df.pivot("level_1", "level_0", 0).reset_index().set_index("level_1")
-        )
+        _corr_df = _corr_df.pivot("level_1", "level_0", 0).reset_index().set_index("level_1")
         _corr_df.index.name = None
         _corr_df = _corr_df.rename_axis(None, axis=1)
         return _corr_df
@@ -913,9 +870,7 @@ class PrecisionScores(object):
             self.map1, left_on="level_1", right_on=self.sample_id_feature, how="left"
         ).drop([self.sample_id_feature], axis=1)
         if self.within and self.mode == "replicability":
-            _corr["corr"] = np.where(
-                _corr["level_0"] == _corr["level_1"], np.nan, _corr["corr"]
-            )
+            _corr["corr"] = np.where(_corr["level_0"] == _corr["level_1"], np.nan, _corr["corr"])
         elif self.within and self.mode == "matching":
             _corr["corr"] = np.where(
                 _corr[f"{self.identify_perturbation_feature}_x"]
@@ -924,25 +879,19 @@ class PrecisionScores(object):
                 _corr["corr"],
             )
 
-        _corr = (
-            _corr.pivot("level_1", "level_0", "corr").reset_index().set_index("level_1")
-        )
+        _corr = _corr.pivot("level_1", "level_0", "corr").reset_index().set_index("level_1")
         _corr.index.name = None
         _corr = _corr.rename_axis(None, axis=1)
 
         return _corr
 
     def cleanup(self):
-        """
-        Remove rows and columns that are all NaN
-        """
-        keep = list((self.truth_matrix.sum(axis=1) > 0))
+        """Remove rows and columns that are all NaN."""
+        keep = list(self.truth_matrix.sum(axis=1) > 0)
         self.corr["keep"] = keep
         self.map1["keep"] = keep
         self.truth_matrix["keep"] = keep
 
         self.corr = self.corr.loc[self.corr.keep].drop(columns=["keep"])
         self.map1 = self.map1.loc[self.map1.keep].drop(columns=["keep"])
-        self.truth_matrix = self.truth_matrix.loc[self.truth_matrix.keep].drop(
-            columns=["keep"]
-        )
+        self.truth_matrix = self.truth_matrix.loc[self.truth_matrix.keep].drop(columns=["keep"])

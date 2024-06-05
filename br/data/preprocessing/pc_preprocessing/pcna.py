@@ -1,8 +1,10 @@
-import pandas as pd
-from skimage.io import imread
+from multiprocessing import Pool
+
 import numpy as np
-from scipy.ndimage import binary_dilation
+import pandas as pd
 from pyntcloud import PyntCloud
+from scipy.ndimage import binary_dilation
+from skimage.io import imread
 from tqdm import tqdm
 
 
@@ -12,8 +14,8 @@ def compute_labels(row):
     num_points = 20480
     img = imread(path)
 
-    img_nuc = img[3]
-    raw = img[2]
+    img_nuc = img[6]  # nuc seg channel
+    raw = img[2]  # PCNA intensity channel
 
     center = get_center_of_mass(img_nuc)
     z_center, y_center, x_center = center[0], center[1], center[2]
@@ -31,7 +33,6 @@ def compute_labels(row):
     probs = probs.flatten()
     probs = probs / probs.max()
 
-    # sampling based on normalized registered images
     skewness = 100 * (3 * (probs.mean() - np.median(probs))) / probs.std()
     probs = np.exp(skewness * probs)
 
@@ -42,10 +43,7 @@ def compute_labels(row):
     # scalr prob so it sums to 1
     probs = probs / probs.sum()
 
-    idxs = np.random.choice(
-        np.arange(len(probs)), size=num_points, replace=False, p=probs
-    )
-    # noise important to avoid nans during encoding
+    idxs = np.random.choice(np.arange(len(probs)), size=num_points, replace=False, p=probs)
     disp = 0.001
     x = x[idxs] + (np.random.rand(len(idxs)) - 0.5) * disp
     y = y[idxs] + (np.random.rand(len(idxs)) - 0.5) * disp
@@ -66,6 +64,7 @@ def compute_labels(row):
     save_path = path_prefix + cell_id + ".ply"
 
     new_cents = new_cents.astype(float)
+
     cloud = PyntCloud(new_cents)
     cloud.to_file(save_path)
 
@@ -75,20 +74,14 @@ def get_center_of_mass(img):
     return np.floor(center_of_mass + 0.5).astype(int)
 
 
-df = pd.read_parquet(
-    "/allen/aics/modeling/ritvik/variance_punctate/one_step/manifest.parquet"
-)
+df = pd.read_parquet("/allen/aics/modeling/ritvik/pcna/manifest.parquet")
 
-path_prefix = "/allen/aics/modeling/ritvik/projects/data/variance_punctate_updated_sampling_morepoints/"
+path_prefix = "/allen/aics/modeling/ritvik/projects/data/pcna_updated_sampling_morepoints/"
 
 all_rows = []
 for ind, row in tqdm(df.iterrows(), total=len(df)):
     all_rows.append(row)
-    # if str(row['CellId']) == '660844':
-    #     print('yes')
-    #     compute_labels(row)
 
-from multiprocessing import Pool
 
 with Pool(40) as p:
     _ = tuple(

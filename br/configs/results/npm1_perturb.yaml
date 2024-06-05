@@ -1,7 +1,7 @@
-embedding_save_location: 
-orig_df: 
-image_path: 
-pc_path: 
+embedding_save_location:
+orig_df:
+image_path:
+pc_path:
 run_ids: [
             "656168ce30614e00ad7fde249f239138",
             "820f3e0af53c4a21a8f4b40aa7f7758c",

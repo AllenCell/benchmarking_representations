@@ -1,21 +1,20 @@
-import vtk
+import math
 import os
-import numpy as np
-from vtk.util import numpy_support
-import pyvista as pv
-import trimesh
-import torch
+
 import mcubes
+import numpy as np
 import pandas as pd
-from sklearn.metrics import jaccard_score as jaccard_similarity_score
-from skimage.measure import marching_cubes
+import pyvista as pv
+import torch
+import trimesh
+import vtk
+from aicsshparam.shtools import voxelize_mesh
 from skimage import filters as skfilters
 from skimage import morphology as skmorpho
-from skimage.measure import label
-
-from aicsshparam.shtools import voxelize_mesh
+from skimage.measure import label, marching_cubes
+from sklearn.metrics import jaccard_score as jaccard_similarity_score
+from vtk.util import numpy_support
 from vtk.util.numpy_support import vtk_to_numpy
-import math
 
 
 def voxelize_scaled_mesh(mesh):
@@ -52,9 +51,8 @@ def voxelize_scaled_mesh(mesh):
 
 
 def get_mesh_from_sdf(sdf, method="skimage", cast_pyvista=True):
-    """
-    This function reconstructs a mesh from signed distance function
-    values using the marching cubes algorithm.
+    """This function reconstructs a mesh from signed distance function values using the marching
+    cubes algorithm.
 
     Parameters
     ----------
@@ -69,9 +67,7 @@ def get_mesh_from_sdf(sdf, method="skimage", cast_pyvista=True):
     if method == "skimage":
         try:
             vertices, faces, normals, _ = marching_cubes(sdf, level=0)
-            mesh = trimesh.Trimesh(
-                vertices=vertices, faces=faces, vertex_normals=normals
-            )
+            mesh = trimesh.Trimesh(vertices=vertices, faces=faces, vertex_normals=normals)
         except:
             print("Created empty mesh")
             vertices = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
@@ -218,9 +214,7 @@ def get_mesh_from_image(
         img[img > 0] = 1
 
         if img.sum() == 0:
-            raise ValueError(
-                "No foreground voxels found after pre-processing. Try using sigma=0."
-            )
+            raise ValueError("No foreground voxels found after pre-processing. Try using sigma=0.")
 
     # Set image border to 0 so that the mesh forms a manifold
     img[[0, -1], :, :] = 0
@@ -266,8 +260,7 @@ def get_mesh_from_image(
 
 
 def center_polydata(polydata):
-    """
-    Center a polydata mesh around the object's center of mass
+    """Center a polydata mesh around the object's center of mass.
 
     Parameters
     ----------
@@ -278,7 +271,6 @@ def center_polydata(polydata):
     -------
     polydata : pyvista.PolyData
         Centered mesh
-
     """
     centerOfMassFilter = vtk.vtkCenterOfMass()
     centerOfMassFilter.SetInputData(polydata)
@@ -323,16 +315,10 @@ def compute_mse_recon_and_target_segs(recon_segs, target_segs):
     mses = []
     for i, recon_seg in enumerate(recon_segs):
         target_seg = target_segs[i]
-        if (
-            (len(np.unique(recon_seg)) > 2)
-            or recon_seg.max() == 255
-            or target_seg.max() == 255
-        ):
+        if (len(np.unique(recon_seg)) > 2) or recon_seg.max() == 255 or target_seg.max() == 255:
             recon_seg = np.where(recon_seg > 0.5, 1, 0)
             target_seg = np.where(target_seg > 0.5, 1, 0)
-        mse = 1 - jaccard_similarity_score(
-            target_seg.flatten(), recon_seg.flatten(), pos_label=1
-        )
+        mse = 1 - jaccard_similarity_score(target_seg.flatten(), recon_seg.flatten(), pos_label=1)
         mses.append(mse)
     return np.array(mses)
 
@@ -361,10 +347,7 @@ def voxelize_recon_meshes(recon_meshes, target_bounds):
 def get_scale_factor_for_bounds(polydata, resolution):
     bounds = polydata.GetBounds()
     bounds = tuple(
-        [
-            b + int(resolution / 1.5) if b > 0 else b - int(resolution / 1.5)
-            for b in list(bounds)
-        ]
+        b + int(resolution / 1.5) if b > 0 else b - int(resolution / 1.5) for b in list(bounds)
     )  # Increasing bounds to prevent mesh from getting clipped
     x_delta = bounds[1] - bounds[0]
     y_delta = bounds[3] - bounds[2]
@@ -420,8 +403,7 @@ def get_scaled_mesh(
 
 
 def scale_polydata(polydata, resolution, scale_factor=None):
-    """
-    Rescale a polydata mesh to fit into specified bounds
+    """Rescale a polydata mesh to fit into specified bounds.
 
     Parameters
     ----------
@@ -435,7 +417,6 @@ def scale_polydata(polydata, resolution, scale_factor=None):
     -------
     scaled_polydata : pyvista.PolyData
         Scaled polydata
-
     """
     if scale_factor is None:
         scale_factor = get_scale_factor_for_bounds(polydata, resolution)
@@ -462,8 +443,7 @@ def get_sdf_from_mesh_vtk(
     vpolydata=None,
     center_and_scale=True,
 ):
-    """
-    Compute 3D signed distance function values of a mesh
+    """Compute 3D signed distance function values of a mesh.
 
     Parameters
     ----------
@@ -477,7 +457,6 @@ def get_sdf_from_mesh_vtk(
     -------
     sdf : np.array
         Resulting SDF with shape (vox_resolution, vox_resolution, vox_resolution)
-
     """
     vox_shape = (vox_resolution, vox_resolution, vox_resolution)
     scaled_vpolydata, scale_factor = get_scaled_mesh(
@@ -492,9 +471,7 @@ def get_sdf_from_mesh_vtk(
     for i in range(-factor, factor):
         for j in range(-factor, factor):
             for k in range(-factor, factor):
-                sdf[i + factor, j + factor, k + factor] = pdd.EvaluateFunction(
-                    [i, j, k]
-                )
+                sdf[i + factor, j + factor, k + factor] = pdd.EvaluateFunction([i, j, k])
     return sdf, scale_factor
 
 

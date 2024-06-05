@@ -1,8 +1,7 @@
-from hydra.utils import instantiate
-import yaml
+import os
 
 import yaml
-import os
+from hydra.utils import instantiate
 
 CONFIG_PATH = CYTODL_CONFIG_PATH + "/results/"
 
@@ -19,7 +18,7 @@ def get_data(dataset_name, batch_size, debug=False):
     config_list = DATA_LIST[dataset_name]
     data = []
     for config_path in config_list:
-        with open(config_path, "r") as stream:
+        with open(config_path) as stream:
             config = yaml.safe_load(stream)
             if batch_size:
                 config["batch_size"] = batch_size

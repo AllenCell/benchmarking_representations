@@ -1,34 +1,25 @@
-import torch
+import glob
 import os
-import pyvista as pv
+from pathlib import Path
+
+import imageio
+import mcubes
 import numpy as np
 import pandas as pd
-import mcubes
+import pyvista as pv
+import torch
 import trimesh
-from tqdm import tqdm
-import glob
 import vtk
-import imageio
-from sklearn.decomposition import PCA
-from skimage.io import imsave
-from src.models.utils import sample_points
-from pathlib import Path
 from aicsimageio import AICSImage
-from vtk.util import numpy_support
-from skimage import morphology as skmorpho
-from skimage import filters as skfilters
-from skimage.measure import label, marching_cubes
-from src.data.utils import (
-    get_mesh_from_sdf,
-    get_scaled_mesh,
-    voxelize_recon_meshes,
-    get_image_from_mesh,
-    rescale_meshed_sdfs_to_full,
-    center_polydata,
-    get_iae_reconstruction_3d_grid,
-)
-from escnn.nn.modules.masking_module import build_mask
 from cyto_dl.image.transforms import RotationMask
+from skimage import filters as skfilters
+from skimage import morphology as skmorpho
+from skimage.measure import label, marching_cubes
+from sklearn.decomposition import PCA
+from src.data.utils import get_iae_reconstruction_3d_grid, get_mesh_from_sdf
+from src.models.utils import sample_points
+from tqdm import tqdm
+from vtk.util import numpy_support
 
 
 def write_pyvista_latent_walk_gif(out_file, view, mesh_files, expl_var=None):
@@ -75,9 +66,7 @@ def write_pyvista_latent_walk_gif(out_file, view, mesh_files, expl_var=None):
         if expl_var is not None:
             if expl_var < 1:
                 expl_var = expl_var * 100
-            plotter.add_text(
-                f"{round(expl_var, 1)}%", color="black", position=(550, 250)
-            )
+            plotter.add_text(f"{round(expl_var, 1)}%", color="black", position=(550, 250))
     else:
         raise NotImplementedError
     plotter.open_gif(out_file)
@@ -245,9 +234,7 @@ def get_mesh_from_image(
         img[img > 0] = 1
 
         if img.sum() == 0:
-            raise ValueError(
-                "No foreground voxels found after pre-processing. Try using sigma=0."
-            )
+            raise ValueError("No foreground voxels found after pre-processing. Try using sigma=0.")
 
     # Set image border to 0 so that the mesh forms a manifold
     img[[0, -1], :, :] = 0
@@ -293,9 +280,8 @@ def get_mesh_from_image(
 
 
 def get_mesh_from_sdf(sdf, method="skimage"):
-    """
-    This function reconstructs a mesh from signed distance function
-    values using the marching cubes algorithm.
+    """This function reconstructs a mesh from signed distance function values using the marching
+    cubes algorithm.
 
     Parameters
     ----------
@@ -310,9 +296,7 @@ def get_mesh_from_sdf(sdf, method="skimage"):
     if method == "skimage":
         try:
             vertices, faces, normals, _ = marching_cubes(sdf, level=0)
-            mesh = trimesh.Trimesh(
-                vertices=vertices, faces=faces, vertex_normals=normals
-            )
+            mesh = trimesh.Trimesh(vertices=vertices, faces=faces, vertex_normals=normals)
         except:
             # empty mesh
             mesh = pv.PolyData()
@@ -329,10 +313,9 @@ def get_mesh_from_sdf(sdf, method="skimage"):
 
 
 def save_pcloud(xhat, path, name, z_max, z_ind=2):
-    """
-    Save pointcloud xhat
-    z_max - percentage of z_max to place cut at
+    """Save pointcloud xhat.
 
+    z_max - percentage of z_max to place cut at
     """
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
@@ -469,9 +452,7 @@ def make_canonical_shapes(
     all_closest_real_meshes = []
     for stage in sub_slice_list:
         this_stage_df = df.loc[df[slice_key] == stage].reset_index(drop=True)
-        this_stage_mu = (
-            this_stage_df[cols].iloc[:, :max_embed_dim].dropna(axis=0).values
-        )
+        this_stage_mu = this_stage_df[cols].iloc[:, :max_embed_dim].dropna(axis=0).values
         closest_real_mesh = None
         if sample_closest_cell:
             mean_mu = this_stage_mu.mean(axis=0)
@@ -479,7 +460,7 @@ def make_canonical_shapes(
             dist = np.sum(dist, axis=1)
             closest_idx = np.argmin(dist)
 
-            real_input = this_stage_df.iloc[closest_idx]['seg_path']
+            real_input = this_stage_df.iloc[closest_idx]["seg_path"]
             from skimage.io import imread
             from src.data.utils import mesh_seg_model_output
 
@@ -502,9 +483,7 @@ def make_canonical_shapes(
                 uni_sample_points = uni_sample_points.unsqueeze(0)
                 xhat, _ = decoder(uni_sample_points.to(device), z_inf)
                 reshape_vox_size = int(np.cbrt(xhat.shape[1]))
-                xhat = xhat.reshape(
-                    reshape_vox_size, reshape_vox_size, reshape_vox_size
-                )
+                xhat = xhat.reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size)
             else:
                 xhat = decoder(z_inf)
 
@@ -537,9 +516,7 @@ def make_canonical_shapes(
                 bin_recon = (xhat > thresh).astype(float)
                 # xhat = bin_recon
                 if return_meshes:
-                    mesh, _, _ = get_mesh_from_image(
-                        bin_recon, sigma=0, lcc=False, denoise=False
-                    )
+                    mesh, _, _ = get_mesh_from_image(bin_recon, sigma=0, lcc=False, denoise=False)
                     all_meshes.append(pv.wrap(mesh))
             elif model_type == "iae":
                 if return_meshes:
@@ -554,16 +531,18 @@ def make_canonical_shapes(
 
 def extract_digitized_shape_modes(shape_mode, shape_modes_df, pca, map_points):
     def invert(pcs, pca):
-        """Matrix has shape NxM, where N is the number of
-        samples and M is the number of shape modes."""
+        """Matrix has shape NxM, where N is the number of samples and M is the number of shape
+        modes."""
         # Inverse PCA here: PCA coords -> shcoeffs
         df = pd.DataFrame(pca.inverse_transform(pcs))
         return df
 
     def get_coordinates_matrix(coords, comp, n_shape_modes):
-        """Coords has shape (N,). Creates a matrix of shape
-        (N,M), where M is the reduced dimension. comp is an
-        integer from 1 to npcs."""
+        """Coords has shape (N,).
+
+        Creates a matrix of shape (N,M), where M is the reduced dimension. comp is an integer from
+        1 to npcs.
+        """
         npts = len(coords)
         matrix = np.zeros((npts, n_shape_modes), dtype=np.float32)
         matrix[:, comp] = coords

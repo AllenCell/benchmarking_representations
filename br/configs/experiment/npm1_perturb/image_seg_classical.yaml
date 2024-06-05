@@ -18,12 +18,11 @@ tags: ["equivariance"]
 
 seed: 42
 
-data: 
+data:
   batch_size: 4
 
-model: 
+model:
   x_label: image
-  
 
 trainer:
   check_val_every_n_epoch: 1

@@ -30,9 +30,8 @@ def imgtoprojection(
     global_adjust=False,
     local_adjust=False,
 ):
-    """
-    Outputs projections of a 4d CZYX numpy array into a CYX numpy array, allowing for
-    color masks for each input channel as well as adjustment options
+    """Outputs projections of a 4d CZYX numpy array into a CYX numpy array, allowing for color
+    masks for each input channel as well as adjustment options.
 
     Parameters
     ----------
@@ -82,9 +81,7 @@ def imgtoprojection(
 
     except (AttributeError, IndexError):
         # its not a list of np arrays
-        raise ValueError(
-            "im1 must be either a 4d numpy array or a list of numpy arrays"
-        )
+        raise ValueError("im1 must be either a 4d numpy array or a list of numpy arrays")
 
     # color processing code
     if isinstance(colors, str):

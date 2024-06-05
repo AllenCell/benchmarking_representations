@@ -1,4 +1,5 @@
 """Adapted from.
+
 - https://github.com/AllenCellModeling/cyto-dl/blob/main/cyto_dl/train.py
 LICENSE - https://github.com/AllenCellModeling/cyto-dl/blob/main/licenses/LICENSE
 """
@@ -13,11 +14,10 @@ from typing import List, Optional, Tuple
 import hydra
 import lightning
 import pyrootutils
+from cyto_dl import utils
 from lightning import Callback, LightningDataModule, LightningModule, Trainer
 from lightning.pytorch.loggers.logger import Logger
 from omegaconf import DictConfig, OmegaConf
-
-from cyto_dl import utils
 
 log = utils.get_pylogger(__name__)
 
@@ -82,9 +82,7 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
     logger: List[Logger] = utils.instantiate_loggers(cfg.get("logger"))
 
     log.info(f"Instantiating trainer <{cfg.trainer._target_}>")
-    trainer: Trainer = hydra.utils.instantiate(
-        cfg.trainer, callbacks=callbacks, logger=logger
-    )
+    trainer: Trainer = hydra.utils.instantiate(cfg.trainer, callbacks=callbacks, logger=logger)
 
     object_dict = {
         "cfg": cfg,

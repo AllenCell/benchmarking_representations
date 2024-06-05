@@ -1,15 +1,16 @@
-from pathlib import Path
-import pandas as pd
-from src.features.rotation_invariance import get_equiv_dict
-from src.features.outlier_compactness import get_embedding_metrics
-from src.features.classification import get_classification_df
-from src.features.evolve import get_evolve_dataset
-from src.features.evolve import get_evolution_dict
-from src.features.regression import get_regression_df
-from src.models.save_embeddings import get_pc_loss_chamfer, compute_embeddings
-import numpy as np
-import yaml
 import os
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import yaml
+
+from br.features.classification import get_classification_df
+from br.features.evolve import get_evolution_dict, get_evolve_dataset
+from br.features.outlier_compactness import get_embedding_metrics
+from br.features.regression import get_regression_df
+from br.features.rotation_invariance import get_equiv_dict
+from br.models.save_embeddings import compute_embeddings, get_pc_loss_chamfer
 
 CONFIG_PATH = CYTODL_CONFIG_PATH + "/results/"
 configs = os.listdir(CONFIG_PATH)
@@ -134,10 +135,8 @@ def compute_features(
         "check_duplicates": False,
     },
 ):
-    """
-    Compute all benchmarking metrics and save
-    given list of datamodules, models, runs, input keys
-    """
+    """Compute all benchmarking metrics and save given list of datamodules, models, runs, input
+    keys."""
     path = Path(save_folder)
     path.mkdir(parents=True, exist_ok=True)
     loss_eval = get_pc_loss_chamfer() if loss_eval_list is None else loss_eval_list
@@ -165,15 +164,11 @@ def compute_features(
 
     if len(metric_list) != 0:
         if "split" in all_ret.columns:
-            all_ret = all_ret.loc[all_ret["split"].isin(splits_list)].reset_index(
-                drop=True
-            )
+            all_ret = all_ret.loc[all_ret["split"].isin(splits_list)].reset_index(drop=True)
 
         if "Reconstruction" in metric_list:
             print("Getting reconstruction")
-            rec_df = (
-                all_ret[["model", "split", "loss"]].groupby(["model", "split"]).mean()
-            )
+            rec_df = all_ret[["model", "split", "loss"]].groupby(["model", "split"]).mean()
             rec_df.to_csv(path / "recon.csv")
             metric_list.pop(metric_list.index("Reconstruction"))
 
@@ -191,9 +186,7 @@ def compute_features(
                     model = model.eval()
                     all_data_ids, all_splits, all_loss, all_embeds = [], [], [], []
                     this_loss_eval = (
-                        get_pc_loss_chamfer()
-                        if loss_eval_list is None
-                        else loss_eval_list[j]
+                        get_pc_loss_chamfer() if loss_eval_list is None else loss_eval_list[j]
                     )
                     all_embeds, all_data_ids, all_splits, all_loss = compute_embeddings(
                         model,

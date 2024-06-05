@@ -1,0 +1,19 @@
+defaults:
+  - _base
+
+step:
+  _target_: variance_preprocessing.steps.CombineDataframes
+  columns_to_drop:
+    - "merged_channels"
+    - "aligned_image"
+
+  column_renames: {}
+  output_dir: ${output_dir}/processed
+
+input:
+  merge_col: CellId
+  manifests:
+    - ${input_manifest}
+    - ${output_dir}/merge/manifest.parquet
+    - ${output_dir}/align/manifest.parquet
+    - ${output_dir}/register/manifest.parquet

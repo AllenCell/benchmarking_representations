@@ -1,13 +1,11 @@
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-import plotly.offline as pyo
 import seaborn as sns
-import os
-import matplotlib.pyplot as plt
-from pathlib import Path
-import plotly.express as px
-import numpy as np
-import random
+
 from .utils import normalize_intensities_and_get_colormap
 
 METRIC_DICT = {
@@ -26,8 +24,8 @@ METRIC_DICT = {
 
 
 def min_max(df, feat, better_min=True, norm="std"):
-    """
-    Norm for model comparison
+    """Norm for model comparison.
+
     e.g std - zscore model scores
     better_min - if lower is better, take negative
     returns dataframe where all features scores are comparable
@@ -133,7 +131,7 @@ def collect_outputs(path, norm, model_order=None):
                 id_vars=["model"],
                 value_vars=this_metrics,
             )
-            tmp_agg['variable'] = metric + '_' + tmp_agg['variable'].iloc[0]
+            tmp_agg["variable"] = metric + "_" + tmp_agg["variable"].iloc[0]
             df_non_agg.append(tmp_agg)
             this_df = (
                 this_df.loc[this_df["split"] == "test"]
@@ -148,7 +146,7 @@ def collect_outputs(path, norm, model_order=None):
                 id_vars=["model"],
                 value_vars=this_metrics,
             )
-            tmp_agg['variable'] = tmp_agg['variable'].apply(lambda x: metric + '_' + x)
+            tmp_agg["variable"] = tmp_agg["variable"].apply(lambda x: metric + "_" + x)
             df_non_agg.append(tmp_agg.reset_index())
             this_df = this_df.groupby(["model"]).mean(numeric_only=True).reset_index()
 
@@ -164,7 +162,7 @@ def collect_outputs(path, norm, model_order=None):
                 id_vars=["model"],
                 value_vars=[this_metrics[i]],
             )
-            this_df2['variable'] = metric + '_' + this_df2['variable'].iloc[0]
+            this_df2["variable"] = metric + "_" + this_df2["variable"].iloc[0]
             df_list.append(this_df2)
     df = pd.concat(df_list, axis=0).reset_index(drop=True)
     df_non_agg = pd.concat(df_non_agg, axis=0).reset_index(drop=True)
@@ -210,7 +208,7 @@ def plot(save_folder, df, models, title, colors_list=None, norm="std"):
         "Rotation Invariance Error",
         "Embedding Distance",
     ]
-    if "Interphase/Mitotic classification" in df['variable'].unique():
+    if "Interphase/Mitotic classification" in df["variable"].unique():
         expressive_metrics = [
             "Compactness",
             "Outlier Detection",
@@ -274,9 +272,7 @@ def plot(save_folder, df, models, title, colors_list=None, norm="std"):
                 line_color=colors[i],
                 opacity=opacity,
                 line=dict(width=5, color=colors[i % len(colors)]),  # Set line color
-                marker=dict(
-                    size=13, color=colors[i % len(colors)]
-                ),  # Set marker color (optional)
+                marker=dict(size=13, color=colors[i % len(colors)]),  # Set marker color (optional)
             )
             for i in range(len(all_models))
         ],
@@ -311,8 +307,8 @@ def plot_pc(
     ylim=[-10, 10],
     mark_center=False,
 ):
-    """
-    Plot point clouds saved as csv's in a directory
+    """Plot point clouds saved as csv's in a directory.
+
     directory - location where they are saved e.g. './test'
     names - names of files e.g - ['G1', 'earlyS', ...]
     key - type of filter used to generate the files e.g. - 'cell_cycle'
@@ -330,7 +326,7 @@ def plot_pc(
     if "inorm" not in df.columns:
         df, cmap = normalize_intensities_and_get_colormap(df=df, pcts=[5, 95])
     else:
-        cmap = 'inferno'
+        cmap = "inferno"
 
     for sub_key in df[key].unique():
         df_sub = df.loc[df[key] == sub_key]
@@ -396,11 +392,9 @@ def plot_pc(
         # seq.append(image)
 
 
-def archetypal_plot(
-    archetypes_labels: list, weights: list, filename: str = "archetypal_plot.png"
-):
-    """
-    Plot the distribution of weights for a set of archetypes
+def archetypal_plot(archetypes_labels: list, weights: list, filename: str = "archetypal_plot.png"):
+    """Plot the distribution of weights for a set of archetypes.
+
     :param archetypes_labels: names to be plotted for each archetype
     :param weights: list of weights
     :param filename: name of the file to save the plot

@@ -1,0 +1,15 @@
+defaults:
+  - _base
+
+step:
+  _target_: variance_preprocessing.steps.Merge
+  raw_col: crop_raw
+  seg_col: crop_seg
+  fov_col: fov_path
+  channel_map_col: name_dict
+  roi_col: roi
+  output_dir: ${output_dir}/merge
+  n_workers: ${n_workers}
+  manifest_path: ${input_manifest}
+
+input: ${input_manifest}

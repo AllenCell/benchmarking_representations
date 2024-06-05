@@ -5,17 +5,19 @@ logging.getLogger("aicsimageio").setLevel(logging.ERROR)
 logging.getLogger("xmlschema").setLevel(logging.ERROR)
 
 import multiprocessing
+
 import hydra
 
 
 @hydra.main(version_base=None, config_path="../config", config_name="config")
 def main(cfg):
     from functools import reduce
+
     import numpy as np
     import pandas as pd
+    from hydra.utils import instantiate
     from omegaconf import DictConfig
     from upath import UPath as Path
-    from hydra.utils import instantiate
     from variance_preprocessing.utils import read_df
 
     debug = cfg.get("debug", dict())

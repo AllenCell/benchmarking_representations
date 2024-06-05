@@ -1,25 +1,27 @@
-import os
-import torch
-from codecarbon import EmissionsTracker
-import sys
-from pathlib import Path
 import logging
-import pandas as pd
+import os
+import sys
 import time
-import trimesh
 import warnings
-import pyvista as pv
-import numpy as np
 from multiprocessing import Pool
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pyvista as pv
+import torch
+import trimesh
+from codecarbon import EmissionsTracker
 from skimage.filters import threshold_otsu
-from src.data.utils import (
-    get_sdf_from_mesh_vtk,
+
+from br.data.utils import (
+    compute_mse_recon_and_target_segs,
+    get_iae_reconstruction_3d_grid,
+    get_mesh_from_image,
     get_mesh_from_sdf,
+    get_sdf_from_mesh_vtk,
     rescale_meshed_sdfs_to_full,
     voxelize_recon_and_target_meshes,
-    compute_mse_recon_and_target_segs,
-    get_mesh_from_image,
-    get_iae_reconstruction_3d_grid,
 )
 
 try:
@@ -32,7 +34,7 @@ except ImportError:
             pass
 
 
-from .utils import move, sample_points, apply_sample_points, remove
+from .utils import apply_sample_points, move, remove, sample_points
 
 
 def vit_forward(
@@ -47,9 +49,7 @@ def vit_forward(
     use_sample_points=False,
     skew_scale=100,
 ):
-    """
-    Forward pass for vit with codecarbon tracking option
-    """
+    """Forward pass for vit with codecarbon tracking option."""
     # use_sample_points = True
     model = model
     image = torch.tensor(image)
@@ -64,9 +64,7 @@ def vit_forward(
         emissions: float = tracker.stop()
         emissions_df = pd.read_csv(emissions_csv)
     if use_sample_points:
-        image = torch.tensor(
-            apply_sample_points(image, use_sample_points, skew_scale)
-        ).to(device)
+        image = torch.tensor(apply_sample_points(image, use_sample_points, skew_scale)).to(device)
         predicted_img = torch.tensor(
             apply_sample_points(predicted_img, use_sample_points, skew_scale)
         ).to(device)
@@ -101,15 +99,9 @@ def vit_forward(
     )
 
 
-def mae_forward(
-    model, pcloud, device, this_loss, track_emissions, tracker, end, emissions_csv
-):
-    """
-    Forward pass for PointMAE/PointM2AE with codecarbon tracking option
-    """
-    all_outputs = model.network(
-        pcloud[:, :, :3].contiguous(), eval=True, return_all=True
-    )
+def mae_forward(model, pcloud, device, this_loss, track_emissions, tracker, end, emissions_csv):
+    """Forward pass for PointMAE/PointM2AE with codecarbon tracking option."""
+    all_outputs = model.network(pcloud[:, :, :3].contiguous(), eval=True, return_all=True)
 
     x_vis_list = all_outputs[0]
     if isinstance(x_vis_list, list):
@@ -193,9 +185,7 @@ def multi_proc_scale_img_eval(args):
         elif eval_scaled_img_model_type == "seg":
             thresh = threshold_otsu(recon_data)
             bin_recon = (recon_data > thresh).astype(float)
-            mesh, _, _ = get_mesh_from_image(
-                bin_recon, sigma=0, lcc=False, denoise=False
-            )
+            mesh, _, _ = get_mesh_from_image(bin_recon, sigma=0, lcc=False, denoise=False)
 
         resc_mesh, _ = rescale_meshed_sdfs_to_full([mesh], [target_scale_factor])
 
@@ -225,9 +215,7 @@ def base_forward(
     gt_scale_factor_dict_path=None,
     mesh_ext="stl",
 ):
-    """
-    Forward pass for base cyto_dl models with codecarbon tracking options
-    """
+    """Forward pass for base cyto_dl models with codecarbon tracking options."""
     this_batch = batch.copy()
     if "pcloud" in batch.keys():
         key = "pcloud"
@@ -236,9 +224,7 @@ def base_forward(
 
     if eval_scaled_img and eval_scaled_img_model_type == "iae":
         uni_sample_points = get_iae_reconstruction_3d_grid()
-        uni_sample_points = uni_sample_points.unsqueeze(0).repeat(
-            this_batch[key].shape[0], 1, 1
-        )
+        uni_sample_points = uni_sample_points.unsqueeze(0).repeat(this_batch[key].shape[0], 1, 1)
         this_batch["points"] = uni_sample_points
     xhat, z, z_params = model(
         move(this_batch, device), decode=True, inference=True, return_params=True
@@ -249,9 +235,7 @@ def base_forward(
     else:
         embed_key = key
 
-    if len(xhat[key].shape) == 3 and not isinstance(
-        model.decoder[key], LatentLocalDecoder
-    ):
+    if len(xhat[key].shape) == 3 and not isinstance(model.decoder[key], LatentLocalDecoder):
         xhat[key] = xhat[key][:, :, :3]
         this_batch[key] = this_batch[key][:, :, :3]
 
@@ -263,9 +247,9 @@ def base_forward(
         this_batch[key] = torch.tensor(
             apply_sample_points(this_batch[key], use_sample_points, skew_scale)
         ).to(device)
-        xhat[key] = torch.tensor(
-            apply_sample_points(xhat[key], use_sample_points, skew_scale)
-        ).to(device)
+        xhat[key] = torch.tensor(apply_sample_points(xhat[key], use_sample_points, skew_scale)).to(
+            device
+        )
 
     if this_loss is not None and not eval_scaled_img:
         if "points.df" in this_batch:
@@ -301,9 +285,7 @@ def base_forward(
 
         if gt_scale_factor_dict_path is not None:
             sc_factor_data = np.load(gt_scale_factor_dict_path, allow_pickle=True)
-            scale_factor_dict = dict(
-                zip(sc_factor_data["keys"], sc_factor_data["values"])
-            )
+            scale_factor_dict = dict(zip(sc_factor_data["keys"], sc_factor_data["values"]))
 
         reshape_vox_size = (
             eval_scaled_img_resolution
@@ -382,9 +364,7 @@ def model_pass(
     batch = move(batch, device)
     tracker, end = None, None
     if track_emissions:
-        tracker = EmissionsTracker(
-            measure_power_secs=1, output_dir=emissions_path, gpu_ids=[0]
-        )
+        tracker = EmissionsTracker(measure_power_secs=1, output_dir=emissions_path, gpu_ids=[0])
         tracker.start()
         end = time.time()
 

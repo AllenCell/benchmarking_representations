@@ -3,26 +3,26 @@ decoder_res_units: 0
 latent_dim: 256
 spatial_dims: 3
 in_shape:
-- 1
-- 118
-- 118
-- 118
+  - 1
+  - 118
+  - 118
+  - 118
 channels:
-- 8
-- 16
-- 32
-- 64
-- 128
-- 256
-- 512
+  - 8
+  - 16
+  - 32
+  - 64
+  - 128
+  - 256
+  - 512
 strides:
-- 1
-- 1
-- 2
-- 2
-- 2
-- 2
-- 2
+  - 1
+  - 1
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
 x_label: pcloud
 id_label: null
 act: relu
@@ -43,34 +43,34 @@ optimizer:
   lr: 0.001
 background_value: 0
 kernel_sizes:
-- 3
-- 3
-- 3
-- 3
-- 3
-- 3
-- 3
+  - 3
+  - 3
+  - 3
+  - 3
+  - 3
+  - 3
+  - 3
 encoder_padding:
-- null
-- null
-- null
-- null
-- null
-- null
-- null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
 first_conv_padding_mode: replicate
 num_res_units: 1
 decoder_channels:
-- 512
-- 256
-- 128
-- 64
-- 32
-- 16
+  - 512
+  - 256
+  - 128
+  - 64
+  - 32
+  - 16
 decoder_strides:
-- 2
-- 2
-- 2
-- 2
-- 1
-- 1
+  - 2
+  - 2
+  - 2
+  - 2
+  - 1
+  - 1
