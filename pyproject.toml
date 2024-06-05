@@ -20,6 +20,7 @@ dependencies = [
     "pycytominer @ git+https://github.com/cytomining/pycytominer.git@36241269c4293c24484986568ca16b2d7eb9e808",
     "trimesh>=4.4.0",
     "pyvista>=0.43.8",
+    "scipy==1.8.1" #pycytominer requires scipy < 1.9
 ]
 requires-python = ">=3.9,<3.11"
 
@@ -27,6 +28,7 @@ requires-python = ">=3.9,<3.11"
 viz = [
     "mitsuba>=3.5.0",
     "plotly>=5.22.0",
+    "seaborn>=0.13.2"
 ]
 
 all = [

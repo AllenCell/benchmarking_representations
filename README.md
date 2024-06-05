@@ -1,13 +1,13 @@
 # benchmarking_representations
 
 Code for training and evaluating morphology appropriate representation learning methods.
- 
+
 ## Installation
 
 ```bash
 pip install numpy
 pip install cyto-dl[all] git+https://github.com/AllenCellModeling/cyto-dl@br_release
-pip install -e .
+pip install -e .[all]
 pip install -e ./pointcloudutils
 ```
 
@@ -50,11 +50,11 @@ export CYTODL_CONFIG_PATH=./br/configs/
 │   │   ├── classification.py        <- Test set classification accuracies using logistic regression classifiers
 │   │   ├── outlier_compactness.py      <- Intrinsic dimensionality calculation and outlier classification
 │   │   ├── reconstruction.py      <- Functions for reconstruction viz across models
-│   │   ├── regression.py      <- Linear regression test set r^2 
+│   │   ├── regression.py      <- Linear regression test set r^2
 │   │   ├── rotation_invariance.py      <- Sensitivity to four 90 degree rotations in embedding space
 │   │   ├── plot.py      <- Polar plot viz across metrics
 │
-├── notebooks          <- Jupyter notebooks. 
+├── notebooks          <- Jupyter notebooks.
 │
 ├── pointcloudutils
 │   ├── pointcloudutils
@@ -65,56 +65,97 @@ export CYTODL_CONFIG_PATH=./br/configs/
 │
 ├── pyproject.toml           <- makes project pip installable (pip install -e .) so br can be imported
 ```
+
 ______________________________________________________________________
 
 ## Steps to download data, train models, run benchmarking analysis
 
-To download data and train models, run steps 1, 2 and 3. To skip this and run benchmarking analysis on pre-computed embeddings, skip to step 4. 
+To download data and train models, run steps 1, 2 and 3. To skip this and run benchmarking analysis on pre-computed embeddings, skip to step 4.
 
-1. [Optional] Datasets are hosted on quilt. Download raw data at the following links 
+1. \[Optional\] Datasets are hosted on quilt. Download raw data at the following links
 
 ```bash
-[cellPACK synthetic dataset] 
+[cellPACK synthetic dataset]
 [DNA replication foci dataset] https://open.quiltdata.com/b/allencell/packages/aics/nuclear_project_dataset_4
 [WTC-11 hIPSc single cell image dataset v1] https://staging.allencellquilt.org/b/allencell/tree/aics/hipsc_single_cell_image_dataset/
 [Nucleolar drug perturbation dataset]
 ```
 
-2. [Optional] Once data is downloaded, run preprocessing scripts to create the final image and point cloud datasets. Preprocessing 
+2. \[Optional\] Once data is downloaded, run preprocessing scripts to create the final image and point cloud datasets (for cellPACK synthetic dataset, we provide final versions of both). For image preprocessing used for punctate structures, install [snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html), update the data paths in
 
-update paths in the data yaml files. For the cellPACK data, these yaml files are located here
+```
+├── data
+│   ├── preprocessing
+│   │   ├── image_preprocessing
+│   │   │   ├── config
+│   │   │   │   ├── config.yaml     <- Config for image processing workflow [Update data paths]
+```
+
+,and then run the snakefile located in
+
+```
+├── data
+│   ├── preprocessing
+│   │   ├── image_preprocessing
+│   │   │   ├── Snakefile      <- Image preprocessing workflow. Combines alignment, masking, registration
+```
+
+For point cloud preprocessing for punctate structures, update data paths and run the workflow in
+
+```
+├── data
+│   ├── preprocessing
+│   │   ├── pc_preprocessing
+│   │   │   ├── punctate_cyto.py      <- Point cloud sampling from raw images for punctate structures [Update data paths] here
+```
+
+For SDF preprocessing for polymorphic structures, update data paths and run the workflows in
+
+```
+├── data
+│   ├── preprocessing
+│   │   ├── sdf_preprocessing
+│   │   │   ├── image_sdfs.py      <- Create 32**3 resolution SDF images [Update data paths]
+│   │   │   ├── pc_sdfs.py      <- Sample point clouds from 32**3 resolution SDF images [Update data paths]
+```
+
+Create a single cell manifest for each dataset with a column corresponding to these saved paths.
+
+3. Update the processed data path column in the datamodule yaml files. e.g. for the cellPACK data, these yaml files are located here
 
 ```
 ├── configs
 │   ├── data
-│   │   ├── cellpack        
-│   │   │   ├── image.yaml      <- Datamodule for cellPACK images 
-│   │   │   ├── pc.yaml       <- Datamodule for cellPACK point clouds
-│   │   │   ├── pc_jitter.yaml       <- Datamodule for cellPACK point clouds with jitter
+│   │   ├── cellpack
+│   │   │   ├── image.yaml      <- Datamodule for cellPACK images [Update data paths]
+│   │   │   ├── pc.yaml       <- Datamodule for cellPACK point clouds [Update data paths]
+│   │   │   ├── pc_jitter.yaml       <- Datamodule for cellPACK point clouds with jitter [Update data paths]
 ```
 
-Similarly, for PCNA data these yaml files are located here - 
+Similarly, for PCNA data these yaml files are located here -
 
 ```
 ├── configs
 │   ├── data
-│   │   ├── pcna        
-│   │   │   ├── image.yaml      <- Datamodule for PCNA images 
-│   │   │   ├── pc.yaml       <- Datamodule for PCNA point clouds
-│   │   │   ├── pc_intensity.yaml       <- Datamodule for PCNA point clouds with intensity
-│   │   │   ├── pc_intensity_jitter.yaml       <- Datamodule for PCNA point clouds with intensity and jitter
+│   │   ├── pcna
+│   │   │   ├── image.yaml      <- Datamodule for PCNA images [Update data paths]
+│   │   │   ├── pc.yaml       <- Datamodule for PCNA point clouds [Update data paths]
+│   │   │   ├── pc_intensity.yaml       <- Datamodule for PCNA point clouds with intensity [Update data paths]
+│   │   │   ├── pc_intensity_jitter.yaml       <- Datamodule for PCNA point clouds with intensity and jitter [Update data paths]
 ```
- 
-2. [Optional] Train models using cyto_dl. Experiment configs for point cloud and image models are located here - 
+
+2. \[Optional\] Train models using cyto_dl. Experiment configs for point cloud and image models are located here -
+
 ```
 ├── configs
 │   ├── experiment
-│   │   ├── cellpack        
+│   │   ├── cellpack
 │   │   │   ├── image_equiv.yaml      <- SO3 image model experiment
 │   │   │   ├── pc_equiv.yaml       <- SO3 point cloud model experiment
 ```
 
-Here is an example of training an SO3 point cloud model 
+Here is an example of training an SO3 point cloud model
+
 ```bash
 python br/models/train.py experiment=cellpack/pc_equiv ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
 ```
@@ -125,14 +166,12 @@ Override parts of the experiment config via command line or manually in the conf
 python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthmovers_sphere ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
 ```
 
-3. [Optional] Alternatively, download pre-computed embeddings.
+3. \[Optional\] Alternatively, download pre-computed embeddings.
 
 4. Run benchmarking notebook
 
 ```bash
 jupyter notebook br/notebooks/fig2.ipynb
 ```
-
-
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
