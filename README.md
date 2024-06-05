@@ -171,7 +171,7 @@ python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthm
 4. Run benchmarking notebook
 
 ```bash
-jupyter notebook br/notebooks/fig2.ipynb
+jupyter-notebook br/notebooks/fig2.ipynb
 ```
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
