@@ -81,7 +81,9 @@ def imgtoprojection(
 
     except (AttributeError, IndexError):
         # its not a list of np arrays
-        raise ValueError("im1 must be either a 4d numpy array or a list of numpy arrays")
+        raise ValueError(
+            "im1 must be either a 4d numpy array or a list of numpy arrays"
+        )
 
     # color processing code
     if isinstance(colors, str):

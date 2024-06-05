@@ -64,7 +64,11 @@ class Step:
             if self.raise_errors:
                 raise e
 
-            return {self.cell_id_col: row[self.cell_id_col], "success": False, "exception": str(e)}
+            return {
+                self.cell_id_col: row[self.cell_id_col],
+                "success": False,
+                "exception": str(e),
+            }
 
     def store_image(self, img, channel_names, pps, cell_id, **kwargs):
         if self.output_format == "ome.zarr":
@@ -77,7 +81,11 @@ class Step:
                 img = np.expand_dims(img, 1)
 
             write_image(
-                img, output_path, channel_names=channel_names, physical_pixel_sizes=pps, **kwargs
+                img,
+                output_path,
+                channel_names=channel_names,
+                physical_pixel_sizes=pps,
+                **kwargs,
             )
 
         return str(output_path)
@@ -99,7 +107,9 @@ class Step:
             with Pool(self.n_workers) as p:
                 jobs = p.imap_unordered(self.__call__, iterdicts(manifest))
                 if self.verbose:
-                    jobs = tqdm(jobs, total=len(manifest), desc="processing cells", leave=False)
+                    jobs = tqdm(
+                        jobs, total=len(manifest), desc="processing cells", leave=False
+                    )
                 result = list(jobs)
         else:
             jobs = manifest.itertuples()

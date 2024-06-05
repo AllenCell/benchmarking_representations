@@ -15,7 +15,9 @@ def get_regression_df(all_ret, target_cols, feature_df_path, df_feat=None):
             df_feat = df_feat[["CellId"] + target_cols]
 
     for target in target_cols:
-        for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
+        for model in tqdm(
+            all_ret["model"].unique(), total=len(all_ret["model"].unique())
+        ):
             this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
             if feature_df_path and target not in this_mo.columns:
                 this_mo = this_mo.merge(df_feat, on="CellId")

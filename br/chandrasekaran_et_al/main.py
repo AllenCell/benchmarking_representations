@@ -19,9 +19,9 @@ def get_metadata():
     data_meta = pd.read_csv(this_path, sep="\t", header=None)
     data_meta.columns = data_meta.iloc[0]
     data_meta = data_meta.iloc[1:].reset_index(drop=True)
-    data_meta = data_meta.loc[data_meta["Batch"].isin(["2020_11_04_CPJUMP1"])].reset_index(
-        drop=True
-    )
+    data_meta = data_meta.loc[
+        data_meta["Batch"].isin(["2020_11_04_CPJUMP1"])
+    ].reset_index(drop=True)
     return data, data_meta
 
 
@@ -29,7 +29,9 @@ def agg_norm_singlecells(df_feats, cols):
     data, data_meta = get_metadata()
     all_normalized_df = []
     for plate in df_feats["Assay_Plate_Barcode"].unique():
-        test = df_feats.loc[df_feats["Assay_Plate_Barcode"] == plate].reset_index(drop=True)
+        test = df_feats.loc[df_feats["Assay_Plate_Barcode"] == plate].reset_index(
+            drop=True
+        )
 
         aggregate_df = pycytominer.aggregate(
             test,
@@ -95,7 +97,8 @@ def agg_norm_singlecells(df_feats, cols):
     add_metadata = add_metadata.iloc[1:].reset_index(drop=True)
     add_metadata["Metadata_broad_sample"] = add_metadata["broad_sample"]
     df_final = df_final.merge(
-        add_metadata[["Metadata_broad_sample", "target_list"]], on="Metadata_broad_sample"
+        add_metadata[["Metadata_broad_sample", "target_list"]],
+        on="Metadata_broad_sample",
     )
     df_final["Metadata_target_list"] = df_final["target_list"]
 
@@ -120,7 +123,9 @@ def agg_norm_singlecells(df_feats, cols):
         "BR00117008",
         "BR00116995",
     ]
-    df_final = df_final.loc[df_final["Assay_Plate_Barcode"].isin(plates)].reset_index(drop=True)
+    df_final = df_final.loc[df_final["Assay_Plate_Barcode"].isin(plates)].reset_index(
+        drop=True
+    )
 
     wells = [
         "A01",
@@ -148,8 +153,12 @@ def agg_norm_singlecells(df_feats, cols):
         "A23",
         "A24",
     ]
-    df_final = df_final.loc[df_final["well_position"].isin(wells)].reset_index(drop=True)
-    df_final["PlateWell"] = df_final["Assay_Plate_Barcode"] + "_" + df_final["well_position"]
+    df_final = df_final.loc[df_final["well_position"].isin(wells)].reset_index(
+        drop=True
+    )
+    df_final["PlateWell"] = (
+        df_final["Assay_Plate_Barcode"] + "_" + df_final["well_position"]
+    )
     return df_final
 
 
@@ -167,7 +176,9 @@ def run_map_calculation(
     for cell in experiment_df.Cell_type.unique():
         cell_df = experiment_df.query("Cell_type==@cell")
         modality_1_perturbation = "compound"
-        modality_1_experiments_df = cell_df.query("Perturbation==@modality_1_perturbation")
+        modality_1_experiments_df = cell_df.query(
+            "Perturbation==@modality_1_perturbation"
+        )
         for modality_1_timepoint in modality_1_experiments_df.Time.unique():
             modality_1_timepoint_df = modality_1_experiments_df.query(
                 "Time==@modality_1_timepoint"
@@ -258,7 +269,11 @@ def run_map_calculation(
                 modality_1_consensus_df.merge(
                     target1_metadata, on="Metadata_broad_sample", how="left"
                 )
-                .assign(Metadata_matching_target=lambda x: x.Metadata_target_list.str.split("|"))
+                .assign(
+                    Metadata_matching_target=lambda x: x.Metadata_target_list.str.split(
+                        "|"
+                    )
+                )
                 .drop(["Metadata_target_list"], axis=1)
             )
 
@@ -298,8 +313,12 @@ def run_map_calculation(
                 modality_1_timepoint,
             )
 
-            all_modality_2_experiments_df = cell_df.query("Perturbation!=@modality_1_perturbation")
-            for modality_2_perturbation in all_modality_2_experiments_df.Perturbation.unique():
+            all_modality_2_experiments_df = cell_df.query(
+                "Perturbation!=@modality_1_perturbation"
+            )
+            for (
+                modality_2_perturbation
+            ) in all_modality_2_experiments_df.Perturbation.unique():
                 print("here")
                 modality_2_experiments_df = all_modality_2_experiments_df.query(
                     "Perturbation==@modality_2_perturbation"
@@ -311,13 +330,15 @@ def run_map_calculation(
 
                     modality_2_df = pd.DataFrame()
                     for plate in modality_2_timepoint_df.Assay_Plate_Barcode.unique():
-                        data_df = df_final.loc[df_final["Assay_Plate_Barcode"].isin([plate])]
+                        data_df = df_final.loc[
+                            df_final["Assay_Plate_Barcode"].isin([plate])
+                        ]
                         data_df = data_df.drop(
                             columns=["Metadata_target_list", "target_list"]
                         ).reset_index(drop=True)
-                        data_df = data_df.assign(Metadata_modality=modality_2_perturbation).assign(
-                            Metadata_matching_target=lambda x: x.Metadata_gene
-                        )
+                        data_df = data_df.assign(
+                            Metadata_modality=modality_2_perturbation
+                        ).assign(Metadata_matching_target=lambda x: x.Metadata_gene)
                         modality_2_df = utils.concat_profiles(modality_2_df, data_df)
 
                     # Remove empty wells
@@ -328,7 +349,9 @@ def run_map_calculation(
 
                     # Calculate replicability mAP
 
-                    if not replicability_map_df.Description.str.contains(description).any():
+                    if not replicability_map_df.Description.str.contains(
+                        description
+                    ).any():
                         print(f"Computing {description} replicability")
 
                         modality_2_df["Metadata_negcon"] = np.where(
@@ -356,7 +379,9 @@ def run_map_calculation(
                             null_size=null_size,
                         )
 
-                        result = result.query("Metadata_negcon==0").reset_index(drop=True)
+                        result = result.query("Metadata_negcon==0").reset_index(
+                            drop=True
+                        )
 
                         (
                             replicability_map_df,
@@ -412,13 +437,17 @@ def run_map_calculation(
                         .to_list()
                     )
 
-                    modality_2_consensus_for_matching_df = modality_2_consensus_df.query(
-                        "Metadata_gene!=@genes_without_sister"
-                    ).reset_index(drop=True)
+                    modality_2_consensus_for_matching_df = (
+                        modality_2_consensus_df.query(
+                            "Metadata_gene!=@genes_without_sister"
+                        ).reset_index(drop=True)
+                    )
 
                     # Calculate cripsr-crispr matching
                     if modality_2_perturbation == "crispr":
-                        if not matching_map_df.Description.str.contains(description).any():
+                        if not matching_map_df.Description.str.contains(
+                            description
+                        ).any():
                             print(f"Computing {description} matching")
 
                             pos_sameby = ["Metadata_matching_target"]
@@ -426,7 +455,9 @@ def run_map_calculation(
                             neg_sameby = []
                             neg_diffby = ["Metadata_matching_target"]
 
-                            metadata_df = utils.get_metadata(modality_2_consensus_for_matching_df)
+                            metadata_df = utils.get_metadata(
+                                modality_2_consensus_for_matching_df
+                            )
                             feature_df = utils.get_featuredata(
                                 modality_2_consensus_for_matching_df
                             )
@@ -456,7 +487,9 @@ def run_map_calculation(
                             )
 
                     # Filter out genes that are not perturbed by ORFs or CRISPRs
-                    perturbed_genes = list(set(modality_2_consensus_df.Metadata_matching_target))
+                    perturbed_genes = list(
+                        set(modality_2_consensus_df.Metadata_matching_target)
+                    )
 
                     modality_1_filtered_genes_df = (
                         modality_1_consensus_df[

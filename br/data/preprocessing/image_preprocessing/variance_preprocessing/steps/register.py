@@ -19,7 +19,11 @@ def _rescale_image(img_data, channels):
 
 class Register(Step):
     def __init__(
-        self, input_col, quantile, membrane_seg_channel="membrane_segmentation", **kwargs
+        self,
+        input_col,
+        quantile,
+        membrane_seg_channel="membrane_segmentation",
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.input_col = input_col
@@ -47,7 +51,8 @@ class Register(Step):
                 to_pad.append((0, 0))
                 diff = -diff
                 img_data = img_data.take(
-                    indices=range(diff // 2, (diff // 2) + self.bounding_box[axis]), axis=idx
+                    indices=range(diff // 2, (diff // 2) + self.bounding_box[axis]),
+                    axis=idx,
                 )
 
         img_data = np.pad(img_data.astype(np.float32), to_pad, constant_values=-1)
@@ -105,7 +110,9 @@ class Register(Step):
         global_bounding_box = {}
         for axis in ["z", "y", "x"]:
             diff = manifest[f"bbox_max_{axis}"] - manifest[f"bbox_min_{axis}"]
-            global_bounding_box[axis] = np.ceil(diff.quantile(self.quantile)).astype(int)
+            global_bounding_box[axis] = np.ceil(diff.quantile(self.quantile)).astype(
+                int
+            )
         self.bounding_box = global_bounding_box
 
         return super().run(manifest, n_workers=n_workers)

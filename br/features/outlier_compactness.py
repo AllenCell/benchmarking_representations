@@ -26,11 +26,17 @@ def get_embedding_metrics(
 
     if check_duplicates:
         all_ids = []
-        for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
+        for model in tqdm(
+            all_ret["model"].unique(), total=len(all_ret["model"].unique())
+        ):
             this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
             cols = [i for i in this_mo.columns if "mu" in i]
             inds = (
-                this_mo[cols].iloc[:, :max_embed_dim].drop_duplicates().dropna(axis=1).index.values
+                this_mo[cols]
+                .iloc[:, :max_embed_dim]
+                .drop_duplicates()
+                .dropna(axis=1)
+                .index.values
             )
             all_ids.append(set(this_mo.iloc[inds]["CellId"].values))
         final_ids = set.intersection(*all_ids)
@@ -40,7 +46,9 @@ def get_embedding_metrics(
         if check_duplicates:
             this_mo = this_mo.loc[this_mo["CellId"].isin(final_ids)]
         val = compactness(this_mo, num_PCs, max_embed_dim, method)
-        percent_same = outlier_detection(this_mo, blobby_outlier_max_cc=blobby_outlier_max_cc)
+        percent_same = outlier_detection(
+            this_mo, blobby_outlier_max_cc=blobby_outlier_max_cc
+        )
         for i in range(len(val)):
             ret_dict_compactness["model"].append(model)
             ret_dict_compactness["compactness"].append(val[i])
@@ -75,7 +83,9 @@ def _intrinsic_dim_sample_wise(X, k, dist=None):
     """
 
     if dist is None:
-        neighb = NearestNeighbors(n_neighbors=k + 1, n_jobs=1, algorithm="ball_tree").fit(X)
+        neighb = NearestNeighbors(
+            n_neighbors=k + 1, n_jobs=1, algorithm="ball_tree"
+        ).fit(X)
         dist, ind = neighb.kneighbors(X)
     dist = dist[:, 1 : (k + 1)]
     assert dist.shape == (X.shape[0], k)
@@ -92,9 +102,9 @@ def compute_MLE_intrinsic_dimensionality(feats, k_list=None):
     if k_list is None:
         # k range based on dataset size from `Discovering State Variables Hidden in Experimental Data`
         k_list = (feats.shape[0] * np.linspace(0.008, 0.016, 5)).astype("int")
-    neighb = NearestNeighbors(n_neighbors=k_list[-1] + 1, n_jobs=1, algorithm="ball_tree").fit(
-        feats
-    )
+    neighb = NearestNeighbors(
+        n_neighbors=k_list[-1] + 1, n_jobs=1, algorithm="ball_tree"
+    ).fit(feats)
     dist, ind = neighb.kneighbors(feats)
     all_estimates = []
     for k in k_list:
@@ -175,7 +185,9 @@ def outlier_detection(this_mo, outlier_label=0, blobby_outlier_max_cc=None):
     class_weight = {}
     for i in this_mo["outlier_numeric"].unique():
         n = this_mo.loc[this_mo["outlier_numeric"] == i].shape[0]
-        class_weight[i] = this_mo.shape[0] / (len(this_mo["outlier_numeric"].unique()) * n)
+        class_weight[i] = this_mo.shape[0] / (
+            len(this_mo["outlier_numeric"].unique()) * n
+        )
 
     class_dict = {}
     for i in this_mo["outlier_numeric"].unique():
@@ -186,7 +198,9 @@ def outlier_detection(this_mo, outlier_label=0, blobby_outlier_max_cc=None):
 
     assert this_mo["outlier_numeric"].isna().any() == False
 
-    clf = LogisticRegression(class_weight=class_weight, max_iter=3000, multi_class="ovr")
+    clf = LogisticRegression(
+        class_weight=class_weight, max_iter=3000, multi_class="ovr"
+    )
     model = make_pipeline(StandardScaler(), clf)
 
     cv_model = cross_validate(

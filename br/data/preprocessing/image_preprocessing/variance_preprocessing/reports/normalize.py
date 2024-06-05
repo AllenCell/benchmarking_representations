@@ -150,7 +150,9 @@ class Normalize(Report):
                     f"variance-dataset/register/{file_name}&image=default"
                 )
 
-                return (_BASE_VIEWER_URL + "?url=" + path), (_BASE_VIEWER_URL + "?url=" + path2)
+                return (_BASE_VIEWER_URL + "?url=" + path), (
+                    _BASE_VIEWER_URL + "?url=" + path2
+                )
             except:
                 return ""
 

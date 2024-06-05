@@ -32,7 +32,9 @@ def compute_distances_to_baseline(embeddings, div_norm=False):
                         / torch.norm(baseline_vector)
                     )
                 else:
-                    distance = torch.norm(normalized_embeddings[i, j, k, :] - baseline_vector)
+                    distance = torch.norm(
+                        normalized_embeddings[i, j, k, :] - baseline_vector
+                    )
                 temp_distances.append(distance)
 
             distances_list.append(temp_distances)
@@ -57,7 +59,9 @@ def get_precomputed_equiv_dict(
     model_data = []
     for model_name, paths in file_dict.items():
         rot_embeds = np.load(f"{base_dir}/{paths['equiv_err_embeds']}")
-        rot_ids = np.load(f"{base_dir}/{paths['equiv_err_ids']}", allow_pickle=True).squeeze()
+        rot_ids = np.load(
+            f"{base_dir}/{paths['equiv_err_ids']}", allow_pickle=True
+        ).squeeze()
         rot_errors = compute_distances_to_baseline(rot_embeds)
         avg_errors = rot_errors.mean(dim=(1, 2)).cpu().numpy().squeeze()
         try:
@@ -183,16 +187,22 @@ def get_equiv_dict(
                         if len(i[this_key].shape) == 3:
                             this_input_rot = rotation_pc_batch_z(i, theta)
                         else:
-                            this_input_rot = rotation_image_batch_z(i, theta, squeeze_2d)
+                            this_input_rot = rotation_image_batch_z(
+                                i, theta, squeeze_2d
+                            )
 
-                        batch_input = {this_key: torch.tensor(this_input_rot).to(device).float()}
+                        batch_input = {
+                            this_key: torch.tensor(this_input_rot).to(device).float()
+                        }
                         if "points" in i.keys():
                             batch_input["points"] = i["points"]
                             batch_input["points.df"] = i["points.df"]
 
                         if hasattr(this_model, "decoder"):
                             if LatentLocalDecoder is not None:
-                                if isinstance(this_model.decoder[this_key], LatentLocalDecoder):
+                                if isinstance(
+                                    this_model.decoder[this_key], LatentLocalDecoder
+                                ):
                                     batch_input["points"] = i["points"]
                                     batch_input["points.df"] = i["points.df"]
 
@@ -216,7 +226,9 @@ def get_equiv_dict(
                         baseline = baseline[:, :max_embed_dim]
                         z = z[:, :max_embed_dim]
                         norm_diff = np.linalg.norm(z - baseline)
-                        norm_diff2 = np.linalg.norm(z - baseline) / np.linalg.norm(baseline)
+                        norm_diff2 = np.linalg.norm(z - baseline) / np.linalg.norm(
+                            baseline
+                        )
                         norm_diff3 = np.linalg.norm(z - baseline) / (
                             np.linalg.norm(baseline) + np.linalg.norm(z)
                         )
@@ -230,7 +242,9 @@ def get_equiv_dict(
                             this_ids = this_ids[0]
                         if torch.is_tensor(this_ids):
                             this_ids = (
-                                this_ids.item() if this_ids.numel() == 1 else this_ids.tolist()[0]
+                                this_ids.item()
+                                if this_ids.numel() == 1
+                                else this_ids.tolist()[0]
                             )
                         eq_dict["id"].append(str(this_ids))
                         eq_dict["theta"].append(theta)

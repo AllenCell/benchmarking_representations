@@ -65,7 +65,9 @@ def read_ome_zarr(path, level=0, image_name="default"):
     pps = node.metadata["coordinateTransformations"][0][0]["scale"][-3:]
 
     return AICSImage(
-        node.data[level].compute(), channel_names=node.metadata["name"], physical_pixel_sizes=pps
+        node.data[level].compute(),
+        channel_names=node.metadata["name"],
+        physical_pixel_sizes=pps,
     )
 
 

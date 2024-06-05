@@ -42,10 +42,21 @@ def get_classification(this_mo, target_col, cols=None):
                 ["M1M2", "unclear", "M3", "M4M5", "M6M7_complete", "M6M7_single"]
             )
         ]
-        order = ["G1", "earlyS", "earlyS-midS", "midS", "midS-lateS", "lateS", "lateS-G2", "G2"]
+        order = [
+            "G1",
+            "earlyS",
+            "earlyS-midS",
+            "midS",
+            "midS-lateS",
+            "lateS",
+            "lateS-G2",
+            "G2",
+        ]
         ordered_mo = []
         for ord in order:
-            this2 = this_mo.loc[this_mo["cell_stage_fine"] == ord].reset_index(drop=True)
+            this2 = this_mo.loc[this_mo["cell_stage_fine"] == ord].reset_index(
+                drop=True
+            )
             ordered_mo.append(this2)
         this_mo = pd.concat(ordered_mo, axis=0).reset_index(drop=True)
         this_mo["cell_stage_numeric"] = pd.factorize(this_mo["cell_stage_fine"])[0]
@@ -149,7 +160,9 @@ def run_drug_classification(df, target_col, num_folds):
         score = metric(y_test, y_pred)
         metrics_avg[target_col] += score / num_folds
         metrics_values_all_folds[target_col].append(score)
-    metrics_std_dev = {col: np.std(values) for col, values in metrics_values_all_folds.items()}
+    metrics_std_dev = {
+        col: np.std(values) for col, values in metrics_values_all_folds.items()
+    }
     return metrics_avg, metrics_std_dev
 
 
