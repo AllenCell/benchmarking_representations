@@ -168,10 +168,16 @@ python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthm
 
 3. \[Optional\] Alternatively, download pre-computed embeddings.
 
-4. Run benchmarking notebook
-
-```bash
-jupyter-notebook br/notebooks/fig2.ipynb
+4. Run benchmarking notebooks 
+```
+├── br
+│   ├── notebooks
+│   │   ├── fig2_cellpack.ipynb      <- Reproduce Fig 2 cellPACK synthetic data results
+│   │   ├── fig3_pcna.ipynb      <- Reproduce Fig 3 PCNA data results
+│   │   ├── fig4_other_punctate.ipynb      <- Reproduce Fig 4 other puntate structure data results
+│   │   ├── fig5_npm1.ipynb      <- Reproduce Fig 5 npm1 data results
+│   │   ├── fig6_other_polymorphic.ipynb      <- Reproduce Fig 6 other polymorphic data results
+│   │   ├── fig7_drug_data.ipynb      <- Reproduce Fig 7 drug data results
 ```
 
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+
