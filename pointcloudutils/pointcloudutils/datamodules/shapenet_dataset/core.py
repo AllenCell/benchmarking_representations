@@ -131,7 +131,7 @@ class Shapes3dDataset(data.Dataset):
                     if k is None:
                         data[field_name] = v
                     else:
-                        data["{}.{}".format(field_name, k)] = v
+                        data[f"{field_name}.{k}"] = v
             else:
                 data[field_name] = field_data
 
@@ -212,7 +212,7 @@ class Shapes3dDataset(data.Dataset):
         files = os.listdir(model_path)
         for field_name, field in self.fields.items():
             if not field.check_complete(files):
-                logger.warn('Field "{}" is incomplete: {}'.format(field_name, model_path))
+                logger.warn(f'Field "{field_name}" is incomplete: {model_path}')
                 return False
 
         return True
