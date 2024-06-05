@@ -1,20 +1,10 @@
-from .transforms import (
-    SubsamplePoints,
-    PointcloudNoise,
-    SubsamplePointcloud,
-)
-from .fields import (
-    PointsField,
-    PointCloudField,
-    PartialPointCloudField,
-    IndexField,
-)
 from torchvision import transforms
 
+from .fields import IndexField, PartialPointCloudField, PointCloudField, PointsField
+from .transforms import PointcloudNoise, SubsamplePointcloud, SubsamplePoints
 
-def get_data_fields(
-    mode, points_subsample, input_type, points_file, multi_files, points_iou_file
-):
+
+def get_data_fields(mode, points_subsample, input_type, points_file, multi_files, points_iou_file):
     """Returns the data fields.
 
     Args:
@@ -66,9 +56,7 @@ def get_inputs_field(
         transform = transforms.Compose(
             [SubsamplePointcloud(pointcloud_n), PointcloudNoise(pointcloud_noise)]
         )
-        inputs_field = PointCloudField(
-            pointcloud_file, transform, multi_files=multi_files
-        )
+        inputs_field = PointCloudField(pointcloud_file, transform, multi_files=multi_files)
     elif input_type == "partial_pointcloud":
         transform = transforms.Compose(
             [
@@ -91,8 +79,7 @@ def get_inputs_field(
 
 
 def normalize_3d_coordinate(p, padding=0.1):
-    """Normalize coordinate to [0, 1] for unit cube experiments.
-        Corresponds to our 3D model
+    """Normalize coordinate to [0, 1] for unit cube experiments. Corresponds to our 3D model.
 
     Args:
         p (tensor): point
@@ -110,7 +97,7 @@ def normalize_3d_coordinate(p, padding=0.1):
 
 
 def normalize_coordinate(p, padding=0.1, plane="xz"):
-    """Normalize coordinate to [0, 1] for unit cube experiments
+    """Normalize coordinate to [0, 1] for unit cube experiments.
 
     Args:
         p (tensor): point
@@ -136,8 +123,7 @@ def normalize_coordinate(p, padding=0.1, plane="xz"):
 
 
 def coordinate2index(x, reso, coord_type="2d"):
-    """Normalize coordinate to [0, 1] for unit cube experiments.
-        Corresponds to our 3D model
+    """Normalize coordinate to [0, 1] for unit cube experiments. Corresponds to our 3D model.
 
     Args:
         x (tensor): coordinate
@@ -154,8 +140,7 @@ def coordinate2index(x, reso, coord_type="2d"):
 
 
 def coord2index(p, vol_range, reso=None, plane="xz"):
-    """Normalize coordinate to [0, 1] for sliding-window experiments.
-        Corresponds to our 3D model
+    """Normalize coordinate to [0, 1] for sliding-window experiments. Corresponds to our 3D model.
 
     Args:
         p (tensor): points

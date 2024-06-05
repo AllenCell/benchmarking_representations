@@ -2,7 +2,7 @@ import numpy as np
 
 
 # Transforms
-class PointcloudNoise(object):
+class PointcloudNoise:
     """Point cloud noise transformation class.
 
     It adds noise to point cloud data.
@@ -28,7 +28,7 @@ class PointcloudNoise(object):
         return data_out
 
 
-class SubsamplePointcloud(object):
+class SubsamplePointcloud:
     """Point cloud subsampling transformation class.
 
     It subsamples the point cloud data.
@@ -59,7 +59,7 @@ class SubsamplePointcloud(object):
         return data_out
 
 
-class SubsamplePoints(object):
+class SubsamplePoints:
     """Points subsampling transformation class.
 
     It subsamples the points data.

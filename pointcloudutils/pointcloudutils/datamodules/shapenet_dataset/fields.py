@@ -1,5 +1,7 @@
 import os
+
 import numpy as np
+
 from .core import Field
 
 
@@ -35,7 +37,6 @@ class PointsField(Field):
         file_name (str): file name
         transform (list): list of transformations which will be applied to the points tensor
         multi_files (callable): number of files
-
     """
 
     def __init__(self, file_name, transform=None, unpackbits=False, multi_files=None):
@@ -189,9 +190,7 @@ class PartialPointCloudField(Field):
             category (int): index of category
         """
         if mode in ["val", "test"]:  # fix the size in evaluation
-            self.partial_type = (
-                "centerz" if "centerz" in self.partial_type else "centery"
-            )
+            self.partial_type = "centerz" if "centerz" in self.partial_type else "centery"
             self.part_ratio = 0.5
 
         if self.multi_files is None:

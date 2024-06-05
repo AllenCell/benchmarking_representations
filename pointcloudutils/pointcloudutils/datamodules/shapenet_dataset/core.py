@@ -1,15 +1,16 @@
-import os
 import logging
-from torch.utils import data
+import os
+
 import numpy as np
-import yaml
 import torch
+import yaml
+from torch.utils import data
 
 logger = logging.getLogger(__name__)
 
 
 # Fields
-class Field(object):
+class Field:
     """Data fields class."""
 
     def load(self, data_path, idx, category):
@@ -41,7 +42,7 @@ class Shapes3dDataset(data.Dataset):
         split=None,
         categories=None,
         transform=None,
-        x_label='pcloud',
+        x_label="pcloud",
     ):
         """Initialization of the the 3D shape dataset.
 
@@ -62,15 +63,13 @@ class Shapes3dDataset(data.Dataset):
         # If categories is None, use all subfolders
         if categories is None:
             categories = os.listdir(dataset_folder)
-            categories = [
-                c for c in categories if os.path.isdir(os.path.join(dataset_folder, c))
-            ]
+            categories = [c for c in categories if os.path.isdir(os.path.join(dataset_folder, c))]
 
         # Read metadata file
         metadata_file = os.path.join(dataset_folder, "metadata.yaml")
 
         if os.path.exists(metadata_file):
-            with open(metadata_file, "r") as f:
+            with open(metadata_file) as f:
                 self.metadata = yaml.load(f, Loader=yaml.Loader)
         else:
             self.metadata = {c: {"id": c, "name": "n/a"} for c in categories}
@@ -98,7 +97,7 @@ class Shapes3dDataset(data.Dataset):
 
             else:
                 split_file = os.path.join(subpath, split + ".lst")
-                with open(split_file, "r") as f:
+                with open(split_file) as f:
                     models_c = f.read().split("\n")
 
                 if "" in models_c:
@@ -132,7 +131,7 @@ class Shapes3dDataset(data.Dataset):
                     if k is None:
                         data[field_name] = v
                     else:
-                        data["%s.%s" % (field_name, k)] = v
+                        data["{}.{}".format(field_name, k)] = v
             else:
                 data[field_name] = field_data
 
@@ -213,15 +212,14 @@ class Shapes3dDataset(data.Dataset):
         files = os.listdir(model_path)
         for field_name, field in self.fields.items():
             if not field.check_complete(files):
-                logger.warn('Field "%s" is incomplete: %s' % (field_name, model_path))
+                logger.warn('Field "{}" is incomplete: {}'.format(field_name, model_path))
                 return False
 
         return True
 
 
 def collate_remove_none(batch):
-    """Collater that puts each data field into a tensor with outer dimension
-        batch size.
+    """Collater that puts each data field into a tensor with outer dimension batch size.
 
     Args:
         batch: batch
@@ -257,12 +255,8 @@ def worker_init_fn(worker_id):
 
 def rotate_pointcloud(pointcloud, points, points_iou=None):
     theta = np.pi * 2 * np.random.choice(24) / 24
-    rotation_matrix = np.array(
-        [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
-    )
-    pointcloud[:, [0, 2]] = pointcloud[:, [0, 2]].dot(
-        rotation_matrix
-    )  # random rotation (x,z)
+    rotation_matrix = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    pointcloud[:, [0, 2]] = pointcloud[:, [0, 2]].dot(rotation_matrix)  # random rotation (x,z)
     points[:, [0, 2]] = points[:, [0, 2]].dot(rotation_matrix)
 
     if points_iou is not None:
@@ -291,9 +285,7 @@ def single_translate_pointcloud(
     xyz1 = np.random.uniform(low=2.0 / 3.0, high=3.0 / 2.0, size=[1])
     xyz2 = np.random.uniform(low=-0.2, high=0.2, size=[3])
 
-    translated_pointcloud = np.add(np.multiply(pointcloud, xyz1), xyz2).astype(
-        "float32"
-    )
+    translated_pointcloud = np.add(np.multiply(pointcloud, xyz1), xyz2).astype("float32")
 
     translated_points = np.add(np.multiply(points, xyz1), xyz2).astype("float32")
 
@@ -306,9 +298,7 @@ def single_translate_pointcloud(
         translated_points_iou_df = np.multiply(points_iou_df, xyz1)
 
     if points_iou is not None:
-        translated_points_iou = np.add(np.multiply(points_iou, xyz1), xyz2).astype(
-            "float32"
-        )
+        translated_points_iou = np.add(np.multiply(points_iou, xyz1), xyz2).astype("float32")
         return (
             translated_pointcloud,
             translated_points,

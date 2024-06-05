@@ -1,10 +1,9 @@
+from typing import Optional
+
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader
-from typing import Optional
-from pointcloudutils.datamodules.shapenet_dataset import (
-    Shapes3dDataset,
-    IndexField,
-)
+
+from pointcloudutils.datamodules.shapenet_dataset import IndexField, Shapes3dDataset
 from pointcloudutils.datamodules.shapenet_dataset.utils import (
     get_data_fields,
     get_inputs_field,
@@ -16,7 +15,7 @@ class ShapenetDataModule(LightningDataModule):
         self,
         dataset_folder: str = "/allen/aics/modeling/ritvik/projects/occupancy_networks/data/ShapeNet",
         method: str = "shapenet_dfnet",
-        x_label: str = 'pcloud',
+        x_label: str = "pcloud",
         dataset_type: str = "partial_pointcloud",
         train_split: str = "train",
         val_split: str = "val",
@@ -39,7 +38,7 @@ class ShapenetDataModule(LightningDataModule):
         multi_files: Optional[int] = None,
         categories: Optional[str] = None,
     ):
-        """ """
+        """"""
         super().__init__()
         self.dataset_folder = dataset_folder
         self.method = method
