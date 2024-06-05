@@ -58,15 +58,9 @@ def process_dataloader(
     sdf_process,
 ):
     for j, i in enumerate(tqdm(dataloader)):
-        if (debug) and j > 1:
+        if (debug) and j > 3:
             break
-        (
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            all_metadata,
-        ) = process_batch_embeddings(
+        (all_embeds, all_data_ids, all_splits, all_loss, all_metadata,) = process_batch_embeddings(
             model,
             loss_eval,
             device,
@@ -110,13 +104,7 @@ def compute_embeddings(
 ):
     if "train" in split_list:
         print("Processing train")
-        (
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            all_metadata,
-        ) = process_dataloader(
+        (all_embeds, all_data_ids, all_splits, all_loss, all_metadata,) = process_dataloader(
             this_data.train_dataloader(),
             model,
             loss_eval,
@@ -138,13 +126,7 @@ def compute_embeddings(
         )
     if "val" in split_list:
         print("Processing val")
-        (
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            all_metadata,
-        ) = process_dataloader(
+        (all_embeds, all_data_ids, all_splits, all_loss, all_metadata,) = process_dataloader(
             this_data.val_dataloader(),
             model,
             loss_eval,
@@ -166,13 +148,7 @@ def compute_embeddings(
         )
     if "test" in split_list:
         print("Processing test")
-        (
-            all_embeds,
-            all_data_ids,
-            all_splits,
-            all_loss,
-            all_metadata,
-        ) = process_dataloader(
+        (all_embeds, all_data_ids, all_splits, all_loss, all_metadata,) = process_dataloader(
             this_data.test_dataloader(),
             model,
             loss_eval,
@@ -228,13 +204,7 @@ def save_embeddings(
         this_use_sample_points = sample_points_list[j_ind]
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
-            (
-                all_embeds,
-                all_data_ids,
-                all_splits,
-                all_loss,
-                all_metadata,
-            ) = compute_embeddings(
+            (all_embeds, all_data_ids, all_splits, all_loss, all_metadata,) = compute_embeddings(
                 model,
                 this_data,
                 split_list,

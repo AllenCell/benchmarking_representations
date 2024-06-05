@@ -1,25 +1,27 @@
-embedding_save_location: "./pcna_updated_embeds"
+# embedding_save_location: "./pcna_updated_embeds"
 orig_df: /allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv
 image_path: /allen/aics/modeling/ritvik/pcna/manifest.parquet
 pc_path: /allen/aics/modeling/ritvik/pcna/manifest.parquet
-run_ids: [
-            "0c1bbf0c54f343a083e9c26b476c9469",
-            "1c1ca294eb6d4c3092cbfa062dea934a",
-            "bc9a169ca7c943debcb3352bb80b19ac",
-            "d172d8f823dc437b9fae7ab6b2673d3e",
-            "ac43b8bbeb3a493bacc69927c8f21276",
-        ]
+run_ids:
+  [
+    "0c1bbf0c54f343a083e9c26b476c9469",
+    "1c1ca294eb6d4c3092cbfa062dea934a",
+    "bc9a169ca7c943debcb3352bb80b19ac",
+    "d172d8f823dc437b9fae7ab6b2673d3e",
+    "ac43b8bbeb3a493bacc69927c8f21276",
+  ]
 names: [
-            "2048_ed_dgcnn",  # more
-            "2048_int_ed_vndgcnn",  # more
-            "classical_image",
-            "so3_image",
-            "2048_int_ed_vndgcnn_jitter",
-        ]
-data_paths: [
-        "./br/configs/data/pcna/pc.yaml",
-        "./br/configs/data/pcna/pc_intensity.yaml",
-        "./br/configs/data/pcna/image.yaml",
-        "./br/configs/data/pcna/image.yaml",
-        "./br/configs/data/pcna/pc_intensity_jitter.yaml",
-    ],
+    "Classical_pointcloud", # more
+    "SO3_pointcloud", # more
+    "Classical_image",
+    "SO3_image",
+    "SO3_pointcloud_jitter",
+  ]
+data_paths:
+  [
+    "./br/configs/data/pcna/pc.yaml",
+    "./br/configs/data/pcna/pc_intensity.yaml",
+    "./br/configs/data/pcna/image.yaml",
+    "./br/configs/data/pcna/image.yaml",
+    "./br/configs/data/pcna/pc_intensity_jitter.yaml",
+  ]

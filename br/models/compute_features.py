@@ -11,24 +11,7 @@ from br.features.outlier_compactness import get_embedding_metrics
 from br.features.regression import get_regression_df
 from br.features.rotation_invariance import get_equiv_dict
 from br.models.save_embeddings import compute_embeddings, get_pc_loss_chamfer
-
-CONFIG_PATH = CYTODL_CONFIG_PATH + "/results/"
-configs = os.listdir(CONFIG_PATH)
-
-DATASET_INFO = {}
-for config in configs:
-    data = config.split(".")[0]
-    with open(CONFIG_PATH + config) as stream:
-        a = yaml.safe_load(stream)
-        DATASET_INFO[data] = a
-        # example dataset info
-        # {"variance_all_punctate": {
-        #     "embedding_save_location": "./variance_all_punctate",
-        #     "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
-        #     "image_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
-        #     "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
-        # }}
-
+from br.models.utils import get_all_configs_per_dataset
 
 METRIC_LIST = [
     "Rotation Invariance Error",
@@ -52,10 +35,9 @@ def rename_cellid(df):
     return df
 
 
-def get_embeddings(run_names, dataset):
-    embedding_save_location = DATASET_INFO[dataset]["embedding_save_location"]
+def get_embeddings(run_names, dataset, DATASET_INFO, embeddings_path):
     df_path = DATASET_INFO[dataset]["orig_df"]
-    path = Path(embedding_save_location)
+    path = Path(embeddings_path)
 
     all_df = []
     for i in run_names:
@@ -79,7 +61,13 @@ def get_embeddings(run_names, dataset):
 
 
 def get_evolve_data_list(
-    save_folder, num_samples, config_list_evolve, modality_list, dataset, pc_is_iae
+    save_folder,
+    num_samples,
+    config_list_evolve,
+    modality_list,
+    dataset,
+    pc_is_iae,
+    DATASET_INFO,
 ):
     image_path = DATASET_INFO[dataset]["image_path"]
     pc_path = DATASET_INFO[dataset]["pc_path"]
@@ -98,6 +86,8 @@ def get_evolve_data_list(
 
 def compute_features(
     dataset: str = "pcna",
+    results_path: str = "./br/configs/results/",
+    embeddings_path: str = "./br/embeddings/",
     save_folder: str = "./",
     data_list: list = [],
     all_models: list = [],
@@ -137,6 +127,16 @@ def compute_features(
 ):
     """Compute all benchmarking metrics and save given list of datamodules, models, runs, input
     keys."""
+
+    DATASET_INFO = get_all_configs_per_dataset(results_path)
+    # example dataset info
+    # {"variance_all_punctate": {
+    #     "embedding_save_location": "./variance_all_punctate",
+    #     "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
+    #     "image_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
+    #     "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
+    # }}
+
     path = Path(save_folder)
     path.mkdir(parents=True, exist_ok=True)
     loss_eval = get_pc_loss_chamfer() if loss_eval_list is None else loss_eval_list
@@ -160,19 +160,15 @@ def compute_features(
         eq_dict.to_csv(path / "equiv.csv")
         metric_list.pop(metric_list.index("Rotation Invariance Error"))
 
-    all_ret, df = get_embeddings(run_names, dataset)
+    all_ret, _ = get_embeddings(run_names, dataset, DATASET_INFO, embeddings_path)
 
     if len(metric_list) != 0:
         if "split" in all_ret.columns:
-            all_ret = all_ret.loc[all_ret["split"].isin(splits_list)].reset_index(
-                drop=True
-            )
+            all_ret = all_ret.loc[all_ret["split"].isin(splits_list)].reset_index(drop=True)
 
         if "Reconstruction" in metric_list:
             print("Getting reconstruction")
-            rec_df = (
-                all_ret[["model", "split", "loss"]].groupby(["model", "split"]).mean()
-            )
+            rec_df = all_ret[["model", "split", "loss"]].groupby(["model", "split"]).mean()
             rec_df.to_csv(path / "recon.csv")
             metric_list.pop(metric_list.index("Reconstruction"))
 
@@ -190,9 +186,7 @@ def compute_features(
                     model = model.eval()
                     all_data_ids, all_splits, all_loss, all_embeds = [], [], [], []
                     this_loss_eval = (
-                        get_pc_loss_chamfer()
-                        if loss_eval_list is None
-                        else loss_eval_list[j]
+                        get_pc_loss_chamfer() if loss_eval_list is None else loss_eval_list[j]
                     )
                     all_embeds, all_data_ids, all_splits, all_loss = compute_embeddings(
                         model,
@@ -250,6 +244,7 @@ def compute_features(
                     evolve_params["modality_list_evolve"],
                     dataset,
                     pc_is_iae=evolve_params["pc_is_iae"],
+                    DATASET_INFO=DATASET_INFO,
                 )
             print("Computing evolution")
 

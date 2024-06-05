@@ -1,25 +1,27 @@
-embedding_save_location: "./variance_all_punctate"
+# embedding_save_location: "./variance_all_punctate"
 orig_df: /allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv
 image_path: /allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet
 pc_path: /allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet
-run_ids: [
-            "496e2cfa42234378967a88cee66891c9",
-            "c3f4f99f2bd24578873b6913476cc25e",
-            "9b7b078a61bd40d6baf65b0626e9ce76",
-            "6a523cd918804acd9ed35b436b607ad4",
-            "0fd3e79d8aba45cca21b74da182c93f5",
-        ]
+run_ids:
+  [
+    "496e2cfa42234378967a88cee66891c9",
+    "c3f4f99f2bd24578873b6913476cc25e",
+    "9b7b078a61bd40d6baf65b0626e9ce76",
+    "6a523cd918804acd9ed35b436b607ad4",
+    "0fd3e79d8aba45cca21b74da182c93f5",
+  ]
 names: [
-            "classical_image",
-            "so3_image",
-            "2048_ed_dgcnn",
-            "2048_int_ed_vndgcnn",  # varaince equiv punctate
-            "2048_int_ed_vndgcnn_structnorm",
-        ]
-data_paths: [
+    "classical_image",
+    "so3_image",
+    "2048_ed_dgcnn",
+    "2048_int_ed_vndgcnn", # varaince equiv punctate
+    "2048_int_ed_vndgcnn_structnorm",
+  ]
+data_paths:
+  [
     "./br/configs/data/other_punctate/image.yaml",
     "./br/configs/data/other_punctate/image.yaml",
     "./br/configs/data/other_punctate/pc.yaml",
     "./br/configs/data/other_punctate/pc_intensity.yaml",
     "./br/configs/data/other_punctate/pc_intensity_structurenorm.yaml",
-    ],
+  ]

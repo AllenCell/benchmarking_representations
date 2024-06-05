@@ -107,9 +107,7 @@ class Step:
             with Pool(self.n_workers) as p:
                 jobs = p.imap_unordered(self.__call__, iterdicts(manifest))
                 if self.verbose:
-                    jobs = tqdm(
-                        jobs, total=len(manifest), desc="processing cells", leave=False
-                    )
+                    jobs = tqdm(jobs, total=len(manifest), desc="processing cells", leave=False)
                 result = list(jobs)
         else:
             jobs = manifest.itertuples()

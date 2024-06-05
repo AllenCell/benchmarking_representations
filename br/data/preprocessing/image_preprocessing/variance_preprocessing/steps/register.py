@@ -110,9 +110,7 @@ class Register(Step):
         global_bounding_box = {}
         for axis in ["z", "y", "x"]:
             diff = manifest[f"bbox_max_{axis}"] - manifest[f"bbox_min_{axis}"]
-            global_bounding_box[axis] = np.ceil(diff.quantile(self.quantile)).astype(
-                int
-            )
+            global_bounding_box[axis] = np.ceil(diff.quantile(self.quantile)).astype(int)
         self.bounding_box = global_bounding_box
 
         return super().run(manifest, n_workers=n_workers)

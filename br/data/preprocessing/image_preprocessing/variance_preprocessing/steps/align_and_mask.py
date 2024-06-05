@@ -48,9 +48,7 @@ class AlignMaskNormalize(Step):
         self.alignment_channel = alignment_channel
         self.make_unique = make_unique
         self.mask_map = mask_map
-        self.binary_structure = (
-            np.ones(dilation_shape) if dilation_shape is not None else None
-        )
+        self.binary_structure = np.ones(dilation_shape) if dilation_shape is not None else None
         self.membrane_seg_channel = membrane_seg_channel
         self.padding = padding
         self.structure_clip_values = structure_clip_values
@@ -71,9 +69,7 @@ class AlignMaskNormalize(Step):
             else:
                 pad.append((abs(coord), 0))
         centered = np.pad(img_data, pad)
-        aligned, angle = align_image_2d(
-            centered, alignment_channel, make_unique=self.make_unique
-        )
+        aligned, angle = align_image_2d(centered, alignment_channel, make_unique=self.make_unique)
 
         for idx, channel in enumerate(img.channel_names):
             if "_seg" in channel:
@@ -137,8 +133,7 @@ class AlignMaskNormalize(Step):
                         # finally, sum 1, such that the background voxels become 0
                         # and everything else has the remaining range. this is because
                         # the viewer expects uint16
-                        ((np.clip(channel_data, m, M) - m) / (M - m))
-                        * (_MAX_UINT16 - 1),
+                        ((np.clip(channel_data, m, M) - m) / (M - m)) * (_MAX_UINT16 - 1),
                         -1,
                     )
                     + 1

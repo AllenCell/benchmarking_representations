@@ -37,11 +37,7 @@ class Overview(Report):
             title="# of FOV per structure",
         )
 
-        (
-            fig_fovstruc.update_layout(
-                xaxis=dict(categoryorder="total descending"), overwrite=True
-            )
-        )
+        (fig_fovstruc.update_layout(xaxis=dict(categoryorder="total descending"), overwrite=True))
 
         # fig cells_per_FOV
         cells_per_fov = (

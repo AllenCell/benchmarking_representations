@@ -1,4 +1,4 @@
-embedding_save_location: "./npm1_variance"
+# embedding_save_location: "./npm1_variance"
 orig_df: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv
 image_path: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv
 pc_path: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv
@@ -10,13 +10,21 @@ run_ids:
     "1e0b6c9ea34345728c4d8f0f7211f5ad",
     "89d7de1dd292434883f9e737ec7cc74d",
   ]
+model_checkpoints:
+  [
+    "./br_checkpoints/npm1/SO3_pointcloud_SDF.ckpt",
+    "./br_checkpoints/npm1/SO3_image_SDF.ckpt",
+    "./br_checkpoints/npm1/SO3_image_seg.ckpt",
+    "./br_checkpoints/npm1/Classical_image_SDF.ckpt",
+    "./br_checkpoints/npm1/Classical_image_seg.ckpt",
+  ]
 names:
   [
-    "PC_equiv",
-    "CNN_sdf_SO3",
-    "CNN_seg_SO3",
-    "CNN_sdf_noalign",
-    "CNN_seg_noalign",
+    "SO3_pointcloud_SDF",
+    "SO3_image_SDF",
+    "SO3_image_seg",
+    "Classical_image_SDF",
+    "Classical_image_seg",
   ]
 data_paths:
   [

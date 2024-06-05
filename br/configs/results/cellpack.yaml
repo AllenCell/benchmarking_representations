@@ -1,25 +1,36 @@
-embedding_save_location: "./embeddings_cellpack_pcna"
+# embedding_save_location: "./embeddings_cellpack_pcna"
 orig_df: /allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv
 image_path: /allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv
 pc_path: /allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv
-run_ids: [
-            "2dbec95965374c8a85b2dbdd4d569284",
-            "a2c2c55d2f2f4b329e3003279c8d4e09",
-            "43f3bb2ffc76466c8023a593d78faf05",
-            "15a4ea21eea3482bb7b5a41ca4b4b180",
-            "575c95fad4614d7e83ca6b85f069f6e5"
-        ]
-names: [
-            "classical_image",
-            "so3_image",
-            "classical_pointcloud",
-            "so3_pointcloud",
-            "so3_pointcloud_jitter",
-        ]
-data_paths: [
-        "./br/configs/data/cellpack/image.yaml",
-        "./br/configs/data/cellpack/image.yaml",
-        "./br/configs/data/cellpack/pc.yaml",
-        "./br/configs/data/cellpack/pc.yaml",
-        "./br/configs/data/cellpack/pc_jitter.yaml"
-    ],
+run_ids:
+  [
+    "2dbec95965374c8a85b2dbdd4d569284",
+    "a2c2c55d2f2f4b329e3003279c8d4e09",
+    "43f3bb2ffc76466c8023a593d78faf05",
+    "15a4ea21eea3482bb7b5a41ca4b4b180",
+    "575c95fad4614d7e83ca6b85f069f6e5",
+  ]
+model_checkpoints:
+  [
+    "./br_checkpoints/cellpack/Classical_image.ckpt",
+    "./br_checkpoints/cellpack/SO3_image.ckpt",
+    "./br_checkpoints/cellpack/Classical_pointcloud.ckpt",
+    "./br_checkpoints/cellpack/SO3_pointcloud.ckpt",
+    "./br_checkpoints/cellpack/SO3_pointcloud_jitter.ckpt",
+  ]
+names:
+  [
+    "Classical_image",
+    "SO3_image",
+    "Classical_pointcloud",
+    "SO3_pointcloud",
+    "SO3_pointcloud_jitter",
+  ]
+data_paths:
+  [
+    "./br/configs/data/cellpack/image.yaml",
+    "./br/configs/data/cellpack/image.yaml",
+    "./br/configs/data/cellpack/pc.yaml",
+    "./br/configs/data/cellpack/pc.yaml",
+    "./br/configs/data/cellpack/pc_jitter.yaml",
+  ]

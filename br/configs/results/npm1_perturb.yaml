@@ -1,25 +1,28 @@
-embedding_save_location:
+# embedding_save_location:
 orig_df:
 image_path:
 pc_path:
-run_ids: [
-            "656168ce30614e00ad7fde249f239138",
-            "820f3e0af53c4a21a8f4b40aa7f7758c",
-            "688851f1bd3747c59dce25627db2b55b",
-            "1ed54b284fbf42d3ad99d388a7bdacfc",
-            "afd757c799194b18a39c67c66346717d"
-        ]
-names: [
-            "VN_equiv",
-            "CNN_sdf_noalign_global",
-            "CNN_seg_noalign_global",
-            "CNN_sdf_SO3_global",
-            "CNN_seg_SO3_global"
-        ]
-data_paths: [
-        "../data/configs/inference_npm1_perturb/pointcloud_sdf_noalign.yaml",
-        "../data/configs/inference_npm1_perturb/image_sdf_noalign_so3.yaml",
-        "../data/configs/inference_npm1_perturb/image_seg_noalign_so3.yaml",
-        "../data/configs/inference_npm1_perturb/image_sdf_noalign.yaml",
-        "../data/configs/inference_npm1_perturb/image_seg_noalign.yaml",
-    ],
+run_ids:
+  [
+    "656168ce30614e00ad7fde249f239138",
+    "820f3e0af53c4a21a8f4b40aa7f7758c",
+    "688851f1bd3747c59dce25627db2b55b",
+    "1ed54b284fbf42d3ad99d388a7bdacfc",
+    "afd757c799194b18a39c67c66346717d",
+  ]
+names:
+  [
+    "VN_equiv",
+    "CNN_sdf_noalign_global",
+    "CNN_seg_noalign_global",
+    "CNN_sdf_SO3_global",
+    "CNN_seg_SO3_global",
+  ]
+data_paths:
+  [
+    "../data/configs/inference_npm1_perturb/pointcloud_sdf_noalign.yaml",
+    "../data/configs/inference_npm1_perturb/image_sdf_noalign_so3.yaml",
+    "../data/configs/inference_npm1_perturb/image_seg_noalign_so3.yaml",
+    "../data/configs/inference_npm1_perturb/image_sdf_noalign.yaml",
+    "../data/configs/inference_npm1_perturb/image_seg_noalign.yaml",
+  ]

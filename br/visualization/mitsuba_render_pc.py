@@ -1,8 +1,9 @@
-import numpy as np
-import sys
 import os
-from plyfile import PlyData
+import sys
+
 import mitsuba as mi
+import numpy as np
+from plyfile import PlyData
 
 
 class XMLTemplates:
@@ -27,7 +28,7 @@ class XMLTemplates:
             <rfilter type="gaussian"/>
         </film>
     </sensor>
-    
+
     <bsdf type="roughplastic" id="surfaceMaterial">
         <string name="distribution" value="ggx"/>
         <float name="alpha" value="0.05"/>
@@ -54,7 +55,7 @@ class XMLTemplates:
             <translate x="0" y="0" z="-0.2"/>
         </transform>
     </shape>
-    
+
     <shape type="rectangle">
         <transform name="toWorld">
             <scale x="10" y="10" z="1"/>
@@ -95,7 +96,7 @@ class PointCloudRenderer:
         center = (mins + maxs) / 2.0
         scale = np.amax(maxs - mins)
         rescale = ((pcl - center) / scale).astype(np.float32)
-        unscale = ((pcl)).astype(np.float32)
+        unscale = (pcl).astype(np.float32)
         return unscale, center
 
     def load_point_cloud(self):
@@ -114,14 +115,10 @@ class PointCloudRenderer:
         xml_segments = [self.XML_HEAD]
         for j, point in enumerate(pcl):
             if location_as_color:
-                color = self.compute_color(
-                    point[0] + 0.5, point[1] + 0.5, point[2] + 0.5 - 0.0125
-                )
+                color = self.compute_color(point[0] + 0.5, point[1] + 0.5, point[2] + 0.5 - 0.0125)
             else:
                 color = (colors[j][0], colors[j][1], colors[j][2])
-            xml_segments.append(
-                self.XML_BALL_SEGMENT.format(point[0], point[1], point[2], *color)
-            )
+            xml_segments.append(self.XML_BALL_SEGMENT.format(point[0], point[1], point[2], *color))
         xml_segments.append(self.XML_TAIL)
         return "".join(xml_segments)
 

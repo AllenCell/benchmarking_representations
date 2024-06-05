@@ -13,9 +13,7 @@ transforms:
     keys:
       - image
     remote: false
-  - _target_: cyto_dl.image.transforms.AddChannel
-    keys:
-      - image
+    unsqueeze: True
   - _target_: monai.transforms.SpatialPadd
     keys:
       - image

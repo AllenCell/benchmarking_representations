@@ -1,5 +1,19 @@
+import os
+
 import numpy as np
 import torch
+import yaml
+
+
+def get_all_configs_per_dataset(results_path):
+    configs = os.listdir(results_path)
+    INFO = {}
+    for config in configs:
+        data = config.split(".")[0]
+        with open(results_path + config) as stream:
+            a = yaml.safe_load(stream)
+            INFO[data] = a
+    return INFO
 
 
 def move(batch, device):
