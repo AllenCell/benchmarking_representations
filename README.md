@@ -91,7 +91,7 @@ To download data and train models, run steps 1, 2 and 3. To skip this and run be
 │   │   │   │   ├── config.yaml     <- Config for image processing workflow [Update data paths]
 ```
 
-,and then run the snakefile located in
+and then follow the [installation](https://github.com/AllenCellModeling/benchmarking_representations/br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
 
 ```
 ├── data
@@ -119,7 +119,7 @@ For SDF preprocessing for polymorphic structures, update data paths and run the 
 │   │   │   ├── pc_sdfs.py      <- Sample point clouds from 32**3 resolution SDF images [Update data paths]
 ```
 
-Create a single cell manifest for each dataset with a column corresponding to these saved paths.
+In all cases, create a single cell manifest for each dataset with a column corresponding to final processed paths, and create a split column corresponding to train/test/validation.
 
 3. Update the processed data path column in the datamodule yaml files. e.g. for the cellPACK data, these yaml files are located here
 
@@ -168,7 +168,8 @@ python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthm
 
 3. \[Optional\] Alternatively, download pre-computed embeddings.
 
-4. Run benchmarking notebooks 
+4. Run benchmarking notebooks
+
 ```
 ├── br
 │   ├── notebooks
@@ -179,5 +180,3 @@ python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthm
 │   │   ├── fig6_other_polymorphic.ipynb      <- Reproduce Fig 6 other polymorphic data results
 │   │   ├── fig7_drug_data.ipynb      <- Reproduce Fig 7 drug data results
 ```
-
-
