@@ -10,6 +10,14 @@ run_ids:
     "1ed54b284fbf42d3ad99d388a7bdacfc",
     "afd757c799194b18a39c67c66346717d",
   ]
+model_checkpoints:
+  [
+    "./br_checkpoints/npm1/SO3_pointcloud_SDF.ckpt",
+    "./br_checkpoints/npm1/SO3_image_SDF.ckpt",
+    "./br_checkpoints/npm1/SO3_image_seg.ckpt",
+    "./br_checkpoints/npm1/Classical_image_SDF.ckpt",
+    "./br_checkpoints/npm1/Classical_image_seg.ckpt",
+  ]
 names:
   [
     "VN_equiv",
@@ -20,9 +28,9 @@ names:
   ]
 data_paths:
   [
-    "../data/configs/inference_npm1_perturb/pointcloud_sdf_noalign.yaml",
-    "../data/configs/inference_npm1_perturb/image_sdf_noalign_so3.yaml",
-    "../data/configs/inference_npm1_perturb/image_seg_noalign_so3.yaml",
-    "../data/configs/inference_npm1_perturb/image_sdf_noalign.yaml",
-    "../data/configs/inference_npm1_perturb/image_seg_noalign.yaml",
+    "./br/configs/data/npm1_perturb/pc.yaml",
+    "./br/configs/data/npm1_perturb/image_sdf.yaml",
+    "./br/configs/data/npm1_perturb/image_seg.yaml",
+    "./br/configs/data/npm1_perturb/image_sdf.yaml",
+    "./br/configs/data/npm1_perturb/image_seg.yaml",
   ]

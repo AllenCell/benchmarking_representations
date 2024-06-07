@@ -1,0 +1,57 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "image_preprocessing"
+version = "0.0.1"
+description = "A snakemake workflow to preprocess a 3D single cell image dataset"
+authors = [
+    "Nick Gomez <nick.gomez@alleninstitute.org>",
+    "Guilherme Pires <guilherme.pires@alleninstitute.org>",
+    "Ryan Spangler <ryan.spangler@alleninstitute.org>",
+    "Ritvik Vasan <ritvik.vasan@alleninstitute.org>",
+    "Theo Knijnenburg <theo.knijnenburg@alleninstitute.org>",
+]
+packages = [
+    { include = "image_preprocessing" },
+]
+exclude = [
+    "**/*.pyc",
+    "**/__pycache__"
+]
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+aicsimageio = ">=4.9.4"
+numpy = "^1.18"
+pandas = "^1.1"
+universal-pathlib = "^0.0.18"
+s3fs = "^2022.3.0"
+fsspec = "^2022.3.0"
+hydra-core = "^1.2.0.dev2"
+snakemake = "^7.8.3"
+scipy = "^1.8.1"
+tqdm = "^4.64.0"
+fastparquet = "^0.8.1"
+plotly = "^5.9.0"
+dash = "^2.5.1"
+aicsshparam = "^0.1.1"
+bfio = "2.3.0"
+zarr = "^2.12.0"
+aiobotocore = "^2.3.4"
+ome-zarr = {git = "https://github.com/ome/ome-zarr-py", rev = "master"}
+boto3 = "1.21.0"
+multiprocessing_on_dill = "^3.5.0-alpha.4"
+fire = "^0.4.0"
+pulp = "2.7.0"
+
+
+[tool.flake8]
+exclude = "docs/"
+ignore = [
+    "E203",
+    "E402",
+    "W291",
+    "W503"
+]
+max-line-length = 88

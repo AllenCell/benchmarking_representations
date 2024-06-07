@@ -2,7 +2,7 @@ defaults:
   - _base
 
 step:
-  _target_: variance_preprocessing.steps.CombineDataframes
+  _target_: image_preprocessing.steps.CombineDataframes
   columns_to_drop:
     - "merged_channels"
     - "aligned_image"

@@ -115,10 +115,14 @@ class PointCloudRenderer:
         xml_segments = [self.XML_HEAD]
         for j, point in enumerate(pcl):
             if location_as_color:
-                color = self.compute_color(point[0] + 0.5, point[1] + 0.5, point[2] + 0.5 - 0.0125)
+                color = self.compute_color(
+                    point[0] + 0.5, point[1] + 0.5, point[2] + 0.5 - 0.0125
+                )
             else:
                 color = (colors[j][0], colors[j][1], colors[j][2])
-            xml_segments.append(self.XML_BALL_SEGMENT.format(point[0], point[1], point[2], *color))
+            xml_segments.append(
+                self.XML_BALL_SEGMENT.format(point[0], point[1], point[2], *color)
+            )
         xml_segments.append(self.XML_TAIL)
         return "".join(xml_segments)
 

@@ -20,7 +20,9 @@ def load_model_from_path(dataset, results_path, strict=False, split="val"):
         model_conf = instantiate(model_conf)
         model_class = _locate(model_class)
         all_models.append(
-            model_class.load_from_checkpoint(ckpt_path, **model_conf, strict=strict).eval()
+            model_class.load_from_checkpoint(
+                ckpt_path, **model_conf, strict=strict
+            ).eval()
         )
         model_sizes.append(config["model/params/total"])
 

@@ -5,13 +5,13 @@ logging.getLogger("aicsimageio").setLevel(logging.ERROR)
 logging.getLogger("xmlschema").setLevel(logging.ERROR)
 
 import warnings
-
+import os
 import numpy as np
 import pandas as pd
-import s3fs
 import zarr
 from aicsimageio import AICSImage as _AICSImage
-from aicsimageio.writers import OmeTiffWriter, OmeZarrWriter
+from aicsimageio.writers import OmeTiffWriter
+from image_preprocessing.zarr_writer import OmeZarrWriter
 from ome_zarr.io import parse_url
 from ome_zarr.reader import Reader
 from ome_zarr.writer import write_multiscale
@@ -38,6 +38,8 @@ def AICSImage(path, **kwargs):
 
 
 def write_image(data, output_path, channel_names, **kwargs):
+    dir_path = os.path.dirname(os.path.realpath(output_path))
+    Path(dir_path).mkdir(parents=True, exist_ok=True)
     if not str(output_path).startswith("s3"):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")

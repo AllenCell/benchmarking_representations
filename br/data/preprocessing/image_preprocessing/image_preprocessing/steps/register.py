@@ -1,8 +1,8 @@
 import numpy as np
 from upath import UPath as Path
 
-from ..utils import read_image, write_ome_zarr
-from .abstract_step import Step
+from image_preprocessing.utils import read_image
+from image_preprocessing.steps.abstract_step import Step
 
 
 def _rescale_image(img_data, channels):
@@ -63,6 +63,7 @@ class Register(Step):
                 img_data[ix] = img_data[ix] > 0
 
         paths = dict()
+
         paths["registered_path"] = self.store_image(
             _rescale_image(img_data, img.channel_names),
             img.channel_names,
@@ -72,30 +73,30 @@ class Register(Step):
             image_name="default",
         )
 
-        self.output_format = "ome.tiff"
-        base_output_dir = Path(self.output_dir).parent
-        for ix, axis in enumerate(["z", "y", "x"]):
-            for projection_type in ["max", "mean", "median"]:
-                op = getattr(np, projection_type)
-                projection = op(img_data, axis=ix + 1)  # c = 0, z = 1, y = 2, x = 3
+        # self.output_format = "ome.tiff"
+        # base_output_dir = Path(self.output_dir).parent
+        # for ix, axis in enumerate(["z", "y", "x"]):
+        #     for projection_type in ["max", "mean", "median"]:
+        #         op = getattr(np, projection_type)
+        #         projection = op(img_data, axis=ix + 1)  # c = 0, z = 1, y = 2, x = 3
 
-                prefix = f"{projection_type}_projection_{axis}"
-                self.output_dir = base_output_dir / prefix
-                paths[f"{projection_type}_projection_{axis}"] = self.store_image(
-                    projection,
-                    img.channel_names,
-                    None,
-                    cell_id,
-                )
+        #         prefix = f"{projection_type}_projection_{axis}"
+        #         self.output_dir = base_output_dir / prefix
+        #         paths[f"{projection_type}_projection_{axis}"] = self.store_image(
+        #             projection,
+        #             img.channel_names,
+        #             None,
+        #             cell_id,
+        #         )
 
-        self.output_dir = base_output_dir / "center_slice"
-        center_slice = img_data[:, img_data.shape[1] // 2, :, :]
-        paths["center_slice"] = self.store_image(
-            center_slice,
-            img.channel_names,
-            None,
-            cell_id,
-        )
+        # self.output_dir = base_output_dir / "center_slice"
+        # center_slice = img_data[:, img_data.shape[1] // 2, :, :]
+        # paths["center_slice"] = self.store_image(
+        #     center_slice,
+        #     img.channel_names,
+        #     None,
+        #     cell_id,
+        # )
 
         return {
             self.cell_id_col: cell_id,
@@ -110,7 +111,9 @@ class Register(Step):
         global_bounding_box = {}
         for axis in ["z", "y", "x"]:
             diff = manifest[f"bbox_max_{axis}"] - manifest[f"bbox_min_{axis}"]
-            global_bounding_box[axis] = np.ceil(diff.quantile(self.quantile)).astype(int)
+            global_bounding_box[axis] = np.ceil(diff.quantile(self.quantile)).astype(
+                int
+            )
         self.bounding_box = global_bounding_box
 
         return super().run(manifest, n_workers=n_workers)

@@ -63,7 +63,9 @@ def update_config(config_path, data, configs, save_path, suffix):
     return data, configs
 
 
-def make_csv(pc_path, image_path, num_samples, save_path, key="CellId", pc_is_iae=False):
+def make_csv(
+    pc_path, image_path, num_samples, save_path, key="CellId", pc_is_iae=False
+):
     if pc_path.split(".")[-1] == "csv":
         pc_df = pd.read_csv(pc_path)
     else:
@@ -207,8 +209,12 @@ def model_pass_reconstruct(
         if eval_meshed_img_model_type == "iae":
             reshape_vox_size = int(np.cbrt(xhat.shape[1]))
             xhat = xhat.reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size)
-            init_x = init_x.reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size)
-            final_x = final_x.reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size)
+            init_x = init_x.reshape(
+                reshape_vox_size, reshape_vox_size, reshape_vox_size
+            )
+            final_x = final_x.reshape(
+                reshape_vox_size, reshape_vox_size, reshape_vox_size
+            )
 
             mesh = get_mesh_from_sdf(xhat)
             mesh_initial = get_mesh_from_sdf(init_x)
@@ -230,7 +236,9 @@ def model_pass_reconstruct(
 
         target_bounds_initial = get_mesh_bbox_shape(mesh_initial)
         target_bounds_final = get_mesh_bbox_shape(mesh_final)
-        target_bounds = [max(i, j) for i, j in zip(target_bounds_initial, target_bounds_final)]
+        target_bounds = [
+            max(i, j) for i, j in zip(target_bounds_initial, target_bounds_final)
+        ]
         recon_int, recon_initial, recon_final = voxelize_recon_meshes(
             [mesh, mesh_initial, mesh_final], target_bounds
         )
@@ -289,7 +297,9 @@ def model_pass_reconstruct(
         elif hasattr(model, "backbone"):
             init_x = torch.tensor(init_x).to(device)
             final_x = torch.tensor(final_x).to(device)
-            _, backward_indexes1, patch_size1 = model.backbone.encoder(init_x.contiguous())
+            _, backward_indexes1, patch_size1 = model.backbone.encoder(
+                init_x.contiguous()
+            )
             z = z.reshape(1, -1, 256)
             xhat, mask = model.backbone.decoder(z, backward_indexes1, patch_size1)
             xhat = apply_sample_points(xhat, use_sample_points, skew_scale)
@@ -308,13 +318,17 @@ def model_pass_reconstruct(
             return energy.item()
         elif isinstance(model.decoder[key], LatentLocalDecoder):
             points_grid = get_iae_reconstruction_3d_grid()
-            xhat_rec, _ = model.decoder[key](torch.tensor(points_grid).unsqueeze(0).to(device), z)
+            xhat_rec, _ = model.decoder[key](
+                torch.tensor(points_grid).unsqueeze(0).to(device), z
+            )
             init_x_sdf = torch.tensor(init_x[0]).to(device)
             final_x_sdf = torch.tensor(final_x[0]).to(device)
             xhat, _ = model.decoder[key](torch.tensor(init_x[1]).to(device), z)
             init_rcl = loss_eval(xhat.contiguous(), init_x_sdf.contiguous()).mean()
             final_rcl = loss_eval(xhat.contiguous(), final_x_sdf.contiguous()).mean()
-            total_rcl = loss_eval(final_x_sdf.contiguous(), init_x_sdf.contiguous()).mean()
+            total_rcl = loss_eval(
+                final_x_sdf.contiguous(), init_x_sdf.contiguous()
+            ).mean()
             return (init_rcl + final_rcl) / total_rcl
         else:
             init_x = torch.tensor(init_x).to(device)
@@ -425,7 +439,9 @@ def get_evolution_dict(
                 if fit_pca:
                     pca = PCA(n_components=embed_dim)
                     if len(this_all_embeds.shape) > 2:
-                        this_all_embeds = pca.fit_transform(this_all_embeds[:, 1:, :].mean(axis=1))
+                        this_all_embeds = pca.fit_transform(
+                            this_all_embeds[:, 1:, :].mean(axis=1)
+                        )
                     else:
                         this_all_embeds = pca.fit_transform(this_all_embeds)
 
@@ -449,15 +465,21 @@ def get_evolution_dict(
                     init_input = [init_input, i1["points"]]
                     final_input = [final_input, i2["points"]]
 
-                model_outputs = model_pass(i1, model, device, None, track_emissions=False)
+                model_outputs = model_pass(
+                    i1, model, device, None, track_emissions=False
+                )
                 init_embed = model_outputs[1]
 
-                model_outputs = model_pass(i2, model, device, None, track_emissions=False)
+                model_outputs = model_pass(
+                    i2, model, device, None, track_emissions=False
+                )
                 final_embed = model_outputs[1]
 
                 for fraction in np.linspace(0, 1, 11):
                     if fraction not in [0, 1]:
-                        intermediate_embed = init_embed + (final_embed - init_embed) * fraction
+                        intermediate_embed = (
+                            init_embed + (final_embed - init_embed) * fraction
+                        )
                         energy = 0
                         if not only_embedding:
                             energy = model_pass_reconstruct(
@@ -499,7 +521,9 @@ def get_evolution_dict(
                                     intermediate_embed[:, 1:, :].mean(axis=1)
                                 )
                             else:
-                                intermediate_embed = intermediate_embed[:, 1:, :].mean(axis=1)
+                                intermediate_embed = intermediate_embed[:, 1:, :].mean(
+                                    axis=1
+                                )
                         else:
                             if fit_pca:
                                 intermediate_embed = pca.transform(intermediate_embed)

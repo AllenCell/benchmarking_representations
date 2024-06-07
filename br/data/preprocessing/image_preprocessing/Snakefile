@@ -19,101 +19,41 @@ input_manifest = cfg.input_manifest
 if input_manifest.startswith("s3://"):
     input_manifest = remote_provider.remote(cfg.input_manifest)
 
-samples_per_structure = cfg.get("samples_per_structure")
-if samples_per_structure is None:
-    input_to_merge = input_manifest
-else:
-    input_to_merge = remote_provider.remote(
-        os.path.join(cfg.output_dir, "subsample.parquet")
-    )
-
-
-rule sample:
+rule all:
     input:
-        input_manifest
+        input_manifest,
+        os.path.join(cfg.output_dir, "merge/manifest.parquet"),
+        os.path.join(cfg.output_dir, "align/manifest.parquet"),
+        os.path.join(cfg.output_dir, "register/manifest.parquet")
     output:
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "subsample.parquet")
-        )
-    run:
-        import pandas as pd
+        os.path.join(cfg.output_dir, "processed/manifest.parquet")
+    shell:
+        "python scripts/run_step.py step=combine_dfs ++step.input.0={input[0]}"
 
-        path = str(input)
-        if path.endswith(".csv"):
-            df = pd.read_csv(path, low_memory=False)
-        else:
-            df = pd.read_parquet(path)
-
-        subsampled = pd.concat(
-            [group.sample(samples_per_structure)
-             for _, group in df.groupby("structure_name")]
-        )
-        subsampled.to_parquet(str(output))
 
 rule merge_channels:
     input:
-        input_to_merge
+        input_manifest
     output:
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "merge/manifest.parquet")
-        )
+        os.path.join(cfg.output_dir, "merge/manifest.parquet")
     shell:
         "python scripts/run_step.py step=merge ++input_manifest={input}"
 
 rule align_and_mask:
     input:
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "merge/manifest.parquet")
-        )
+        os.path.join(cfg.output_dir, "merge/manifest.parquet")
     output:
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "align/manifest.parquet")
-        )
+        os.path.join(cfg.output_dir, "align/manifest.parquet")
     shell:
         "python scripts/run_step.py step=align_and_mask ++input={input}"
 
 rule register:
     input:
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "align/manifest.parquet")
-        )
+        os.path.join(cfg.output_dir, "align/manifest.parquet")
     output:
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "register/manifest.parquet")
-        )
+        os.path.join(cfg.output_dir, "register/manifest.parquet")
     shell:
         "python scripts/run_step.py step=register ++input={input}"
-
-rule all:
-    input:
-        input_to_merge,
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "merge/manifest.parquet")
-        ),
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "align/manifest.parquet")
-        ),
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "register/manifest.parquet")
-        )
-    output:
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "processed/manifest.parquet")
-        )
-    shell:
-        "python scripts/run_step.py step=combine_dfs ++step.input.0={input[0]}"
-
-rule cytodata_preprocess:
-    input:
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "processed/manifest.parquet")
-        )
-    output:
-        remote_provider.remote(
-            os.path.join(cfg.output_dir, "processed/hackathon_manifest_09292022.parquet")
-        )
-    shell:
-        "python scripts/cytodata_preprocessing_script.py {input} {output}"
 
 rule delete_temps:
     shell:

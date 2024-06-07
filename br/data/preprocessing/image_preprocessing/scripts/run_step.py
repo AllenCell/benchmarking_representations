@@ -13,12 +13,11 @@ import hydra
 def main(cfg):
     from functools import reduce
 
-    import numpy as np
     import pandas as pd
     from hydra.utils import instantiate
+    from image_preprocessing.utils import read_df
     from omegaconf import DictConfig
     from upath import UPath as Path
-    from variance_preprocessing.utils import read_df
 
     debug = cfg.get("debug", dict())
     nrows = debug.get("nrows")

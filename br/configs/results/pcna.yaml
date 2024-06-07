@@ -10,6 +10,14 @@ run_ids:
     "d172d8f823dc437b9fae7ab6b2673d3e",
     "ac43b8bbeb3a493bacc69927c8f21276",
   ]
+model_checkpoints:
+  [
+    "./br_checkpoints/pcna/Classical_pointcloud.ckpt",
+    "./br_checkpoints/pcna/SO3_pointcloud.ckpt",
+    "./br_checkpoints/pcna/Classical_image.ckpt",
+    "./br_checkpoints/pcna/SO3_image.ckpt",
+    "./br_checkpoints/pcna/SO3_pointcloud_jitter.ckpt",
+  ]
 names: [
     "Classical_pointcloud", # more
     "SO3_pointcloud", # more

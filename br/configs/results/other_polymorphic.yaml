@@ -10,6 +10,14 @@ run_ids:
     "10c70b65c0224eb086a2482ae8a241b9",
     "e59986a466964951854cd8360c89306c",
   ]
+model_checkpoints:
+  [
+    "./br_checkpoints/other_polymorphic/SO3_pointcloud_SDF.ckpt",
+    "./br_checkpoints/other_polymorphic/SO3_image_SDF.ckpt",
+    "./br_checkpoints/other_polymorphic/SO3_image_seg.ckpt",
+    "./br_checkpoints/other_polymorphic/Classical_image_SDF.ckpt",
+    "./br_checkpoints/other_polymorphic/Classical_image_seg.ckpt",
+  ]
 names:
   [
     "equiv_vn",

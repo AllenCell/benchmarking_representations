@@ -272,7 +272,9 @@ def plot(save_folder, df, models, title, colors_list=None, norm="std"):
                 line_color=colors[i],
                 opacity=opacity,
                 line=dict(width=5, color=colors[i % len(colors)]),  # Set line color
-                marker=dict(size=13, color=colors[i % len(colors)]),  # Set marker color (optional)
+                marker=dict(
+                    size=13, color=colors[i % len(colors)]
+                ),  # Set marker color (optional)
             )
             for i in range(len(all_models))
         ],
@@ -392,7 +394,9 @@ def plot_pc(
         # seq.append(image)
 
 
-def archetypal_plot(archetypes_labels: list, weights: list, filename: str = "archetypal_plot.png"):
+def archetypal_plot(
+    archetypes_labels: list, weights: list, filename: str = "archetypal_plot.png"
+):
     """Plot the distribution of weights for a set of archetypes.
 
     :param archetypes_labels: names to be plotted for each archetype

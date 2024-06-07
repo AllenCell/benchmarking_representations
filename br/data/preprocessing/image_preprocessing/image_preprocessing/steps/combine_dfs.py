@@ -1,20 +1,5 @@
 import numpy as np
-from upath import UPath as Path
-
-from ..utils import read_image, write_ome_zarr
-from .abstract_step import Step
-
-
-def _rescale_image(img_data, channels):
-    img_data = np.copy(img_data.squeeze().astype(np.int32))
-
-    for ix, channel in enumerate(channels):
-        if "_seg" not in channel:
-            img_data[ix] -= 1
-
-            img_data[ix] = np.where(img_data[ix] >= 0, img_data[ix], -1)
-
-    return img_data
+from image_preprocessing.steps.abstract_step import Step
 
 
 class CombineDataframes(Step):

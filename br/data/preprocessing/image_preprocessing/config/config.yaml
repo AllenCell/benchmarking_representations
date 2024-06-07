@@ -10,7 +10,7 @@ force: false
 raise_errors: true
 samples_per_structure:
 
-output_dir: "/allen/aics/modeling/ritvik/variance_preprocessed"
+output_dir: "/allen/aics/modeling/ritvik/projects/benchmarking_representations/out_test/"
 
 # input_manifest: /allen/aics/modeling/VariancePlayground/orgmanifests/variance_dataset_07082022.csv
 input_manifest: /allen/aics/modeling/ritvik/projects/benchmarking_representations/variance_data_process_test.csv

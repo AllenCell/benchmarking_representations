@@ -2,7 +2,7 @@ defaults:
   - _base
 
 step:
-  _target_: variance_preprocessing.steps.AlignMaskNormalize
+  _target_: image_preprocessing.steps.AlignMaskNormalize
   input_col: merged_channels
   alignment_channel: membrane_segmentation
   membrane_seg_channel: membrane_segmentation

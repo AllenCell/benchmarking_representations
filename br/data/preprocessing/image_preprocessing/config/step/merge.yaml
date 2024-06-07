@@ -2,7 +2,7 @@ defaults:
   - _base
 
 step:
-  _target_: variance_preprocessing.steps.Merge
+  _target_: image_preprocessing.steps.Merge
   raw_col: crop_raw
   seg_col: crop_seg
   fov_col: fov_path

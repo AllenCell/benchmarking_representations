@@ -10,6 +10,14 @@ run_ids:
     "6a523cd918804acd9ed35b436b607ad4",
     "0fd3e79d8aba45cca21b74da182c93f5",
   ]
+model_checkpoints:
+  [
+    "./br_checkpoints/other_punctate/Classical_image.ckpt",
+    "./br_checkpoints/other_punctate/SO3_image.ckpt",
+    "./br_checkpoints/other_punctate/Classical_pointcloud.ckpt",
+    "./br_checkpoints/other_punctate/SO3_pointcloud.ckpt",
+    "./br_checkpoints/other_punctate/SO3_pointcloud_structurenorm.ckpt",
+  ]
 names: [
     "classical_image",
     "so3_image",

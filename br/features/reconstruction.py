@@ -67,7 +67,9 @@ def write_pyvista_latent_walk_gif(out_file, view, mesh_files, expl_var=None):
         if expl_var is not None:
             if expl_var < 1:
                 expl_var = expl_var * 100
-            plotter.add_text(f"{round(expl_var, 1)}%", color="black", position=(550, 250))
+            plotter.add_text(
+                f"{round(expl_var, 1)}%", color="black", position=(550, 250)
+            )
     else:
         raise NotImplementedError
     plotter.open_gif(out_file)
@@ -235,7 +237,9 @@ def get_mesh_from_image(
         img[img > 0] = 1
 
         if img.sum() == 0:
-            raise ValueError("No foreground voxels found after pre-processing. Try using sigma=0.")
+            raise ValueError(
+                "No foreground voxels found after pre-processing. Try using sigma=0."
+            )
 
     # Set image border to 0 so that the mesh forms a manifold
     img[[0, -1], :, :] = 0
@@ -297,7 +301,9 @@ def get_mesh_from_sdf(sdf, method="skimage"):
     if method == "skimage":
         try:
             vertices, faces, normals, _ = marching_cubes(sdf, level=0)
-            mesh = trimesh.Trimesh(vertices=vertices, faces=faces, vertex_normals=normals)
+            mesh = trimesh.Trimesh(
+                vertices=vertices, faces=faces, vertex_normals=normals
+            )
         except:
             # empty mesh
             mesh = pv.PolyData()
@@ -453,7 +459,9 @@ def make_canonical_shapes(
     all_closest_real_meshes = []
     for stage in sub_slice_list:
         this_stage_df = df.loc[df[slice_key] == stage].reset_index(drop=True)
-        this_stage_mu = this_stage_df[cols].iloc[:, :max_embed_dim].dropna(axis=0).values
+        this_stage_mu = (
+            this_stage_df[cols].iloc[:, :max_embed_dim].dropna(axis=0).values
+        )
         closest_real_mesh = None
         if sample_closest_cell:
             mean_mu = this_stage_mu.mean(axis=0)
@@ -484,7 +492,9 @@ def make_canonical_shapes(
                 uni_sample_points = uni_sample_points.unsqueeze(0)
                 xhat, _ = decoder(uni_sample_points.to(device), z_inf)
                 reshape_vox_size = int(np.cbrt(xhat.shape[1]))
-                xhat = xhat.reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size)
+                xhat = xhat.reshape(
+                    reshape_vox_size, reshape_vox_size, reshape_vox_size
+                )
             else:
                 xhat = decoder(z_inf)
 
@@ -517,7 +527,9 @@ def make_canonical_shapes(
                 bin_recon = (xhat > thresh).astype(float)
                 # xhat = bin_recon
                 if return_meshes:
-                    mesh, _, _ = get_mesh_from_image(bin_recon, sigma=0, lcc=False, denoise=False)
+                    mesh, _, _ = get_mesh_from_image(
+                        bin_recon, sigma=0, lcc=False, denoise=False
+                    )
                     all_meshes.append(pv.wrap(mesh))
             elif model_type == "iae":
                 if return_meshes:

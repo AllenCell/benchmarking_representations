@@ -61,7 +61,9 @@ class Rotation(Report):
             fig_hist.add_trace(go.Histogram(name=f"{coord} bounding box", x=values))
 
         # The three histograms are drawn on top of another
-        fig_hist.update_layout(barmode="overlay", title="Bounding Box Size Distributions")
+        fig_hist.update_layout(
+            barmode="overlay", title="Bounding Box Size Distributions"
+        )
         fig_hist.update_traces(opacity=0.75)
         # Read in the register manifest which has if cell passes BB limits
         manifest_register = pd.read_parquet(self.register_manifest_path)
