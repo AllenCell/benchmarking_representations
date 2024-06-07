@@ -91,7 +91,7 @@ To download data and train models, run steps 1, 2 and 3. To skip this and run be
 │   │   │   │   ├── config.yaml     <- Config for image processing workflow [Update data paths]
 ```
 
-and then follow the [installation](https://github.com/AllenCellModeling/benchmarking_representations/br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
+and then follow the [installation](br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
 
 ```
 ├── data
