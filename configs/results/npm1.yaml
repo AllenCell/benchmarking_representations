@@ -28,9 +28,9 @@ names:
   ]
 data_paths:
   [
-    "./br/configs/data/npm1/pc.yaml",
-    "./br/configs/data/npm1/image_sdf.yaml",
-    "./br/configs/data/npm1/image_seg.yaml",
-    "./br/configs/data/npm1/image_sdf.yaml",
-    "./br/configs/data/npm1/image_seg.yaml",
+    "./configs/data/npm1/pc.yaml",
+    "./configs/data/npm1/image_sdf.yaml",
+    "./configs/data/npm1/image_seg.yaml",
+    "./configs/data/npm1/image_sdf.yaml",
+    "./configs/data/npm1/image_seg.yaml",
   ]

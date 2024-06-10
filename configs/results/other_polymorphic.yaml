@@ -28,9 +28,9 @@ names:
   ]
 data_paths:
   [
-    "./br/configs/data/other_polymorphic/pc.yaml",
-    "./br/configs/data/other_polymorphic/image_sdf.yaml",
-    "./br/configs/data/other_polymorphic/image_seg.yaml",
-    "./br/configs/data/other_polymorphic/image_sdf.yaml",
-    "./br/configs/data/other_polymorphic/image_seg.yaml",
+    "./configs/data/other_polymorphic/pc.yaml",
+    "./configs/data/other_polymorphic/image_sdf.yaml",
+    "./configs/data/other_polymorphic/image_seg.yaml",
+    "./configs/data/other_polymorphic/image_sdf.yaml",
+    "./configs/data/other_polymorphic/image_seg.yaml",
   ]
