@@ -20,8 +20,8 @@ def get_data(dataset_name, batch_size, results_path, debug=False):
                 if debug:
                     if config["_target_"] == "cyto_dl.datamodules.DataframeDatamodule":
                         config["subsample"] = {}
-                        config["subsample"]["train"] = 1
-                        config["subsample"]["valid"] = 1
-                        config["subsample"]["test"] = 1
+                        config["subsample"]["train"] = 4
+                        config["subsample"]["valid"] = 4
+                        config["subsample"]["test"] = 4
             data.append(instantiate(config))
     return data

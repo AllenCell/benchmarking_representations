@@ -286,9 +286,6 @@ def save_embeddings(
 
             tmp_df.to_csv(Path(save_folder) / f"{this_run_name}.csv")
 
-            if len(all_embeds.shape) > 2:
-                return all_embeds, all_loss, all_data_ids, all_splits
-
 
 def save_emissions(
     emissions_path: str = "./emissions/",

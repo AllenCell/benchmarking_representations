@@ -295,7 +295,7 @@ def plot(
     # fig.write_image(path / f"{title}.pdf")
 
 
-def plot_pc(
+def plot_pc_saved(
     directory,
     names,
     key,
@@ -391,86 +391,50 @@ def plot_pc(
         # seq.append(image)
 
 
-def archetypal_plot(
-    archetypes_labels: list, weights: list, filename: str = "archetypal_plot.png"
-):
-    """Plot the distribution of weights for a set of archetypes.
+def plot_single_pc(df, xlim, ylim, key, dir, cmap):
+    views = ["xy"]
+    for sub_key in df[key].unique():
+        df_sub = df.loc[df[key] == sub_key]
+        plt.style.use("default")
+        fig, axes = plt.subplots(1, len(views), figsize=(len(views) * 2, 2), dpi=150)
+        x = df_sub.x.values
+        y = df_sub.y.values
+        z = df_sub.z.values
+        orders = [[x, y], [x, z], [y, z]]
+        labels = ["xy", "xz", "yz"]
+        if flip:
+            labels = ["xz", "xy", "yz"]
 
-    :param archetypes_labels: names to be plotted for each archetype
-    :param weights: list of weights
-    :param filename: name of the file to save the plot
-    :return:
-    """
-    # Remove zero weights
-    archetypes_labels = [a for w, a in zip(weights, archetypes_labels) if w != 0]
-    weights = [w for w in weights if w != 0]
-    # Compute max to normalize for plot
-    weights_max = max(weights)
+        for i in range(len(views)):
+            this_view = views[i]
+            ind = np.where(np.array(labels) == this_view)[0][0]
+            this_order = orders[ind]
+            this_label = labels[ind]
+            intensity = df_sub.inorm.values
+            try:
+                this_axes = axes[i]
+            except:
+                this_axes = axes
+            this_axes.scatter(
+                this_order[0],
+                this_order[1],
+                c=cmap(intensity),
+                # s=3 * intensity,
+                # s=0.5 * intensity,
+                s=0.5 * intensity,
+                alpha=0.5,
+            )
+            this_axes.scatter([0], [0], c="r", s=0.2, alpha=1, marker="+")
+            this_axes.set_xlim(xlim)
+            this_axes.set_ylim(ylim)
+            this_axes.set_title(f"{sub_key}_{this_label}")
+            this_axes.set_aspect("equal")
+            this_axes.axis("off")
+        plt.tight_layout()
 
-    n_archetypes = len(archetypes_labels)
-    archetype_coordinates = np.zeros((n_archetypes, 3))
-
-    for index, alpha in enumerate(np.arange(0.0, 2 * np.pi, 2 * np.pi / n_archetypes)):
-        archetype_coordinates[index] = np.cos(alpha), np.sin(alpha), alpha
-
-    plt.figure(figsize=(7, 7))
-
-    ax = plt.gca()
-
-    # Axis settings
-    ax.set_xlim((-1.2, 1.2))
-    ax.set_ylim((-1.2, 1.2))
-    # Move left y-axis and bottim x-axis to centre, passing through (0,0)
-    ax.spines["left"].set_position("center")
-    ax.spines["bottom"].set_position("center")
-    # Eliminate axes
-    ax.spines["right"].set_color("none")
-    ax.spines["top"].set_color("none")
-    ax.spines["left"].set_color("none")
-    ax.spines["bottom"].set_color("none")
-    # Turn off tick labels
-    ax.set_yticks([])
-    ax.set_xticks([])
-
-    x_coordinates, y_coordinates = [], []
-
-    # Plot the archetypes
-    # for index, label in enumerate(archetypes_labels):
-    #     x, y, alpha = archetype_coordinates[index]
-    #     text_angle = np.rad2deg(alpha) - 90
-    #     plt.text(x * 1.12, y * 1.12, label, ha='center', va='center', size=20, rotation=text_angle)
-    #     # Line from centre to archetype
-    #     plt.plot([0, x], [0, y], linestyle='--', dashes=(5, 10), linewidth=0.55, color='black')
-    #     x, y, _ = archetype_coordinates[index] * weights[index] / weights_max
-    #     x_coordinates.append(x)
-    #     y_coordinates.append(y)
-    #     plt.text(x, y, round(weights[index], 2), ha='center', va='center', size=7, rotation=text_angle,
-    #              color='white', fontweight='bold', bbox=dict(boxstyle=f"circle,pad=0.3", fc='black', ec='none'))
-
-    for index, label in enumerate(archetypes_labels):
-        x, y, alpha = archetype_coordinates[index]
-        text_angle = np.rad2deg(alpha) - 90
-        plt.text(
-            x * 1.12,
-            y * 1.12,
-            label,
-            ha="center",
-            va="center",
-            size=20,
-            rotation=text_angle,
+        fig.savefig(
+            Path(dir) / Path(f"{key}_{sub_key}.png"),
+            bbox_inches="tight",
+            dpi=600,
         )
-        # Line from centre to archetype
-        plt.plot(
-            [0, x],
-            [0, y],
-            linestyle="--",
-            dashes=(5, 10),
-            linewidth=0.55,
-            color="black",
-        )
-        x, y, _ = archetype_coordinates[index] * weights[index] / weights_max
-        x_coordinates.append(x)
-        y_coordinates.append(y)
-
-    plt.fill(x_coordinates, y_coordinates, color="r", alpha=0.2)
-    plt.savefig(filename, dpi=320, bbox_inches="tight")
+        plt.close("all")

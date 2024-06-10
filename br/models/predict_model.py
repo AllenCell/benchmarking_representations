@@ -291,7 +291,11 @@ def base_forward(
             else np.array(batch["cell_id"])
         )
 
-        recon = xhat[key].detach().cpu().numpy()
+        recon = xhat[key].detach().cpu().numpy().squeeze()
+        if recon.ndim == 3:
+            recon = recon[np.newaxis, :]
+        elif recon.ndim == 1:
+            recon = recon[np.newaxis, :]
         gt = batch[key].detach().cpu().numpy()
         errs = []
 
@@ -306,10 +310,9 @@ def base_forward(
             if eval_scaled_img_model_type == "iae"
             else recon.squeeze().shape[-1]
         )
-        # import ipdb
 
-        # ipdb.set_trace()
-        # recon = recon[:, 0, ...]  # remove channel dimension
+        # if eval_scaled_img_model_type != "iae":
+        #     recon = recon[:, 0, ...]
         recon_data_list = [
             recon[i].reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size)
             for i in range(len(cellids))
