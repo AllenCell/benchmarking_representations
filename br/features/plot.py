@@ -9,16 +9,16 @@ import seaborn as sns
 from .utils import normalize_intensities_and_get_colormap
 
 METRIC_DICT = {
-    "recon": {"metric": ["loss"], "min": [True]},
+    "reconstruction": {"metric": ["loss"], "min": [True]},
     "regression": {"metric": ["test_r2"], "min": [False]},
     "classification": {"metric": ["top_1_acc"], "min": [False]},
-    "cell_stage_classification2": {"metric": ["top_1_acc"], "min": [False]},
     "emissions": {"metric": ["emissions", "inference_time"], "min": [True, True]},
-    "evolve": {"metric": ["energy", "closest_embedding_distance"], "min": [True, True]},
-    "equiv": {"metric": ["value3"], "min": [True]},
-    # "compactness": {"metric": ["compactness", "percent_same"], "min": [True, False]},
+    "evolution_energy": {
+        "metric": ["energy", "closest_embedding_distance"],
+        "min": [True, True],
+    },
+    "rotation_invariance_error": {"metric": ["value"], "min": [True]},
     "compactness": {"metric": ["compactness"], "min": [True]},
-    # "outlier": {"metric": ["top_1_acc"], "min": [False]},
     "model_sizes": {"metric": ["model_size"], "min": [True]},
 }
 
@@ -48,7 +48,7 @@ def min_max(df, feat, better_min=True, norm="std"):
     return df
 
 
-def collect_outputs(path, norm, model_order=None):
+def collect_outputs(path, norm, model_order=None, metric_list=None):
     """
     path - location of csvs
     dataset - name of dataset in csv names
@@ -101,21 +101,25 @@ def collect_outputs(path, norm, model_order=None):
     ]
     rep_dict = {i: j for i, j in zip(run_names_orig, run_names)}
 
+    if metric_list is None:
+        metric_list = [
+            "reconstruction",
+            "classification",
+            # "regression",
+            "rotation_invariance_error",
+            "emissions",
+            "compactness",
+            "evolution_energy",
+            "model_sizes",
+        ]
+
     df_list = []
     df_non_agg = []
-    for metric in [
-        "recon",
-        "classification",
-        "cell_stage_classification2",
-        # "regression",
-        # "outlier",
-        "equiv",
-        "emissions",
-        "compactness",
-        "evolve",
-        "model_sizes",
-    ]:
+    for metric in metric_list:
         print(metric)
+        metric_key = metric
+        if "classification" in metric_key:
+            metric_key = "classification"
         this_df = pd.read_csv(path + f"{metric}.csv")
         this_df["model"] = this_df["model"].replace(rep_dict)
         if metric == "evolve":
@@ -123,7 +127,7 @@ def collect_outputs(path, norm, model_order=None):
             this_df = this_df.dropna()
 
         if "split" in this_df.columns:
-            this_metrics = METRIC_DICT[metric]["metric"]
+            this_metrics = METRIC_DICT[metric_key]["metric"]
             # tmp_agg = this_df.loc[this_df["split"] == "test"].reset_index()
             tmp_agg = this_df
             tmp_agg = pd.melt(
@@ -140,7 +144,7 @@ def collect_outputs(path, norm, model_order=None):
                 .reset_index()
             )
         else:
-            this_metrics = METRIC_DICT[metric]["metric"]
+            this_metrics = METRIC_DICT[metric_key]["metric"]
             tmp_agg = pd.melt(
                 this_df[["model"] + this_metrics],
                 id_vars=["model"],
@@ -152,8 +156,8 @@ def collect_outputs(path, norm, model_order=None):
 
         if model_order:
             this_df = this_df.loc[this_df["model"].isin(model_order)]
-        this_metrics = METRIC_DICT[metric]["metric"]
-        this_minmax = METRIC_DICT[metric]["min"]
+        this_metrics = METRIC_DICT[metric_key]["metric"]
+        this_minmax = METRIC_DICT[metric_key]["min"]
 
         for i in range(len(this_metrics)):
             this_df2 = min_max(this_df, this_metrics[i], this_minmax[i], norm)
@@ -162,22 +166,22 @@ def collect_outputs(path, norm, model_order=None):
                 id_vars=["model"],
                 value_vars=[this_metrics[i]],
             )
-            this_df2["variable"] = metric + "_" + this_df2["variable"].iloc[0]
+            if "classification" in metric:
+                this_df2["variable"] = (
+                    "Classification" + metric.split("classification")[-1]
+                )
+            else:
+                this_df2["variable"] = metric + "_" + this_df2["variable"].iloc[0]
             df_list.append(this_df2)
     df = pd.concat(df_list, axis=0).reset_index(drop=True)
     df_non_agg = pd.concat(df_non_agg, axis=0).reset_index(drop=True)
     rep_dict_var = {
-        "recon_loss": "Reconstruction",
+        "reconstruction_loss": "Reconstruction",
         "regression_test_r2": "Feature Regression",
-        "classification_top_1_acc": "Classification",
-        "cell_stage_classification2_top_1_acc": "Interphase/Mitotic classification",
-        "classification_top_2_acc": "Classification",
         "compactness_compactness": "Compactness",
-        "compactness_percent_same": "Outlier Detection",
-        "outlier_top_1_acc": "Outlier Detection",
-        "equiv_value3": "Rotation Invariance Error",
-        "evolve_closest_embedding_distance": "Embedding Distance",
-        "evolve_energy": "Evolution Energy",
+        "rotation_invariance_error_value": "Rotation Invariance Error",
+        "evolution_energy_closest_embedding_distance": "Embedding Distance",
+        "evolution_energy_energy": "Evolution Energy",
         "emissions_emissions": "Emissions",
         "emissions_inference_time": "Inference Time",
         "model_sizes_model_size": "Model Size",
@@ -187,7 +191,15 @@ def collect_outputs(path, norm, model_order=None):
     return df, df_non_agg
 
 
-def plot(save_folder, df, models, title, colors_list=None, norm="std"):
+def plot(
+    save_folder,
+    df,
+    models,
+    title,
+    colors_list=None,
+    norm="std",
+    unique_expressivity_metrics=None,
+):
     import matplotlib as mpl
 
     mpl.rcParams["pdf.fonttype"] = 42
@@ -201,24 +213,14 @@ def plot(save_folder, df, models, title, colors_list=None, norm="std"):
 
     gen_metrics = ["Reconstruction", "Evolution Energy"]
     emission_metrics = ["Emissions", "Inference Time", "Model Size"]
-    expressive_metrics = [
+    base_expressive_metrics = [
         "Compactness",
-        "Outlier Detection",
-        "Classification",
         "Rotation Invariance Error",
         "Embedding Distance",
     ]
-    if "Interphase/Mitotic classification" in df["variable"].unique():
-        expressive_metrics = [
-            "Compactness",
-            "Outlier Detection",
-            "Classification",
-            "Interphase/Mitotic classification",
-            "Rotation Invariance Error",
-            "Embedding Distance",
-        ]
-    if "Feature Regression" in df["variable"].unique():
-        expressive_metrics = expressive_metrics + ["Feature Regression"]
+    if unique_expressivity_metrics is not None:
+        expressive_metrics = unique_expressivity_metrics + base_expressive_metrics
+
     cat_order = gen_metrics + emission_metrics + expressive_metrics
     missing_cols = set(cat_order).symmetric_difference(set(df["variable"].values))
     cat_order = [i for i in cat_order if i not in missing_cols]
@@ -239,11 +241,6 @@ def plot(save_folder, df, models, title, colors_list=None, norm="std"):
             val = this_i.loc[this_i["variable"] == cat]["value"].iloc[0]
             this_model.append(val)
         all_models.append(this_model)
-
-    # import ipdb
-
-    # ipdb.set_trace()
-
     if len(models) == 5:
         colors = ["#636EFA", "#00CC96", "#AB63FA", "#FFA15A", "#EF553B"]
     elif len(models) == 4:
@@ -384,9 +381,9 @@ def plot_pc(
         # fig.canvas.draw()
         # image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
         # image = image.reshape(*reversed(fig.canvas.get_width_height()), 3)
-        print(Path(f"{key}_{sub_key}_clean.png"))
+        print(Path(f"{key}_{sub_key}.png"))
         fig.savefig(
-            Path(directory) / Path(f"{key}_{sub_key}_clean.png"),
+            Path(directory) / Path(f"{key}_{sub_key}.png"),
             bbox_inches="tight",
             dpi=600,
         )

@@ -21,7 +21,7 @@ def get_embedding_metrics(
     ret_dict_compactness = {
         "model": [],
         "compactness": [],
-        "percent_same": [],
+        "outlier_detection": [],
     }
 
     if check_duplicates:
@@ -52,7 +52,7 @@ def get_embedding_metrics(
         for i in range(len(val)):
             ret_dict_compactness["model"].append(model)
             ret_dict_compactness["compactness"].append(val[i])
-            ret_dict_compactness["percent_same"].append(percent_same)
+            ret_dict_compactness["outlier_detection"].append(percent_same)
     ret_dict_compactness = pd.DataFrame(ret_dict_compactness)
     return ret_dict_compactness
 
@@ -131,13 +131,7 @@ def compactness(this_mo, num_PCs, max_embed_dim, method):
 
 def outlier_detection(this_mo, outlier_label=0, blobby_outlier_max_cc=None):
     """
-    Performs agglomerative cluster on outlier column
-    Does this with n_clusters = 3, 4, 5
-    Outlier must be 2 labels, 0 or 1
-    outlier_label indicates if 0 is outlier or 1
-    Metric returned is percent of predicted cluster labels from outlier set that
-    are the same, scaled by the size of that predicted cluster set relative to
-    the total population
+    Classification of outlier labels
     """
     if blobby_outlier_max_cc is not None:
         this_mo["outlier"] = np.where(

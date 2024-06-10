@@ -63,6 +63,21 @@ def get_classification(this_mo, target_col, cols=None):
         assert this_mo["cell_stage_numeric"].isna().any() == False
         target_col = "cell_stage_numeric"
         assert this_mo["cell_stage_numeric"].isna().any() == False
+    elif target_col == "flag_comment":
+        this_mo1 = this_mo.loc[
+            this_mo["flag_comment"].isin(
+                ["cell appears dead or dying", "no EGFP fluorescence"]
+            )
+        ]
+        this_mo1["outlier"] = "Yes"
+        this_mo2 = this_mo.loc[
+            ~this_mo["flag_comment"].isin(
+                ["cell appears dead or dying", "no EGFP fluorescence"]
+            )
+        ]
+        this_mo2["outlier"] = "No"
+        this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
+        this_mo["flag_comment"] = this_mo["outlier"]
     else:
         this_mo[f"{target_col}_numeric"] = pd.factorize(this_mo[target_col])[0]
         assert this_mo[f"{target_col}_numeric"].isna().any() == False

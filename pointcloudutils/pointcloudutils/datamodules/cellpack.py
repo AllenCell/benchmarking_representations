@@ -192,8 +192,8 @@ class CellPackDataset(Dataset):
 
         self.ids = _splits[split]
 
-        if split == "test":
-            self.ids = ["9c1ff213-4e9e-4b73-a942-3baf9d37a50f"]
+        # if split == "test":
+        #     self.ids = ["9c1ff213-4e9e-4b73-a942-3baf9d37a50f"]
 
         # self.data = []
         # self.ref = []
@@ -322,7 +322,7 @@ class CellPackDataset(Dataset):
         # all_packings = []
         # for i in tqdm(tup, total=len(tup)):
         #     all_packings.append(get_packing(i))
-        with Pool(3) as p:
+        with Pool(30) as p:
             all_packings = tuple(
                 tqdm(
                     p.imap_unordered(

@@ -6,7 +6,9 @@ from hydra.utils import instantiate
 from br.models.utils import get_all_configs_per_dataset
 
 
-def load_model_from_path(dataset, results_path, strict=False, split="val"):
+def load_model_from_path(
+    dataset, results_path, strict=False, split="val", device="cuda:0"
+):
     MODEL_INFO = get_all_configs_per_dataset(results_path)
     models = MODEL_INFO[dataset]
     model_sizes = []
@@ -21,7 +23,7 @@ def load_model_from_path(dataset, results_path, strict=False, split="val"):
         model_class = _locate(model_class)
         all_models.append(
             model_class.load_from_checkpoint(
-                ckpt_path, **model_conf, strict=strict
+                ckpt_path, **model_conf, strict=strict, map_location=device
             ).eval()
         )
         model_sizes.append(config["model/params/total"])

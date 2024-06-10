@@ -306,7 +306,10 @@ def base_forward(
             if eval_scaled_img_model_type == "iae"
             else recon.squeeze().shape[-1]
         )
-        recon = recon[:, 0, ...]  # remove channel dimension
+        # import ipdb
+
+        # ipdb.set_trace()
+        # recon = recon[:, 0, ...]  # remove channel dimension
         recon_data_list = [
             recon[i].reshape(reshape_vox_size, reshape_vox_size, reshape_vox_size)
             for i in range(len(cellids))

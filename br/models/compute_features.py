@@ -100,7 +100,7 @@ def compute_features(
     compute_embeds: bool = False,
     metric_list: list = METRIC_LIST,
     loss_eval_list: list = None,
-    classification_params: dict = {"class_label": "cell_stage_fine"},
+    classification_params: dict = {"class_labels": ["cell_stage_fine"]},
     regression_params: dict = {
         "feature_df_path": None,
         "target_cols": [],
@@ -157,7 +157,7 @@ def compute_features(
             rot_inv_params["squeeze_2d"],
             use_sample_points_list,
         )
-        eq_dict.to_csv(path / "equiv.csv")
+        eq_dict.to_csv(path / "rotation_invariance_error.csv")
         metric_list.pop(metric_list.index("Rotation Invariance Error"))
 
     all_ret, _ = get_embeddings(run_names, dataset, DATASET_INFO, embeddings_path)
@@ -173,7 +173,7 @@ def compute_features(
             rec_df = (
                 all_ret[["model", "split", "loss"]].groupby(["model", "split"]).mean()
             )
-            rec_df.to_csv(path / "recon.csv")
+            rec_df.to_csv(path / "reconstruction.csv")
             metric_list.pop(metric_list.index("Reconstruction"))
 
         if len(set(METRIC_LIST).intersection(set(metric_list))) > 0:
@@ -225,10 +225,14 @@ def compute_features(
 
         if "Classification" in metric_list:
             print("Computing classification")
-            ret_dict_classification = get_classification_df(
-                all_ret, classification_params["class_label"]
-            )
-            ret_dict_classification.to_csv(path / Path("classification.csv"))
+            for target_col in classification_params["class_labels"]:
+                ret_dict_classification = get_classification_df(
+                    all_ret,
+                    target_col,
+                )
+                ret_dict_classification.to_csv(
+                    path / Path(f"classification_{target_col}.csv")
+                )
 
         if "Regression" in metric_list:
             print("Computing regression")
@@ -275,4 +279,4 @@ def compute_features(
             if evolve_params["only_embedding"]:
                 evolution_dict.to_csv(path / Path("embedding_interpolate.csv"))
             else:
-                evolution_dict.to_csv(path / Path("evolve.csv"))
+                evolution_dict.to_csv(path / Path("evolution_energy.csv"))
