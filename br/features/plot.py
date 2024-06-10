@@ -1,5 +1,4 @@
 from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -329,7 +328,6 @@ def plot_pc_saved(
 
     for sub_key in df[key].unique():
         df_sub = df.loc[df[key] == sub_key]
-        plt.style.use("default")
         fig, axes = plt.subplots(1, len(views), figsize=(len(views) * 2, 2), dpi=150)
         x = df_sub.x.values
         y = df_sub.y.values
@@ -391,12 +389,11 @@ def plot_pc_saved(
         # seq.append(image)
 
 
-def plot_single_pc(df, xlim, ylim, key, dir, cmap):
+def plot_stratified_pc(df, xlim, ylim, key, dir, cmap, flip):
     views = ["xy"]
     for sub_key in df[key].unique():
         df_sub = df.loc[df[key] == sub_key]
-        plt.style.use("default")
-        fig, axes = plt.subplots(1, len(views), figsize=(len(views) * 2, 2), dpi=150)
+        fig, axes = plt.subplots(1, len(views), figsize=(len(views) * 2, 2))
         x = df_sub.x.values
         y = df_sub.y.values
         z = df_sub.z.values
