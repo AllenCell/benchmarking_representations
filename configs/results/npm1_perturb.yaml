@@ -12,11 +12,11 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "./br_checkpoints/npm1/SO3_pointcloud_SDF.ckpt",
-    "./br_checkpoints/npm1/Classical_image_SDF.ckpt",
-    "./br_checkpoints/npm1/Classical_image_seg.ckpt",
-    "./br_checkpoints/npm1/SO3_image_SDF.ckpt",
-    "./br_checkpoints/npm1/SO3_image_seg.ckpt",
+    "./br_checkpoints/npm1_perturb/SO3_pointcloud_SDF.ckpt",
+    "./br_checkpoints/npm1_perturb/Classical_image_SDF.ckpt",
+    "./br_checkpoints/npm1_perturb/Classical_image_seg.ckpt",
+    "./br_checkpoints/npm1_perturb/SO3_image_SDF.ckpt",
+    "./br_checkpoints/npm1_perturb/SO3_image_seg.ckpt",
   ]
 names:
   [
