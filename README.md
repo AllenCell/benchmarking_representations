@@ -25,15 +25,6 @@ export CYTODL_CONFIG_PATH=./br/configs/
 ├── README.md          <- The top-level README for developers using this project.
 
 ├── br                <- Source code for use in this project.
-│   ├── configs          <- Training configs for each experiment
-│   │   ├── callbacks       <- e.g. Early stopping, model checkpoint etc
-│   │   ├── data        <- Datamodules for each dataset
-│   │   ├── experiment      <- training config for an experiment combining data, models, logger etc
-│   │   └── model            <- config for Pytorch Lightning model
-│   │   ├── trainer       <- trainer parameters for Pytorch Lightning
-│   │   ├── logger        <- Choice of logger to save results
-│   │   ├── hydra      <- Hydra params to perform experiment sweeps
-│
 │   ├── data
 │   │   ├── preprocessing        <- Preprocessing scripts to generate point clouds and SDFs
 │   │   ├── get_datamodules.py      <- Get final list of datamodules per dataset
@@ -53,6 +44,15 @@ export CYTODL_CONFIG_PATH=./br/configs/
 │   │   ├── regression.py      <- Linear regression test set r^2
 │   │   ├── rotation_invariance.py      <- Sensitivity to four 90 degree rotations in embedding space
 │   │   ├── plot.py      <- Polar plot viz across metrics
+│
+├── configs          <- Training configs for each experiment
+│   ├── callbacks       <- e.g. Early stopping, model checkpoint etc
+│   ├── data        <- Datamodules for each dataset
+│   ├── experiment      <- training config for an experiment combining data, models, logger 
+│   ├── model            <- config for Pytorch Lightning model
+│   ├── trainer       <- trainer parameters for Pytorch Lightning
+│   ├── logger        <- Choice of logger to save results
+│   ├── hydra      <- Hydra params to perform experiment sweeps
 │
 ├── notebooks          <- Jupyter notebooks.
 │
@@ -81,7 +81,7 @@ To download data and train models, run steps 1, 2 and 3. To skip this and run be
 [Nucleolar drug perturbation dataset]
 ```
 
-2. \[Optional\] Once data is downloaded, run preprocessing scripts to create the final image and point cloud datasets (for cellPACK synthetic dataset, we provide final versions of both). For image preprocessing used for punctate structures, install [snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html), update the data paths in
+2. \[Optional\] Once data is downloaded, run preprocessing scripts to create the final image and point cloud datasets (for cellPACK synthetic dataset, we provide final versions of both). For image preprocessing used for punctate structures, install [snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html), then update the data paths in
 
 ```
 ├── data
@@ -91,7 +91,7 @@ To download data and train models, run steps 1, 2 and 3. To skip this and run be
 │   │   │   │   ├── config.yaml     <- Config for image processing workflow [Update data paths]
 ```
 
-and then follow the [installation](br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
+Then follow the [installation](br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
 
 ```
 ├── data
@@ -121,18 +121,7 @@ For SDF preprocessing for polymorphic structures, update data paths and run the 
 
 In all cases, create a single cell manifest for each dataset with a column corresponding to final processed paths, and create a split column corresponding to train/test/validation.
 
-3. Update the processed data path column in the datamodule yaml files. e.g. for the cellPACK data, these yaml files are located here
-
-```
-├── configs
-│   ├── data
-│   │   ├── cellpack
-│   │   │   ├── image.yaml      <- Datamodule for cellPACK images [Update data paths]
-│   │   │   ├── pc.yaml       <- Datamodule for cellPACK point clouds [Update data paths]
-│   │   │   ├── pc_jitter.yaml       <- Datamodule for cellPACK point clouds with jitter [Update data paths]
-```
-
-Similarly, for PCNA data these yaml files are located here -
+3. Update the processed data path column in the datamodule yaml files. e.g. for PCNA data these yaml files are located here -
 
 ```
 ├── configs
