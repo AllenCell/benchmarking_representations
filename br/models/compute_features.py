@@ -46,6 +46,8 @@ def get_embeddings(run_names, dataset, DATASET_INFO, embeddings_path):
         all_df.append(df)
 
     all_ret = pd.concat(all_df, axis=0).reset_index(drop=True)
+    if df_path is None:
+        return all_ret
 
     if df_path.split(".")[-1] == "csv":
         df = pd.read_csv(df_path)
@@ -118,7 +120,7 @@ def compute_features(
         "only_embedding": False,
         "fit_pca": False,
     },
-    rot_inv_params: dict = {"squeeze_2d": False, "id": "CellId"},
+    rot_inv_params: dict = {"squeeze_2d": False, "id": "CellId", "max_batches": 4000},
     compactness_params: dict = {
         "method": "mle",
         "blobby_outlier_max_cc": None,
@@ -140,7 +142,6 @@ def compute_features(
     path = Path(save_folder)
     path.mkdir(parents=True, exist_ok=True)
     loss_eval = get_pc_loss_chamfer() if loss_eval_list is None else loss_eval_list
-    max_batches = 4000
 
     if "Rotation Invariance Error" in metric_list:
         print("Computing rotation invariance")
@@ -152,7 +153,7 @@ def compute_features(
             loss_eval,
             keys,
             rot_inv_params["id"],
-            max_batches,
+            rot_inv_params["max_batches"],
             max_embed_dim,
             rot_inv_params["squeeze_2d"],
             use_sample_points_list,

@@ -162,7 +162,13 @@ def normalize_intensities_and_get_colormap(df, pcts=[1, 60], cm_name="inferno"):
         df["inorm"] = np.clip(df.s.values, vmin, vmax)
         df["inorm"] = (df.inorm - vmin) / (vmax - vmin)
     else:
+        vmin, vmax = None, None
         df["inorm"] = 1
     cmap = plt.get_cmap(cm_name)
     # print(vmin, vmax)
-    return df, cmap
+    return df, cmap, vmin, vmax
+
+
+def normalize_intensities_and_get_colormap_apply(df, vmin, vmax):
+    df["inorm"] = (df.s - vmin) / (vmax - vmin)
+    return df

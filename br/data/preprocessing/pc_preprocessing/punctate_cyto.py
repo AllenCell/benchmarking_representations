@@ -23,7 +23,7 @@ REP_DICT = {
 }
 
 
-def compute_labels(row):
+def compute_labels(row, save=True):
     num_points = 20480
     path = row["crop_raw"]
     structure_name = row["Structure"]
@@ -85,10 +85,12 @@ def compute_labels(row):
     new_cents = np.stack([z, y, x, probs], axis=1)
     new_cents = pd.DataFrame(new_cents, columns=["z", "y", "x", "s"])
     assert new_cents.shape[0] == num_points
+    new_cents["s"] = probs_orig
+    if not save:
+        return new_cents
     new_cents["z"] = new_cents["z"] - z_center
     new_cents["y"] = new_cents["y"] - y_center
     new_cents["x"] = new_cents["x"] - x_center
-    new_cents["s"] = probs_orig
 
     cell_id = str(row["CellId"])
 
@@ -104,24 +106,25 @@ def get_center_of_mass(img):
     return np.floor(center_of_mass + 0.5).astype(int)
 
 
-df = pd.read_parquet(
-    "/allen/aics/modeling/ritvik/projects/data/variance_cytoplasmic_punctate/manifest.parquet"
-)
-
-path_prefix = "/allen/aics/modeling/ritvik/projects/data/variance_cytoplasmic_punctate_morepoints/"
-
-all_rows = []
-for ind, row in tqdm(df.iterrows(), total=len(df)):
-    all_rows.append(row)
-
-with Pool(40) as p:
-    _ = tuple(
-        tqdm(
-            p.imap_unordered(
-                compute_labels,
-                all_rows,
-            ),
-            total=len(all_rows),
-            desc="compute_everything",
-        )
+if __name__ == "__main__":
+    df = pd.read_parquet(
+        "/allen/aics/modeling/ritvik/projects/data/variance_cytoplasmic_punctate/manifest.parquet"
     )
+
+    path_prefix = "/allen/aics/modeling/ritvik/projects/data/variance_cytoplasmic_punctate_morepoints/"
+
+    all_rows = []
+    for ind, row in tqdm(df.iterrows(), total=len(df)):
+        all_rows.append(row)
+
+    with Pool(40) as p:
+        _ = tuple(
+            tqdm(
+                p.imap_unordered(
+                    compute_labels,
+                    all_rows,
+                ),
+                total=len(all_rows),
+                desc="compute_everything",
+            )
+        )

@@ -305,7 +305,8 @@ def plot_pc_saved(
     ylim=[-10, 10],
     mark_center=False,
 ):
-    """Plot point clouds saved as csv's in a directory.
+    """Plot point clouds saved as csv's in a directory. Normalize across all
+    pcs if there is a scalar feature
 
     directory - location where they are saved e.g. './test'
     names - names of files e.g - ['G1', 'earlyS', ...]
@@ -322,7 +323,7 @@ def plot_pc_saved(
         df = pd.concat([df, dft], ignore_index=True)
 
     if "inorm" not in df.columns:
-        df, cmap = normalize_intensities_and_get_colormap(df=df, pcts=[5, 95])
+        df, cmap, _, _ = normalize_intensities_and_get_colormap(df=df, pcts=[5, 95])
     else:
         cmap = "inferno"
 
@@ -379,7 +380,6 @@ def plot_pc_saved(
         # fig.canvas.draw()
         # image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
         # image = image.reshape(*reversed(fig.canvas.get_width_height()), 3)
-        print(Path(f"{key}_{sub_key}.png"))
         fig.savefig(
             Path(directory) / Path(f"{key}_{sub_key}.png"),
             bbox_inches="tight",
@@ -390,6 +390,10 @@ def plot_pc_saved(
 
 
 def plot_stratified_pc(df, xlim, ylim, key, dir, cmap, flip):
+    """
+    Plot pcs via dataframe. Specifcy cmap and normalized scalar
+    features in df
+    """
     views = ["xy"]
     for sub_key in df[key].unique():
         df_sub = df.loc[df[key] == sub_key]

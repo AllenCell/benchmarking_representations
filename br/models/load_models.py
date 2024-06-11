@@ -4,6 +4,7 @@ from hydra._internal.utils import _locate
 from hydra.utils import instantiate
 
 from br.models.utils import get_all_configs_per_dataset
+from br.data.get_datamodules import get_data
 
 
 def load_model_from_path(
@@ -50,3 +51,11 @@ def load_model_from_mlflow(dataset, results_path, split="val"):
         model_sizes.append(config["model/params/total"])
 
     return all_models, models["names"], model_sizes
+
+
+def get_data_and_models(dataset_name, batch_size, results_path, debug=False):
+    data_list = get_data(dataset_name, batch_size, results_path, debug)
+    all_models, run_names, model_sizes = load_model_from_path(
+        dataset_name, results_path
+    )  # default list of models in load_models.py
+    return data_list, all_models, run_names, model_sizes
