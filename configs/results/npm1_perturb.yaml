@@ -1,5 +1,5 @@
 # embedding_save_location:
-orig_df:
+orig_df: "/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/npm1_perturb_classical_manifest.csv"
 image_path:
 pc_path:
 run_ids:
@@ -13,18 +13,18 @@ run_ids:
 model_checkpoints:
   [
     "./br_checkpoints/npm1/SO3_pointcloud_SDF.ckpt",
-    "./br_checkpoints/npm1/SO3_image_SDF.ckpt",
-    "./br_checkpoints/npm1/SO3_image_seg.ckpt",
     "./br_checkpoints/npm1/Classical_image_SDF.ckpt",
     "./br_checkpoints/npm1/Classical_image_seg.ckpt",
+    "./br_checkpoints/npm1/SO3_image_SDF.ckpt",
+    "./br_checkpoints/npm1/SO3_image_seg.ckpt",
   ]
 names:
   [
-    "VN_equiv",
-    "CNN_sdf_noalign_global",
-    "CNN_seg_noalign_global",
-    "CNN_sdf_SO3_global",
-    "CNN_seg_SO3_global",
+    "SO3_pointcloud_SDF",
+    "Classical_image_SDF",
+    "Classical_image_seg",
+    "SO3_image_SDF",
+    "SO3_image_seg",
   ]
 data_paths:
   [

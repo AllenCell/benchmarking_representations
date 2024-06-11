@@ -20,16 +20,16 @@ transforms:
     keys:
       - image
     spatial_size:
-      - 33
-      - 33
-      - 33
+      - 35
+      - 35
+      - 35
     value: 0
   - _target_: cyto_dl.image.transforms.RotationMaskd
     keys:
       - image
     group: so3
     spatial_dims: 3
-    mask_side: 33
+    mask_side: 35
     background: 0
   - _target_: monai.transforms.ToTensord
     keys:
