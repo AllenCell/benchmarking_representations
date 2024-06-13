@@ -1,0 +1,47 @@
+_target_: cyto_dl.datamodules.DataframeDatamodule
+_convert_: all
+path: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv
+split_column: split
+batch_size: 64
+num_workers: 4
+transforms:
+  - _target_: cyto_dl.dataframe.transforms.GroupCols
+    groups:
+      image: sdf_path_noalign_32res_global
+      cell_id: CellId
+  - _target_: cyto_dl.image.io.ReadNumpyFile
+    keys:
+      - image
+    remote: false
+    unsqueeze: True
+  - _target_: monai.transforms.ThresholdIntensityd
+    keys:
+      - image
+    threshold: 2
+    above: false
+    cval: 2
+  - _target_: monai.transforms.ThresholdIntensityd
+    keys:
+      - image
+    threshold: -2
+    above: true
+    cval: -2
+  - _target_: monai.transforms.SpatialPadd
+    keys:
+      - image
+    spatial_size:
+      - 35
+      - 35
+      - 35
+    value: 2
+  - _target_: cyto_dl.image.transforms.RotationMaskd
+    keys:
+    - image
+    group: so3
+    spatial_dims: 3
+    mask_side: 35
+    background: 2
+  - _target_: monai.transforms.ToTensord
+    keys:
+      - image
+    track_meta: false

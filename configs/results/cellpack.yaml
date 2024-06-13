@@ -26,8 +26,7 @@ names:
     "SO3_pointcloud",
     "SO3_pointcloud_jitter",
   ]
-data_paths:
-  [
+data_paths: [
     "./configs/data/cellpack/image.yaml",
     "./configs/data/cellpack/image.yaml",
     "./configs/data/cellpack/pc.yaml",
