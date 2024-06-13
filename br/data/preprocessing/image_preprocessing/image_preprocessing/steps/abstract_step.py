@@ -2,10 +2,9 @@ from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
+from image_preprocessing.utils import write_image, write_ome_zarr
 from tqdm import tqdm
 from upath import UPath as Path
-
-from image_preprocessing.utils import write_image, write_ome_zarr
 
 
 def iterdicts(df):
@@ -107,9 +106,7 @@ class Step:
             with Pool(self.n_workers) as p:
                 jobs = p.imap_unordered(self.__call__, iterdicts(manifest))
                 if self.verbose:
-                    jobs = tqdm(
-                        jobs, total=len(manifest), desc="processing cells", leave=False
-                    )
+                    jobs = tqdm(jobs, total=len(manifest), desc="processing cells", leave=False)
                 result = list(jobs)
         else:
             jobs = manifest.itertuples()

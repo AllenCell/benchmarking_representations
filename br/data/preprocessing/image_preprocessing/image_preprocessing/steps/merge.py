@@ -3,11 +3,10 @@ from multiprocessing.context import SpawnProcess
 
 import numpy as np
 import pandas as pd
+from image_preprocessing.steps.abstract_step import Step
+from image_preprocessing.utils import read_image
 from scipy.ndimage.interpolation import zoom
 from tqdm import tqdm
-
-from image_preprocessing.utils import read_image
-from image_preprocessing.steps.abstract_step import Step
 
 STANDARD_RES_QCB = 0.108
 
@@ -19,9 +18,7 @@ def read_and_filter(path, fov_id, fov_id_col, columns):
         iter_csv = pd.read_csv(path, iterator=True, chunksize=500, usecols=columns)
         return pd.concat([chunk.loc[chunk[fov_id_col] == fov_id] for chunk in iter_csv])
     else:
-        return pd.read_parquet(path, columns=columns).loc[
-            lambda row: row[fov_id_col] == fov_id
-        ]
+        return pd.read_parquet(path, columns=columns).loc[lambda row: row[fov_id_col] == fov_id]
 
 
 class NoDaemonProcess(SpawnProcess):
@@ -94,9 +91,7 @@ class Merge(Step):
             if not any(contains):
                 bf_channel = ix
 
-        dna_channel = (
-            fov_channel_names.index("H3342") if "H3342" in fov_channel_names else None
-        )
+        dna_channel = fov_channel_names.index("H3342") if "H3342" in fov_channel_names else None
 
         if bf_channel is None:
             raise ValueError("Not finding a single bright-field channel")
@@ -159,9 +154,7 @@ class Merge(Step):
         ).astype("uint16")
 
         channel_names = (
-            ["bf"]
-            + raw_channel_names
-            + [seg_channel_names[ix] for ix in seg_channels_to_use]
+            ["bf"] + raw_channel_names + [seg_channel_names[ix] for ix in seg_channels_to_use]
         )
 
         output_path = self.store_image(

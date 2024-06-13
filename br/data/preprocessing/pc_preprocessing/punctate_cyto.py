@@ -53,9 +53,7 @@ def compute_labels(row, save=True):
 
     # sampling based on raw images
     skewness = (
-        SKEW_EXP_DICT[structure_name]
-        * (3 * (probs.mean() - np.median(probs)))
-        / probs.std()
+        SKEW_EXP_DICT[structure_name] * (3 * (probs.mean() - np.median(probs))) / probs.std()
     )
 
     if skewness < 25:
@@ -71,9 +69,7 @@ def compute_labels(row, save=True):
 
     replace = REP_DICT[structure_name]
 
-    idxs = np.random.choice(
-        np.arange(len(probs)), size=num_points, replace=replace, p=probs
-    )
+    idxs = np.random.choice(np.arange(len(probs)), size=num_points, replace=replace, p=probs)
     # noise important to avoid nans during encoding
     disp = 0.001
     x = x[idxs] + (np.random.rand(len(idxs)) - 0.5) * disp
@@ -87,7 +83,7 @@ def compute_labels(row, save=True):
     assert new_cents.shape[0] == num_points
     new_cents["s"] = probs_orig
     if not save:
-        return new_cents
+        return new_cents, raw, np.concatenate([img_full, img_seg], axis=0), center
     new_cents["z"] = new_cents["z"] - z_center
     new_cents["y"] = new_cents["y"] - y_center
     new_cents["x"] = new_cents["x"] - x_center
@@ -111,7 +107,9 @@ if __name__ == "__main__":
         "/allen/aics/modeling/ritvik/projects/data/variance_cytoplasmic_punctate/manifest.parquet"
     )
 
-    path_prefix = "/allen/aics/modeling/ritvik/projects/data/variance_cytoplasmic_punctate_morepoints/"
+    path_prefix = (
+        "/allen/aics/modeling/ritvik/projects/data/variance_cytoplasmic_punctate_morepoints/"
+    )
 
     all_rows = []
     for ind, row in tqdm(df.iterrows(), total=len(df)):

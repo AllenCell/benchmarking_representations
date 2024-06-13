@@ -1,8 +1,7 @@
 import numpy as np
-from upath import UPath as Path
-
-from image_preprocessing.utils import read_image
 from image_preprocessing.steps.abstract_step import Step
+from image_preprocessing.utils import read_image
+from upath import UPath as Path
 
 
 def _rescale_image(img_data, channels):
@@ -111,9 +110,7 @@ class Register(Step):
         global_bounding_box = {}
         for axis in ["z", "y", "x"]:
             diff = manifest[f"bbox_max_{axis}"] - manifest[f"bbox_min_{axis}"]
-            global_bounding_box[axis] = np.ceil(diff.quantile(self.quantile)).astype(
-                int
-            )
+            global_bounding_box[axis] = np.ceil(diff.quantile(self.quantile)).astype(int)
         self.bounding_box = global_bounding_box
 
         return super().run(manifest, n_workers=n_workers)

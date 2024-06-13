@@ -19,12 +19,8 @@ def sample_points(mesh, n_points, p_type=np.float16):
     return out_dict
 
 
-def sample_iou_points_and_sdf_vals(
-    mesh, n_iou_points, cube_dim=32, padding=0, p_type=np.float16
-):
-    points = (np.random.rand(n_iou_points, 3).astype(np.float32) - 0.5) * (
-        cube_dim + padding
-    )
+def sample_iou_points_and_sdf_vals(mesh, n_iou_points, cube_dim=32, padding=0, p_type=np.float16):
+    points = (np.random.rand(n_iou_points, 3).astype(np.float32) - 0.5) * (cube_dim + padding)
 
     sdf_vals = mesh_to_sdf.mesh_to_sdf(mesh, query_points=points)
 

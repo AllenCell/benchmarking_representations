@@ -3,13 +3,12 @@ import typing
 from typing import Dict, List, Optional, Tuple
 
 import zarr
-from ome_zarr.io import parse_url
-from ome_zarr.scale import Scaler
-from ome_zarr.writer import write_image
-
 from aicsimageio import types
 from aicsimageio.metadata import utils
 from aicsimageio.utils import io_utils
+from ome_zarr.io import parse_url
+from ome_zarr.scale import Scaler
+from ome_zarr.writer import write_image
 
 # from .writer import Writer
 

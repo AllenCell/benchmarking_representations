@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -166,9 +167,7 @@ def collect_outputs(path, norm, model_order=None, metric_list=None):
                 value_vars=[this_metrics[i]],
             )
             if "classification" in metric:
-                this_df2["variable"] = (
-                    "Classification" + metric.split("classification")[-1]
-                )
+                this_df2["variable"] = "Classification" + metric.split("classification")[-1]
             else:
                 this_df2["variable"] = metric + "_" + this_df2["variable"].iloc[0]
             df_list.append(this_df2)
@@ -268,9 +267,7 @@ def plot(
                 line_color=colors[i],
                 opacity=opacity,
                 line=dict(width=5, color=colors[i % len(colors)]),  # Set line color
-                marker=dict(
-                    size=13, color=colors[i % len(colors)]
-                ),  # Set marker color (optional)
+                marker=dict(size=13, color=colors[i % len(colors)]),  # Set marker color (optional)
             )
             for i in range(len(all_models))
         ],
@@ -305,8 +302,8 @@ def plot_pc_saved(
     ylim=[-10, 10],
     mark_center=False,
 ):
-    """Plot point clouds saved as csv's in a directory. Normalize across all
-    pcs if there is a scalar feature
+    """Plot point clouds saved as csv's in a directory. Normalize across all pcs if there is a
+    scalar feature.
 
     directory - location where they are saved e.g. './test'
     names - names of files e.g - ['G1', 'earlyS', ...]
@@ -376,7 +373,6 @@ def plot_pc_saved(
             this_axes.axis("off")
         plt.tight_layout()
         # plt.show()
-
         # fig.canvas.draw()
         # image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
         # image = image.reshape(*reversed(fig.canvas.get_width_height()), 3)
@@ -390,9 +386,9 @@ def plot_pc_saved(
 
 
 def plot_stratified_pc(df, xlim, ylim, key, dir, cmap, flip):
-    """
-    Plot pcs via dataframe. Specifcy cmap and normalized scalar
-    features in df
+    """Plot pcs via dataframe.
+
+    Specifcy cmap and normalized scalar features in df
     """
     views = ["xy"]
     for sub_key in df[key].unique():

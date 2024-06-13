@@ -3,13 +3,11 @@ from cyto_dl.models.utils.mlflow import get_config, load_model_from_checkpoint
 from hydra._internal.utils import _locate
 from hydra.utils import instantiate
 
-from br.models.utils import get_all_configs_per_dataset
 from br.data.get_datamodules import get_data
+from br.models.utils import get_all_configs_per_dataset
 
 
-def load_model_from_path(
-    dataset, results_path, strict=False, split="val", device="cuda:0"
-):
+def load_model_from_path(dataset, results_path, strict=False, split="val", device="cuda:0"):
     MODEL_INFO = get_all_configs_per_dataset(results_path)
     models = MODEL_INFO[dataset]
     model_sizes = []

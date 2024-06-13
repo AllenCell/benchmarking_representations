@@ -42,9 +42,7 @@ def compute_labels(row, save=True):
     # scalr prob so it sums to 1
     probs = probs / probs.sum()
 
-    idxs = np.random.choice(
-        np.arange(len(probs)), size=num_points, replace=False, p=probs
-    )
+    idxs = np.random.choice(np.arange(len(probs)), size=num_points, replace=False, p=probs)
     # noise important to avoid nans during encoding
     disp = 0.001
     x = x[idxs] + (np.random.rand(len(idxs)) - 0.5) * disp
@@ -59,7 +57,7 @@ def compute_labels(row, save=True):
 
     new_cents["s"] = probs_orig
     if not save:
-        return new_cents
+        return new_cents, raw, img, center
     new_cents["z"] = new_cents["z"] - z_center
     new_cents["y"] = new_cents["y"] - y_center
     new_cents["x"] = new_cents["x"] - x_center
@@ -79,11 +77,11 @@ def get_center_of_mass(img):
 
 
 if __name__ == "__main__":
-    df = pd.read_parquet(
-        "/allen/aics/modeling/ritvik/variance_punctate/one_step/manifest.parquet"
-    )
+    df = pd.read_parquet("/allen/aics/modeling/ritvik/variance_punctate/one_step/manifest.parquet")
 
-    path_prefix = "/allen/aics/modeling/ritvik/projects/data/variance_punctate_updated_sampling_morepoints/"
+    path_prefix = (
+        "/allen/aics/modeling/ritvik/projects/data/variance_punctate_updated_sampling_morepoints/"
+    )
 
     all_rows = []
     for ind, row in tqdm(df.iterrows(), total=len(df)):

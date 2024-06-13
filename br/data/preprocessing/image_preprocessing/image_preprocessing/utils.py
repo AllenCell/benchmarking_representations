@@ -4,8 +4,9 @@ logging.getLogger("bfio").setLevel(logging.ERROR)
 logging.getLogger("aicsimageio").setLevel(logging.ERROR)
 logging.getLogger("xmlschema").setLevel(logging.ERROR)
 
-import warnings
 import os
+import warnings
+
 import numpy as np
 import pandas as pd
 import zarr
