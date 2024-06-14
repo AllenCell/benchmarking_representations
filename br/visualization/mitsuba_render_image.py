@@ -2,13 +2,13 @@ import matplotlib.pyplot as plt
 import mitsuba as mi
 import numpy as np
 import trimesh
+
+mi.set_variant("scalar_rgb")
 from mitsuba import ScalarTransform4f as T
 from trimesh.transformations import rotation_matrix
 
-mi.set_variant("scalar_rgb")
 
-
-def plot(this_mesh_path, angle, angle2=None, angle3=None):
+def plot(this_mesh_path, save_path, angle, angle2=None, angle3=None, name="mesh"):
     myMesh = trimesh.load(this_mesh_path)
 
     # Scale the mesh to approximately one unit based on the height
@@ -42,7 +42,9 @@ def plot(this_mesh_path, angle, angle2=None, angle3=None):
     # Create a sensor that is used for rendering the scene
     def load_sensor(r, phi, theta):
         # Apply two rotations to convert from spherical coordinates to world 3D coordinates.
-        origin = T.rotate([0, 0, 1], phi).rotate([0, 1, 0], theta) @ mi.ScalarPoint3f([0, 0, r])
+        origin = T.rotate([0, 0, 1], phi).rotate([0, 1, 0], theta) @ mi.ScalarPoint3f(
+            [0, 0, r]
+        )
 
         return mi.load_dict(
             {
@@ -100,7 +102,9 @@ def plot(this_mesh_path, angle, angle2=None, angle3=None):
             "areaLight": {
                 "type": "rectangle",
                 # The height of the light can be adjusted below
-                "to_world": T.translate([0, 0.0, myMesh.bounds[1, 2] + relativeLightHeight])
+                "to_world": T.translate(
+                    [0, 0.0, myMesh.bounds[1, 2] + relativeLightHeight]
+                )
                 .scale(1.0)
                 .rotate([1, 0, 0], 5.0),
                 "flip_normals": True,
@@ -136,10 +140,7 @@ def plot(this_mesh_path, angle, angle2=None, angle3=None):
     image = mi.render(scene2, sensor=sensors[0], spp=256)
 
     # Write the output
-
-    save_path = mesh_path + "mitsuba/"
-    mi.util.write_bitmap(save_path + f"{name}.png", image)
-    # mi.util.write_bitmap(save_path + ".exr", image)
+    mi.util.write_bitmap(save_path + f"/{name}.png", image)
 
     # Display the output in an Image
     plt.imshow(image ** (1.0 / 2.2))
