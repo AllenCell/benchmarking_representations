@@ -7,7 +7,7 @@ num_workers: 4
 transforms:
   - _target_: cyto_dl.dataframe.transforms.GroupCols
     groups:
-      image: sdf_path_noalign
+      image: sdf_path_noalign_32res
       cell_id: CellId
   - _target_: cyto_dl.image.io.ReadNumpyFile
     keys:

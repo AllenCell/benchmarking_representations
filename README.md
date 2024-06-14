@@ -48,7 +48,7 @@ export CYTODL_CONFIG_PATH=./br/configs/
 ├── configs          <- Training configs for each experiment
 │   ├── callbacks       <- e.g. Early stopping, model checkpoint etc
 │   ├── data        <- Datamodules for each dataset
-│   ├── experiment      <- training config for an experiment combining data, models, logger 
+│   ├── experiment      <- training config for an experiment combining data, models, logger
 │   ├── model            <- config for Pytorch Lightning model
 │   ├── trainer       <- trainer parameters for Pytorch Lightning
 │   ├── logger        <- Choice of logger to save results
