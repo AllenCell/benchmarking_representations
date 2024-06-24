@@ -13,7 +13,7 @@ from pointcloudutils.datamodules.shapenet_dataset.utils import (
 class ShapenetDataModule(LightningDataModule):
     def __init__(
         self,
-        dataset_folder: str = "/allen/aics/modeling/ritvik/projects/occupancy_networks/data/ShapeNet",
+        dataset_folder: str = "",
         method: str = "shapenet_dfnet",
         x_label: str = "pcloud",
         dataset_type: str = "partial_pointcloud",

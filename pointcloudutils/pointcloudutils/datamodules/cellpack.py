@@ -509,10 +509,7 @@ def get_packing(tup):
 
         # for image models
         if get_image:
-            this_path = this_path.replace(
-                "/allen/aics/animated-cell/Saurabh/cellpack/out/pcna/spheresSST/",
-                "/allen/aics/animated-cell/Saurabh/cellpack/out/pcna/spheresSST/figures/",
-            )
+            this_path = this_path + "figures/"
             this_path = this_path.replace("positions", "voxelized_image").split(".")[0]
             this_path = this_path + "_seed_0.ome.tiff"
             tmp = imread(this_path)
