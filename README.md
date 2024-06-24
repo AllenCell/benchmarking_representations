@@ -139,8 +139,8 @@ In all cases, create a single cell manifest for each dataset with a column corre
 ├── configs
 │   ├── experiment
 │   │   ├── cellpack
-│   │   │   ├── image_equiv.yaml      <- SO3 image model experiment
-│   │   │   ├── pc_equiv.yaml       <- SO3 point cloud model experiment
+│   │   │   ├── image_equiv.yaml      <- Rotation invariant image model experiment
+│   │   │   ├── pc_equiv.yaml       <- Rotation invariant point cloud model experiment
 ```
 
 Here is an example of training an SO3 point cloud model
