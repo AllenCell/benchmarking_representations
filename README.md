@@ -18,6 +18,132 @@ pip install -e ./pointcloudutils
 export CYTODL_CONFIG_PATH=./br/configs/
 ```
 
+## Steps to download and preprocess data
+
+1. Datasets are hosted on quilt. Download raw data at the following links
+
+```
+[cellPACK synthetic dataset]()
+[DNA replication foci dataset](https://open.quiltdata.com/b/allencell/packages/aics/nuclear_project_dataset_4)
+[WTC-11 hIPSc single cell image dataset v1](https://staging.allencellquilt.org/b/allencell/tree/aics/hipsc_single_cell_image_dataset/)
+[Nucleolar drug perturbation dataset]()
+```
+
+2. Once data is downloaded, run preprocessing scripts to create the final image/pointcloud/SDF datasets (this step is not necessary for the cellPACK dataset). For image preprocessing used for punctate structures, install [snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) and update the data paths in
+
+```
+├── data
+│   ├── preprocessing
+│   │   ├── image_preprocessing
+│   │   │   ├── config
+│   │   │   │   ├── config.yaml     <- Data config for image processing workflow
+```
+
+Then follow the [installation](br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
+
+```
+├── data
+│   ├── preprocessing
+│   │   ├── image_preprocessing
+│   │   │   ├── Snakefile      <- Image preprocessing workflow. Combines alignment, masking, registration
+```
+
+For point cloud preprocessing for punctate structures, update data paths and run the workflow in
+
+```
+├── data
+│   ├── preprocessing
+│   │   ├── pc_preprocessing
+│   │   │   ├── punctate_cyto.py      <- Point cloud sampling from raw images for punctate structures here
+```
+
+For SDF preprocessing for polymorphic structures, update data paths and run the workflows in
+
+```
+├── data
+│   ├── preprocessing
+│   │   ├── sdf_preprocessing
+│   │   │   ├── image_sdfs.py      <- Create 32**3 resolution SDF images
+│   │   │   ├── pc_sdfs.py      <- Sample point clouds from 32**3 resolution SDF images
+```
+
+In all cases, create a single cell manifest (e.g. csv, parquet) for each dataset with a column corresponding to final processed paths, and create a split column corresponding to train/test/validation split.
+
+## Steps to train models
+
+1. Update the final processed path column in the datamodule yaml files. e.g. for PCNA data these yaml files are located here -
+
+```
+├── configs
+│   ├── data
+│   │   ├── pcna
+│   │   │   ├── image.yaml      <- Datamodule for PCNA images 
+│   │   │   ├── pc.yaml       <- Datamodule for PCNA point clouds 
+│   │   │   ├── pc_intensity.yaml       <- Datamodule for PCNA point clouds with intensity
+│   │   │   ├── pc_intensity_jitter.yaml       <- Datamodule for PCNA point clouds with intensity and jitter
+```
+
+2. Train models using cyto_dl. Experiment configs for point cloud and image models are located here -
+
+```
+├── configs
+│   ├── experiment
+│   │   ├── cellpack
+│   │   │   ├── image_equiv.yaml      <- Rotation invariant image model experiment
+│   │   │   ├── pc_equiv.yaml       <- Rotation invariant point cloud model experiment
+```
+
+Here is an example of training a rotation invariant point cloud model
+
+```bash
+python br/models/train.py experiment=cellpack/pc_equiv ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
+```
+
+Override parts of the experiment config via command line or manually in the configs. For example, to train a classical model, run
+
+```bash
+python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthmovers_sphere ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
+```
+
+## Steps to download pre-trained models and pre-computed embeddings
+
+1. To skip model training, download pre-trained models 
+
+```
+[cellPACK synthetic dataset]()
+[DNA replication foci dataset]()
+[WTC-11 hIPSc single cell image dataset v1 punctate structures]()
+[WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)]()
+[WTC-11 hIPSc single cell image dataset v1 polymorphic structures]()
+[Nucleolar drug perturbation dataset]()
+```
+
+2. Download pre-computed embeddings 
+
+```
+[cellPACK synthetic dataset]()
+[DNA replication foci dataset]()
+[WTC-11 hIPSc single cell image dataset v1 punctate structures]()
+[WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)]()
+[WTC-11 hIPSc single cell image dataset v1 polymorphic structures]()
+[Nucleolar drug perturbation dataset]()
+```
+
+## Steps to run benchmarking analysis
+
+1. Run analysis for each dataset separately via jupyter notebooks
+
+```
+├── br
+│   ├── notebooks
+│   │   ├── fig2_cellpack.ipynb      <- Reproduce Fig 2 cellPACK synthetic data results
+│   │   ├── fig3_pcna.ipynb      <- Reproduce Fig 3 PCNA data results
+│   │   ├── fig4_other_punctate.ipynb      <- Reproduce Fig 4 other puntate structure data results
+│   │   ├── fig5_npm1.ipynb      <- Reproduce Fig 5 npm1 data results
+│   │   ├── fig6_other_polymorphic.ipynb      <- Reproduce Fig 6 other polymorphic data results
+│   │   ├── fig7_drug_data.ipynb      <- Reproduce Fig 7 drug data results
+```
+
 ## Project Organization
 
 ```
@@ -67,105 +193,3 @@ export CYTODL_CONFIG_PATH=./br/configs/
 ```
 
 ______________________________________________________________________
-
-## Steps to download data, train models, run benchmarking analysis
-
-To download data and train models, run steps 1, 2 and 3. To skip this and run benchmarking analysis on pre-computed embeddings, skip to step 4.
-
-1. \[Optional\] Datasets are hosted on quilt. Download raw data at the following links
-
-```bash
-[cellPACK synthetic dataset]
-[DNA replication foci dataset] https://open.quiltdata.com/b/allencell/packages/aics/nuclear_project_dataset_4
-[WTC-11 hIPSc single cell image dataset v1] https://staging.allencellquilt.org/b/allencell/tree/aics/hipsc_single_cell_image_dataset/
-[Nucleolar drug perturbation dataset]
-```
-
-2. \[Optional\] Once data is downloaded, run preprocessing scripts to create the final image and point cloud datasets (for cellPACK synthetic dataset, we provide final versions of both). For image preprocessing used for punctate structures, install [snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html), then update the data paths in
-
-```
-├── data
-│   ├── preprocessing
-│   │   ├── image_preprocessing
-│   │   │   ├── config
-│   │   │   │   ├── config.yaml     <- Config for image processing workflow [Update data paths]
-```
-
-Then follow the [installation](br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
-
-```
-├── data
-│   ├── preprocessing
-│   │   ├── image_preprocessing
-│   │   │   ├── Snakefile      <- Image preprocessing workflow. Combines alignment, masking, registration
-```
-
-For point cloud preprocessing for punctate structures, update data paths and run the workflow in
-
-```
-├── data
-│   ├── preprocessing
-│   │   ├── pc_preprocessing
-│   │   │   ├── punctate_cyto.py      <- Point cloud sampling from raw images for punctate structures [Update data paths] here
-```
-
-For SDF preprocessing for polymorphic structures, update data paths and run the workflows in
-
-```
-├── data
-│   ├── preprocessing
-│   │   ├── sdf_preprocessing
-│   │   │   ├── image_sdfs.py      <- Create 32**3 resolution SDF images [Update data paths]
-│   │   │   ├── pc_sdfs.py      <- Sample point clouds from 32**3 resolution SDF images [Update data paths]
-```
-
-In all cases, create a single cell manifest for each dataset with a column corresponding to final processed paths, and create a split column corresponding to train/test/validation.
-
-3. Update the processed data path column in the datamodule yaml files. e.g. for PCNA data these yaml files are located here -
-
-```
-├── configs
-│   ├── data
-│   │   ├── pcna
-│   │   │   ├── image.yaml      <- Datamodule for PCNA images [Update data paths]
-│   │   │   ├── pc.yaml       <- Datamodule for PCNA point clouds [Update data paths]
-│   │   │   ├── pc_intensity.yaml       <- Datamodule for PCNA point clouds with intensity [Update data paths]
-│   │   │   ├── pc_intensity_jitter.yaml       <- Datamodule for PCNA point clouds with intensity and jitter [Update data paths]
-```
-
-2. \[Optional\] Train models using cyto_dl. Experiment configs for point cloud and image models are located here -
-
-```
-├── configs
-│   ├── experiment
-│   │   ├── cellpack
-│   │   │   ├── image_equiv.yaml      <- Rotation invariant image model experiment
-│   │   │   ├── pc_equiv.yaml       <- Rotation invariant point cloud model experiment
-```
-
-Here is an example of training an SO3 point cloud model
-
-```bash
-python br/models/train.py experiment=cellpack/pc_equiv ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
-```
-
-Override parts of the experiment config via command line or manually in the configs. For example, to train a classical model, run
-
-```bash
-python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthmovers_sphere ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
-```
-
-3. \[Optional\] Alternatively, download pre-computed embeddings.
-
-4. Run benchmarking notebooks
-
-```
-├── br
-│   ├── notebooks
-│   │   ├── fig2_cellpack.ipynb      <- Reproduce Fig 2 cellPACK synthetic data results
-│   │   ├── fig3_pcna.ipynb      <- Reproduce Fig 3 PCNA data results
-│   │   ├── fig4_other_punctate.ipynb      <- Reproduce Fig 4 other puntate structure data results
-│   │   ├── fig5_npm1.ipynb      <- Reproduce Fig 5 npm1 data results
-│   │   ├── fig6_other_polymorphic.ipynb      <- Reproduce Fig 6 other polymorphic data results
-│   │   ├── fig7_drug_data.ipynb      <- Reproduce Fig 7 drug data results
-```
