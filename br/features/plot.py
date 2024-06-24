@@ -56,50 +56,6 @@ def collect_outputs(path, norm, model_order=None, metric_list=None):
     norm - std, minmax, other
     model_order - list of model names (with nicer names) to compare, zscore and plot
     """
-    run_names_orig = [
-        "2048_ed_dgcnn",
-        "2048_ed_m2ae",
-        "2048_int_ed_vndgcnn",
-        "classical_resize_image",
-        "so2_resize_image",
-        "vit",
-        "classical_image",
-        "so2_image",
-        "2048_ed_mae",
-        "2048_ed_dgcnn_more",
-        "2048_int_ed_vndgcnn_more",
-        "so3_image",
-        "classical_pointcloud",
-        "so3_pointcloud",
-        "classical_image_seg",
-        "so3_image_seg",
-        "classical_image_sdf",
-        "so3_imag_sdf",
-        "2048_int_ed_vndgcnn_jitter",
-    ]
-
-    run_names = [
-        "PointcloudAE",
-        "Point M2AE",
-        "SO3 PointcloudAE",
-        "ImageAE",
-        "SO2 ImageAE",
-        "ViT",
-        "ImageAE",
-        "SO2 ImageAE",
-        "Point MAE",
-        "DGCNN more",
-        "VN-DGCNN int more",
-        "SO3 ImageAE",
-        "PointcloudAE",
-        "SO3 PointcloudAE",
-        "Seg ImageAE",
-        "SO3 Seg ImageAE",
-        "SDF ImageAE",
-        "SO3 SDF ImageAE",
-        "SO3 PointcloudAE Jitter",
-    ]
-    rep_dict = {i: j for i, j in zip(run_names_orig, run_names)}
 
     if metric_list is None:
         metric_list = [
@@ -121,7 +77,6 @@ def collect_outputs(path, norm, model_order=None, metric_list=None):
         if "classification" in metric_key:
             metric_key = "classification"
         this_df = pd.read_csv(path + f"{metric}.csv")
-        this_df["model"] = this_df["model"].replace(rep_dict)
         if metric == "evolve":
             this_df = this_df.replace({np.inf: np.NaN})
             this_df = this_df.dropna()
@@ -167,7 +122,9 @@ def collect_outputs(path, norm, model_order=None, metric_list=None):
                 value_vars=[this_metrics[i]],
             )
             if "classification" in metric:
-                this_df2["variable"] = "Classification" + metric.split("classification")[-1]
+                this_df2["variable"] = (
+                    "Classification" + metric.split("classification")[-1]
+                )
             else:
                 this_df2["variable"] = metric + "_" + this_df2["variable"].iloc[0]
             df_list.append(this_df2)
@@ -267,7 +224,9 @@ def plot(
                 line_color=colors[i],
                 opacity=opacity,
                 line=dict(width=5, color=colors[i % len(colors)]),  # Set line color
-                marker=dict(size=13, color=colors[i % len(colors)]),  # Set marker color (optional)
+                marker=dict(
+                    size=13, color=colors[i % len(colors)]
+                ),  # Set marker color (optional)
             )
             for i in range(len(all_models))
         ],
