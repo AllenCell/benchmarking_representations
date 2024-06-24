@@ -148,7 +148,7 @@ def plot(this_mesh_path, save_path, angle, angle2=None, angle3=None, name="mesh"
 
 
 if __name__ == "__main__":
-    mesh_path = "/allen/aics/modeling/ritvik/projects/benchmarking_representations/notebooks/blobby/closest/"
-    name = "FBL_1_2"
+    mesh_path = MESH_PATH
+    name = NAME
     this_mesh_path = mesh_path + f"{name}.ply"
     plot(this_mesh_path, -120)

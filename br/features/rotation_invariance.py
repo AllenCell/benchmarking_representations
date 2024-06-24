@@ -32,7 +32,9 @@ def compute_distances_to_baseline(embeddings, div_norm=False):
                         / torch.norm(baseline_vector)
                     )
                 else:
-                    distance = torch.norm(normalized_embeddings[i, j, k, :] - baseline_vector)
+                    distance = torch.norm(
+                        normalized_embeddings[i, j, k, :] - baseline_vector
+                    )
                 temp_distances.append(distance)
 
             distances_list.append(temp_distances)
@@ -41,44 +43,6 @@ def compute_distances_to_baseline(embeddings, div_norm=False):
         normalized_embeddings.shape[0], normalized_embeddings.shape[1], -1
     )
     return distances_tensor
-
-
-def get_precomputed_equiv_dict(
-    file_dict,
-    test_ids,
-    num_samples=128,
-    base_dir="/allen/aics/assay-dev/users/Alex/replearn/rep_paper/implicit_decoder/tmp/cyto-dl/notebooks",
-):
-    subset_test_ids = (
-        test_ids
-        if len(test_ids) < num_samples
-        else np.random.choice(test_ids, num_samples, replace=False)
-    )
-    model_data = []
-    for model_name, paths in file_dict.items():
-        rot_embeds = np.load(f"{base_dir}/{paths['equiv_err_embeds']}")
-        rot_ids = np.load(f"{base_dir}/{paths['equiv_err_ids']}", allow_pickle=True).squeeze()
-        rot_errors = compute_distances_to_baseline(rot_embeds)
-        avg_errors = rot_errors.mean(dim=(1, 2)).cpu().numpy().squeeze()
-        try:
-            error_df = pd.DataFrame({"error_id": rot_ids, "value": avg_errors})
-        except:
-            import pdb
-
-            pdb.set_trace()
-        if len(error_df) == 0:
-            import pdb
-
-            pdb.set_trace()
-        filtered_df = error_df[error_df["error_id"].isin(subset_test_ids)]
-        filtered_df["model"] = model_name
-        if len(filtered_df) == 0:
-            import pdb
-
-            pdb.set_trace()
-        model_data.append(filtered_df)
-    final_df = pd.concat(model_data)
-    return final_df
 
 
 def rotation_image_batch_z(batch, z_angle, squeeze_2d=False):
@@ -181,16 +145,22 @@ def get_equiv_dict(
                         if len(i[this_key].shape) == 3:
                             this_input_rot = rotation_pc_batch_z(i, theta)
                         else:
-                            this_input_rot = rotation_image_batch_z(i, theta, squeeze_2d)
+                            this_input_rot = rotation_image_batch_z(
+                                i, theta, squeeze_2d
+                            )
 
-                        batch_input = {this_key: torch.tensor(this_input_rot).to(device).float()}
+                        batch_input = {
+                            this_key: torch.tensor(this_input_rot).to(device).float()
+                        }
                         if "points" in i.keys():
                             batch_input["points"] = i["points"]
                             batch_input["points.df"] = i["points.df"]
 
                         if hasattr(this_model, "decoder"):
                             if LatentLocalDecoder is not None:
-                                if isinstance(this_model.decoder[this_key], LatentLocalDecoder):
+                                if isinstance(
+                                    this_model.decoder[this_key], LatentLocalDecoder
+                                ):
                                     batch_input["points"] = i["points"]
                                     batch_input["points.df"] = i["points.df"]
 
@@ -224,7 +194,9 @@ def get_equiv_dict(
                             this_ids = this_ids[0]
                         if torch.is_tensor(this_ids):
                             this_ids = (
-                                this_ids.item() if this_ids.numel() == 1 else this_ids.tolist()[0]
+                                this_ids.item()
+                                if this_ids.numel() == 1
+                                else this_ids.tolist()[0]
                             )
                         eq_dict["id"].append(str(this_ids))
                         eq_dict["theta"].append(theta)

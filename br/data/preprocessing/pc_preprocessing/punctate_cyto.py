@@ -53,7 +53,9 @@ def compute_labels(row, save=True):
 
     # sampling based on raw images
     skewness = (
-        SKEW_EXP_DICT[structure_name] * (3 * (probs.mean() - np.median(probs))) / probs.std()
+        SKEW_EXP_DICT[structure_name]
+        * (3 * (probs.mean() - np.median(probs)))
+        / probs.std()
     )
 
     if skewness < 25:
@@ -69,7 +71,9 @@ def compute_labels(row, save=True):
 
     replace = REP_DICT[structure_name]
 
-    idxs = np.random.choice(np.arange(len(probs)), size=num_points, replace=replace, p=probs)
+    idxs = np.random.choice(
+        np.arange(len(probs)), size=num_points, replace=replace, p=probs
+    )
     # noise important to avoid nans during encoding
     disp = 0.001
     x = x[idxs] + (np.random.rand(len(idxs)) - 0.5) * disp
@@ -103,13 +107,9 @@ def get_center_of_mass(img):
 
 
 if __name__ == "__main__":
-    df = pd.read_parquet(
-        "/allen/aics/modeling/ritvik/projects/data/variance_cytoplasmic_punctate/manifest.parquet"
-    )
+    df = pd.read_parquet(SINGLE_CELL_IMAGE_PATH)
 
-    path_prefix = (
-        "/allen/aics/modeling/ritvik/projects/data/variance_cytoplasmic_punctate_morepoints/"
-    )
+    path_prefix = SAVE_LOCATION
 
     all_rows = []
     for ind, row in tqdm(df.iterrows(), total=len(df)):

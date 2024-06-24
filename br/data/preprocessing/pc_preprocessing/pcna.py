@@ -43,7 +43,9 @@ def compute_labels(row, save=True):
     # scalr prob so it sums to 1
     probs = probs / probs.sum()
 
-    idxs = np.random.choice(np.arange(len(probs)), size=num_points, replace=False, p=probs)
+    idxs = np.random.choice(
+        np.arange(len(probs)), size=num_points, replace=False, p=probs
+    )
     disp = 0.001
     x = x[idxs] + (np.random.rand(len(idxs)) - 0.5) * disp
     y = y[idxs] + (np.random.rand(len(idxs)) - 0.5) * disp
@@ -78,9 +80,9 @@ def get_center_of_mass(img):
 
 
 if __name__ == "__main__":
-    df = pd.read_parquet("/allen/aics/modeling/ritvik/pcna/manifest.parquet")
+    df = pd.read_csv(PCNA_SINGLE_CELL_PATH)
 
-    path_prefix = "/allen/aics/modeling/ritvik/projects/data/pcna_updated_sampling_morepoints/"
+    path_prefix = SAVE_LOCATION
 
     all_rows = []
     for ind, row in tqdm(df.iterrows(), total=len(df)):

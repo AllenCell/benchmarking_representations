@@ -135,13 +135,6 @@ def compute_features(
     keys."""
 
     DATASET_INFO = get_all_configs_per_dataset(results_path)
-    # example dataset info
-    # {"variance_all_punctate": {
-    #     "embedding_save_location": "./variance_all_punctate",
-    #     "orig_df": "/allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv",
-    #     "image_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
-    #     "pc_path": "/allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet",
-    # }}
 
     path = Path(save_folder)
     path.mkdir(parents=True, exist_ok=True)
