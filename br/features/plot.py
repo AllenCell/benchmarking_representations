@@ -5,8 +5,13 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import seaborn as sns
-
+import trimesh
+from mitsuba import ScalarTransform4f as T
 from .utils import normalize_intensities_and_get_colormap
+import mitsuba as mi
+
+mi.set_variant("scalar_rgb")
+
 
 METRIC_DICT = {
     "reconstruction": {"metric": ["loss"], "min": [True]},
@@ -394,3 +399,156 @@ def plot_stratified_pc(df, xlim, ylim, key, dir, cmap, flip):
             dpi=600,
         )
         plt.close("all")
+
+
+def save_meshes_for_viz(selected_cellids, feature_df, save_name):
+    """
+    Scale meshes using global scale factor and render them using mitsuba
+    """
+    plt.figure(figsize=(10, len(selected_cellids) * 5))
+
+    sfs = []
+    for idx, cell_id in enumerate(selected_cellids):
+        mesh_path = feature_df.loc[
+            feature_df["CellId"] == cell_id, "mesh_path_noalign"
+        ].values[0]
+        mesh = trimesh.load(mesh_path)
+        bbox = mesh.bounding_box.bounds
+        scale_factor = (bbox[1] - bbox[0]).max()
+        sfs.append(scale_factor)
+    sf = np.max(sfs)
+    voxel_size = 0.1083
+    desired_scale_bar_length = 5.0  # um
+    scale_bar_height = 0.1  # 1 micrometer
+    scale_bar_width = 0.1  # 1 micrometer
+    for idx, cell_id in enumerate(selected_cellids):
+        mesh_path = feature_df.loc[
+            feature_df["CellId"] == cell_id, "mesh_path_noalign"
+        ].values[0]
+        myMesh = trimesh.load(mesh_path)
+        myMesh.apply_scale(1 / sf)
+        myMesh.apply_translation(
+            [
+                -myMesh.bounds[0, 0] - myMesh.extents[0] / 2.0,
+                -myMesh.bounds[0, 1] - myMesh.extents[1] / 2.0,
+                -myMesh.bounds[0, 2],
+            ]
+        )
+        myMesh.fix_normals()
+
+        scale_bar_length_voxels = (desired_scale_bar_length / voxel_size) / sf
+
+        scale_bar_height_voxels = (scale_bar_height / voxel_size) / sf
+        scale_bar_width_voxels = (scale_bar_width / voxel_size) / sf
+
+        scale_bar = trimesh.creation.box(
+            extents=[
+                scale_bar_length_voxels,
+                scale_bar_width_voxels,
+                scale_bar_height_voxels,
+            ]
+        )
+
+        mesh_path = feature_df.loc[
+            feature_df["CellId"] == cell_id, "mesh_path_noalign"
+        ].values[0]
+        scale_bar.apply_translation(
+            [0, myMesh.bounds[1, 1] - scale_bar_height_voxels, 0]
+        )
+
+        scene = trimesh.Scene([myMesh, scale_bar])
+
+        with open("mesh.obj", "w") as f:
+            f.write(trimesh.exchange.export.export_obj(scene, include_normals=True))
+
+        # Create a sensor that is used for rendering the scene
+        def load_sensor(r, phi, theta):
+            # Apply two rotations to convert from spherical coordinates to world 3D coordinates.
+            origin = T.rotate([0, 0, 1], phi).rotate(
+                [0, 1, 0], theta
+            ) @ mi.ScalarPoint3f([0, 0, r])
+
+            return mi.load_dict(
+                {
+                    "type": "perspective",
+                    "fov": 15.0,
+                    "to_world": T.look_at(
+                        origin=origin,
+                        target=[0, 0, myMesh.extents[2] / 2],
+                        up=[0, 0, 1],
+                    ),
+                    "sampler": {"type": "independent", "sample_count": 16},
+                    "film": {
+                        "type": "hdrfilm",
+                        "width": 1024,
+                        "height": 768,
+                        "rfilter": {
+                            "type": "tent",
+                        },
+                        "pixel_format": "rgb",
+                    },
+                }
+            )
+
+        # Scene parameters
+        relativeLightHeight = 8
+
+        # A scene dictionary contains the description of the rendering scene.
+        scene2 = mi.load_dict(
+            {
+                "type": "scene",
+                # The keys below correspond to object IDs and can be chosen arbitrarily
+                "integrator": {"type": "path"},
+                "mesh": {
+                    "type": "obj",
+                    "filename": "mesh.obj",
+                    "face_normals": True,  # This prevents smoothing of sharp-corners by discarding surface-normals. Useful for engineering CAD.
+                    "bsdf": {
+                        "type": "pplastic",
+                        "diffuse_reflectance": {
+                            "type": "rgb",
+                            "value": [0.05, 0.03, 0.1],
+                        },
+                        "alpha": 0.02,
+                    },
+                },
+                # A general emitter is used for illuminating the entire scene (renders the background white)
+                "light": {"type": "constant", "radiance": 1.0},
+                "areaLight": {
+                    "type": "rectangle",
+                    # The height of the light can be adjusted below
+                    "to_world": T.translate(
+                        [0, 0.0, myMesh.bounds[1, 2] + relativeLightHeight]
+                    )
+                    .scale(1.0)
+                    .rotate([1, 0, 0], 5.0),
+                    "flip_normals": True,
+                    "emitter": {
+                        "type": "area",
+                        "radiance": {
+                            "type": "spectrum",
+                            "value": 30.0,
+                        },
+                    },
+                },
+                "floor": {
+                    "type": "disk",
+                    "to_world": T.scale(3).translate([0.0, 0.0, 0.0]),
+                    "material": {
+                        "type": "diffuse",
+                        "reflectance": {"type": "rgb", "value": 0.75},
+                    },
+                },
+            }
+        )
+
+        radius = 7
+        theta = 60.0
+        phis_list = [[100.0], [190.0], [-100], [-90.0], [0.0]]
+        sensors = [load_sensor(radius, phi, theta) for phi in phis_list]
+        image = mi.render(scene2, sensor=sensors[0], spp=256)
+        ax = plt.subplot(len(selected_cellids), 1, idx + 1)
+        ax.imshow(image ** (1.0 / 2.2))
+        ax.axis("off")
+    plt.tight_layout()
+    plt.savefig(f"{save_name}.png")

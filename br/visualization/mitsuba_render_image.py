@@ -80,18 +80,6 @@ def plot(this_mesh_path, save_path, angle, angle2=None, angle3=None, name="mesh"
                 "filename": "mesh.obj",
                 "face_normals": True,  # This prevents smoothing of sharp-corners by discarding surface-normals. Useful for engineering CAD.
                 "bsdf": {
-                    # 'type': 'diffuse',
-                    # 'reflectance': {
-                    #     'type': 'rgb',
-                    #     'value': [0.1, 0.27, 0.86]
-                    # }
-                    # 'type': 'plastic',
-                    # 'diffuse_reflectance': {
-                    #     'type': 'rgb',
-                    #     'value': [0.1, 0.27, 0.36]
-                    # },
-                    # 'int_ior': 1.9
-                    # 'type': 'roughplastic'
                     "type": "pplastic",
                     "diffuse_reflectance": {"type": "rgb", "value": [0.05, 0.03, 0.1]},
                     "alpha": 0.02,
