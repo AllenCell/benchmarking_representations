@@ -1,7 +1,7 @@
 _target_: cyto_dl.datamodules.DataframeDatamodule
 _convert_: all
 
-path: /allen/aics/modeling/ritvik/pcna/manifest_jitter.parquet
+path: SINGLE_CELL_DATASET_PATH
 split_column: split
 
 batch_size: 32
@@ -15,7 +15,7 @@ multiprocessing_context: fork # use for joblib
 transforms:
   - _target_: cyto_dl.dataframe.transforms.GroupCols
     groups:
-      pcloud: pcloud_path_updated_morepoints
+      pcloud: POINTCLOUD_COLUMN
       cell_id: CellId
       shcoeff:
         contains: "shcoeffs_"

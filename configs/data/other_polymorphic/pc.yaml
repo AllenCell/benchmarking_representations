@@ -1,5 +1,5 @@
 _target_: pointcloudutils.datamodules.ShapenetDataModule
-dataset_folder: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/sampled_pcs/blobby_var_noalign/1_res
+dataset_folder: SINGLE_CELL_DATASET_POINTCLOUD_FOLDER
 method: shapenet_dfnet
 dataset_type: pointcloud
 train_split: train
