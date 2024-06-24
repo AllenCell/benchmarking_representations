@@ -12,17 +12,17 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "./br_checkpoints/npm1/SO3_pointcloud_SDF.ckpt",
-    "./br_checkpoints/npm1/SO3_image_SDF.ckpt",
-    "./br_checkpoints/npm1/SO3_image_seg.ckpt",
-    "./br_checkpoints/npm1/Classical_image_SDF.ckpt",
-    "./br_checkpoints/npm1/Classical_image_seg.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_pointcloud_SDF.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_image_SDF.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_image_seg.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1/Classical_image_SDF.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1/Classical_image_seg.ckpt",
   ]
 names:
   [
-    "SO3_pointcloud_SDF",
-    "SO3_image_SDF",
-    "SO3_image_seg",
+    "Rotation_invariant_pointcloud_SDF",
+    "Rotation_invariant_image_SDF",
+    "Rotation_invariant_image_seg",
     "Classical_image_SDF",
     "Classical_image_seg",
   ]

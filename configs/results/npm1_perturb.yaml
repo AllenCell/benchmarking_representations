@@ -1,5 +1,5 @@
 # embedding_save_location:
-orig_df: "/allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/npm1_perturb_classical_manifest.csv"
+orig_df: "/allen/aics/modeling/ritvik/projects/aws_uploads/NPM1_single_cell_drug_perturbations/manifest.csv"
 image_path:
 pc_path:
 run_ids:
@@ -12,19 +12,19 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "./br_checkpoints/npm1_perturb/SO3_pointcloud_SDF.ckpt",
-    "./br_checkpoints/npm1_perturb/Classical_image_SDF.ckpt",
-    "./br_checkpoints/npm1_perturb/Classical_image_seg.ckpt",
-    "./br_checkpoints/npm1_perturb/SO3_image_SDF.ckpt",
-    "./br_checkpoints/npm1_perturb/SO3_image_seg.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Rotation_invariant_pointcloud_SDF.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Classical_image_SDF.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Classical_image_seg.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Rotation_invariant_image_SDF.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Rotation_invariant_image_seg.ckpt",
   ]
 names:
   [
-    "SO3_pointcloud_SDF",
+    "Rotation_invariant_pointcloud_SDF",
     "Classical_image_SDF",
     "Classical_image_seg",
-    "SO3_image_SDF",
-    "SO3_image_seg",
+    "Rotation_invariant_image_SDF",
+    "Rotation_invariant_image_seg",
   ]
 data_paths:
   [

@@ -12,18 +12,18 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "./br_checkpoints/pcna/Classical_pointcloud.ckpt",
-    "./br_checkpoints/pcna/SO3_pointcloud.ckpt",
-    "./br_checkpoints/pcna/Classical_image.ckpt",
-    "./br_checkpoints/pcna/SO3_image.ckpt",
-    "./br_checkpoints/pcna/SO3_pointcloud_jitter.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Classical_pointcloud.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_pointcloud.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Classical_image.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_image.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_pointcloud_jitter.ckpt",
   ]
 names: [
-    "Classical_pointcloud", # more
-    "SO3_pointcloud", # more
+    "Classical_pointcloud",
+    "Rotation_invariant_pointcloud",
     "Classical_image",
-    "SO3_image",
-    "SO3_pointcloud_jitter",
+    "Rotation_invariant_image",
+    "Rotation_invariant_pointcloud_jitter",
   ]
 data_paths: [
     "./configs/data/pcna/pc.yaml",

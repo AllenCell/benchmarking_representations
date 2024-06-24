@@ -12,19 +12,19 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "./br_checkpoints/other_polymorphic/SO3_pointcloud_SDF.ckpt",
-    "./br_checkpoints/other_polymorphic/SO3_image_SDF.ckpt",
-    "./br_checkpoints/other_polymorphic/SO3_image_seg.ckpt",
-    "./br_checkpoints/other_polymorphic/Classical_image_SDF.ckpt",
-    "./br_checkpoints/other_polymorphic/Classical_image_seg.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_pointcloud_SDF.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_image_SDF.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_image_seg.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Classical_image_SDF.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Classical_image_seg.ckpt",
   ]
 names:
   [
-    "equiv_vn",
-    "CNN_SO3_pad35_sdf",
-    "CNN_SO3_pad35_seg",
-    "CNN_sdf_pad35",
-    "CNN_seg_pad35",
+    "Rotation_invariant_pointcloud_SDF",
+    "Rotation_invariant_image_SDF",
+    "Rotation_invariant_image_seg",
+    "Classical_image_SDF",
+    "Classical_image_seg",
   ]
 data_paths:
   [

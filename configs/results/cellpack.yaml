@@ -1,7 +1,7 @@
 # embedding_save_location: "./embeddings_cellpack_pcna"
-orig_df: /allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv
-image_path: /allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv
-pc_path: /allen/aics/modeling/ritvik/forSaurabh/all_rules_no_rotation.csv
+orig_df: /allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
+image_path: /allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
+pc_path: /allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
 run_ids:
   [
     "2dbec95965374c8a85b2dbdd4d569284",
@@ -12,19 +12,19 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "./br_checkpoints/cellpack/Classical_image.ckpt",
-    "./br_checkpoints/cellpack/SO3_image.ckpt",
-    "./br_checkpoints/cellpack/Classical_pointcloud.ckpt",
-    "./br_checkpoints/cellpack/SO3_pointcloud.ckpt",
-    "./br_checkpoints/cellpack/SO3_pointcloud_jitter.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/cellpack/Classical_image.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/cellpack/Rotation_invariant_image.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/cellpack/Classical_pointcloud.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/cellpack/Rotation_invariant_pointcloud.ckpt",
+    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/cellpack/Rotation_invariant_pointcloud_jitter.ckpt",
   ]
 names:
   [
     "Classical_image",
-    "SO3_image",
+    "Rotation_invariant_image",
     "Classical_pointcloud",
-    "SO3_pointcloud",
-    "SO3_pointcloud_jitter",
+    "Rotation_invariant_pointcloud",
+    "Rotation_invariant_pointcloud_jitter",
   ]
 data_paths: [
     "./configs/data/cellpack/image.yaml",

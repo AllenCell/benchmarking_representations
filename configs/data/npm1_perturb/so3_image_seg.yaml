@@ -1,6 +1,6 @@
 _target_: cyto_dl.datamodules.DataframeDatamodule
 _convert_: all
-path: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/npm1_perturb_classical_manifest.csv
+path: /allen/aics/modeling/ritvik/projects/aws_uploads/NPM1_single_cell_drug_perturbations/manifest.csv
 split_column: split_bal
 batch_size: 64
 num_workers: 10
