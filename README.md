@@ -71,7 +71,7 @@ In all cases, create a single cell manifest (e.g. csv, parquet) for each dataset
 
 ## Steps to train models
 
-1. Update the final processed path column in the datamodule yaml files. e.g. for PCNA data these yaml files are located here -
+1. Update the final single cell dataset path (SINGLE_CELL_DATASET_PATH) and the column in the manifest for appropriate input modality (SDF_COLUMN/SEG_COLUMN/POINTCLOUD_COLUMN/IMAGE_COLUMN) in each datamodule yaml files. e.g. for PCNA data these yaml files are located here -
 
 ```
 ├── configs
