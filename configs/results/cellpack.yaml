@@ -1,4 +1,3 @@
-# embedding_save_location: "./embeddings_cellpack_pcna"
 orig_df: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
 image_path: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
 pc_path: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv

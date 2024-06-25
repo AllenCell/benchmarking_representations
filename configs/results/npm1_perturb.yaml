@@ -1,4 +1,3 @@
-# embedding_save_location:
 orig_df: "./NPM1_single_cell_drug_perturbations/manifest.csv"
 image_path:
 pc_path:

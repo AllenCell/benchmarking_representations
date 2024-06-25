@@ -1,4 +1,3 @@
-# embedding_save_location: "./variance_all_punctate"
 orig_df: PUNCTATE_STRUCTURES_SINGLE_CELL_MANIFEST
 image_path: PUNCTATE_STRUCTURES_SINGLE_CELL_MANIFEST
 pc_path: PUNCTATE_STRUCTURES_SINGLE_CELL_MANIFEST

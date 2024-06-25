@@ -1,4 +1,3 @@
-# embedding_save_location: "./npm1_variance"
 orig_df: NPM1_SINGLE_CELL_MANIFEST
 image_path: NPM1_SINGLE_CELL_MANIFEST
 pc_path: NPM1_SINGLE_CELL_MANIFEST
