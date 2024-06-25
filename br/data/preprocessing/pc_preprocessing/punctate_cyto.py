@@ -53,9 +53,7 @@ def compute_labels(row, save=True):
 
     # sampling based on raw images
     skewness = (
-        SKEW_EXP_DICT[structure_name]
-        * (3 * (probs.mean() - np.median(probs)))
-        / probs.std()
+        SKEW_EXP_DICT[structure_name] * (3 * (probs.mean() - np.median(probs))) / probs.std()
     )
 
     if skewness < 25:
@@ -71,9 +69,7 @@ def compute_labels(row, save=True):
 
     replace = REP_DICT[structure_name]
 
-    idxs = np.random.choice(
-        np.arange(len(probs)), size=num_points, replace=replace, p=probs
-    )
+    idxs = np.random.choice(np.arange(len(probs)), size=num_points, replace=replace, p=probs)
     # noise important to avoid nans during encoding
     disp = 0.001
     x = x[idxs] + (np.random.rand(len(idxs)) - 0.5) * disp

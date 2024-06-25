@@ -18,7 +18,8 @@ model_checkpoints:
     "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_pointcloud.ckpt",
     "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_pointcloud_structurenorm.ckpt",
   ]
-names: [
+names:
+  [
     "Classical_image",
     "Rotation_invariant_image",
     "Classical_pointcloud",

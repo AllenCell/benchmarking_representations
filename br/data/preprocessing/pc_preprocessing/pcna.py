@@ -43,9 +43,7 @@ def compute_labels(row, save=True):
     # scalr prob so it sums to 1
     probs = probs / probs.sum()
 
-    idxs = np.random.choice(
-        np.arange(len(probs)), size=num_points, replace=False, p=probs
-    )
+    idxs = np.random.choice(np.arange(len(probs)), size=num_points, replace=False, p=probs)
     disp = 0.001
     x = x[idxs] + (np.random.rand(len(idxs)) - 0.5) * disp
     y = y[idxs] + (np.random.rand(len(idxs)) - 0.5) * disp

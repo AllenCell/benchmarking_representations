@@ -18,7 +18,8 @@ model_checkpoints:
     "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_image.ckpt",
     "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_pointcloud_jitter.ckpt",
   ]
-names: [
+names:
+  [
     "Classical_pointcloud",
     "Rotation_invariant_pointcloud",
     "Classical_image",

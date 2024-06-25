@@ -77,8 +77,8 @@ In all cases, create a single cell manifest (e.g. csv, parquet) for each dataset
 ├── configs
 │   ├── data
 │   │   ├── pcna
-│   │   │   ├── image.yaml      <- Datamodule for PCNA images 
-│   │   │   ├── pc.yaml       <- Datamodule for PCNA point clouds 
+│   │   │   ├── image.yaml      <- Datamodule for PCNA images
+│   │   │   ├── pc.yaml       <- Datamodule for PCNA point clouds
 │   │   │   ├── pc_intensity.yaml       <- Datamodule for PCNA point clouds with intensity
 │   │   │   ├── pc_intensity_jitter.yaml       <- Datamodule for PCNA point clouds with intensity and jitter
 ```
@@ -107,7 +107,7 @@ python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthm
 
 ## Steps to download pre-trained models and pre-computed embeddings
 
-1. To skip model training, download pre-trained models 
+1. To skip model training, download pre-trained models
 
 ```
 [cellPACK synthetic dataset]()
@@ -118,7 +118,7 @@ python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthm
 [Nucleolar drug perturbation dataset]()
 ```
 
-2. Download pre-computed embeddings 
+2. Download pre-computed embeddings
 
 ```
 [cellPACK synthetic dataset]()

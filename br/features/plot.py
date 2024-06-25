@@ -1,14 +1,15 @@
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import mitsuba as mi
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import seaborn as sns
 import trimesh
 from mitsuba import ScalarTransform4f as T
+
 from .utils import normalize_intensities_and_get_colormap
-import mitsuba as mi
 
 mi.set_variant("scalar_rgb")
 
@@ -127,9 +128,7 @@ def collect_outputs(path, norm, model_order=None, metric_list=None):
                 value_vars=[this_metrics[i]],
             )
             if "classification" in metric:
-                this_df2["variable"] = (
-                    "Classification" + metric.split("classification")[-1]
-                )
+                this_df2["variable"] = "Classification" + metric.split("classification")[-1]
             else:
                 this_df2["variable"] = metric + "_" + this_df2["variable"].iloc[0]
             df_list.append(this_df2)
@@ -229,9 +228,7 @@ def plot(
                 line_color=colors[i],
                 opacity=opacity,
                 line=dict(width=5, color=colors[i % len(colors)]),  # Set line color
-                marker=dict(
-                    size=13, color=colors[i % len(colors)]
-                ),  # Set marker color (optional)
+                marker=dict(size=13, color=colors[i % len(colors)]),  # Set marker color (optional)
             )
             for i in range(len(all_models))
         ],
@@ -402,16 +399,12 @@ def plot_stratified_pc(df, xlim, ylim, key, dir, cmap, flip):
 
 
 def save_meshes_for_viz(selected_cellids, feature_df, save_name):
-    """
-    Scale meshes using global scale factor and render them using mitsuba
-    """
+    """Scale meshes using global scale factor and render them using mitsuba."""
     plt.figure(figsize=(10, len(selected_cellids) * 5))
 
     sfs = []
     for idx, cell_id in enumerate(selected_cellids):
-        mesh_path = feature_df.loc[
-            feature_df["CellId"] == cell_id, "mesh_path_noalign"
-        ].values[0]
+        mesh_path = feature_df.loc[feature_df["CellId"] == cell_id, "mesh_path_noalign"].values[0]
         mesh = trimesh.load(mesh_path)
         bbox = mesh.bounding_box.bounds
         scale_factor = (bbox[1] - bbox[0]).max()
@@ -422,9 +415,7 @@ def save_meshes_for_viz(selected_cellids, feature_df, save_name):
     scale_bar_height = 0.1  # 1 micrometer
     scale_bar_width = 0.1  # 1 micrometer
     for idx, cell_id in enumerate(selected_cellids):
-        mesh_path = feature_df.loc[
-            feature_df["CellId"] == cell_id, "mesh_path_noalign"
-        ].values[0]
+        mesh_path = feature_df.loc[feature_df["CellId"] == cell_id, "mesh_path_noalign"].values[0]
         myMesh = trimesh.load(mesh_path)
         myMesh.apply_scale(1 / sf)
         myMesh.apply_translation(
@@ -449,12 +440,8 @@ def save_meshes_for_viz(selected_cellids, feature_df, save_name):
             ]
         )
 
-        mesh_path = feature_df.loc[
-            feature_df["CellId"] == cell_id, "mesh_path_noalign"
-        ].values[0]
-        scale_bar.apply_translation(
-            [0, myMesh.bounds[1, 1] - scale_bar_height_voxels, 0]
-        )
+        mesh_path = feature_df.loc[feature_df["CellId"] == cell_id, "mesh_path_noalign"].values[0]
+        scale_bar.apply_translation([0, myMesh.bounds[1, 1] - scale_bar_height_voxels, 0])
 
         scene = trimesh.Scene([myMesh, scale_bar])
 
@@ -464,9 +451,9 @@ def save_meshes_for_viz(selected_cellids, feature_df, save_name):
         # Create a sensor that is used for rendering the scene
         def load_sensor(r, phi, theta):
             # Apply two rotations to convert from spherical coordinates to world 3D coordinates.
-            origin = T.rotate([0, 0, 1], phi).rotate(
-                [0, 1, 0], theta
-            ) @ mi.ScalarPoint3f([0, 0, r])
+            origin = T.rotate([0, 0, 1], phi).rotate([0, 1, 0], theta) @ mi.ScalarPoint3f(
+                [0, 0, r]
+            )
 
             return mi.load_dict(
                 {
@@ -517,9 +504,7 @@ def save_meshes_for_viz(selected_cellids, feature_df, save_name):
                 "areaLight": {
                     "type": "rectangle",
                     # The height of the light can be adjusted below
-                    "to_world": T.translate(
-                        [0, 0.0, myMesh.bounds[1, 2] + relativeLightHeight]
-                    )
+                    "to_world": T.translate([0, 0.0, myMesh.bounds[1, 2] + relativeLightHeight])
                     .scale(1.0)
                     .rotate([1, 0, 0], 5.0),
                     "flip_normals": True,

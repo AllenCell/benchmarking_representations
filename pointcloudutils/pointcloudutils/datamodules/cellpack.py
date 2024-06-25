@@ -9,11 +9,11 @@ import point_cloud_utils as pcu
 import pyshtools
 import torch
 import torch.nn.functional as F
-from skimage.io import imread
-from skimage.measure import block_reduce
 from lightning import LightningDataModule
 from pyntcloud import PyntCloud
 from scipy import interpolate as spinterp
+from skimage.io import imread
+from skimage.measure import block_reduce
 from sklearn import preprocessing
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
@@ -175,17 +175,13 @@ class CellPackDataset(Dataset):
         items = os.listdir(self.structure_path)
         items = [i for i in items if "positions" in i]
 
-        self._all_ids = list(
-            {i.split(".")[0].split("_")[-2].split("deg")[-1] for i in items}
-        )
+        self._all_ids = list({i.split(".")[0].split("_")[-2].split("deg")[-1] for i in items})
         if self.max_ids:
             self._all_ids = self._all_ids[: self.max_ids]
 
         _splits = {
             "train": self._all_ids[: int(0.7 * len(self._all_ids))],
-            "valid": self._all_ids[
-                int(0.7 * len(self._all_ids)) : int(0.85 * len(self._all_ids))
-            ],
+            "valid": self._all_ids[int(0.7 * len(self._all_ids)) : int(0.85 * len(self._all_ids))],
             "test": self._all_ids[int(0.85 * len(self._all_ids)) :],
         }
 
@@ -225,19 +221,19 @@ class CellPackDataset(Dataset):
                         )
                         if os.path.isfile(structure_path + this_path):
                             nuc_path = ref_path + f"{this_id}_{rot}.obj"
-                            nuc_vol = self.ref_csv.loc[
-                                self.ref_csv["CellId"] == this_id
-                            ]["shape_volume"].iloc[0]
+                            nuc_vol = self.ref_csv.loc[self.ref_csv["CellId"] == this_id][
+                                "shape_volume"
+                            ].iloc[0]
                             nuc_vol2 = nuc_vol
-                            nuc_height = self.ref_csv.loc[
-                                self.ref_csv["CellId"] == this_id
-                            ]["position_depth"].iloc[0]
-                            nuc_area = self.ref_csv.loc[
-                                self.ref_csv["CellId"] == this_id
-                            ]["roundness_surface_area"].iloc[0]
-                            nuc_vol_bin = self.ref_csv.loc[
-                                self.ref_csv["CellId"] == this_id
-                            ]["shape_volume_lcc_bins"].iloc[0]
+                            nuc_height = self.ref_csv.loc[self.ref_csv["CellId"] == this_id][
+                                "position_depth"
+                            ].iloc[0]
+                            nuc_area = self.ref_csv.loc[self.ref_csv["CellId"] == this_id][
+                                "roundness_surface_area"
+                            ].iloc[0]
+                            nuc_vol_bin = self.ref_csv.loc[self.ref_csv["CellId"] == this_id][
+                                "shape_volume_lcc_bins"
+                            ].iloc[0]
                             tup.append(
                                 [
                                     structure_path + this_path,
@@ -390,20 +386,14 @@ class CellPackDataset(Dataset):
                 "orig_CellId": self.ids[item],
                 "rule": torch.tensor(self.rule[item]).unsqueeze(dim=0),
                 "cell_id": unique_id,
-                "packing_rotation": torch.tensor(self.pack_rot[item])
-                .unsqueeze(dim=0)
-                .float(),
+                "packing_rotation": torch.tensor(self.pack_rot[item]).unsqueeze(dim=0).float(),
                 "rotation_aug": torch.tensor(self.rot[item]),
                 "jitter_aug": torch.tensor(self.jitter[item][0]).unsqueeze(dim=0),
                 "nuc_vol": torch.tensor(self.nuc_vol[item]).unsqueeze(dim=0).float(),
-                "nuc_height": torch.tensor(self.nuc_height[item])
-                .unsqueeze(dim=0)
-                .float(),
+                "nuc_height": torch.tensor(self.nuc_height[item]).unsqueeze(dim=0).float(),
                 "nuc_area": torch.tensor(self.nuc_area[item]).unsqueeze(dim=0).float(),
                 "nuc_vol2": torch.tensor(self.nuc_vol2[item]).unsqueeze(dim=0).float(),
-                "nuc_vol_bin": torch.tensor(self.nuc_vol_bins[item])
-                .unsqueeze(dim=0)
-                .long(),
+                "nuc_vol_bin": torch.tensor(self.nuc_vol_bins[item]).unsqueeze(dim=0).long(),
                 "rule_one_hot": F.one_hot(
                     torch.tensor(self.rule[item]).unsqueeze(dim=0), self.num_rules
                 ).squeeze(),
@@ -547,9 +537,7 @@ def get_shcoeffs(points, lmax=16):
     lon = np.pi + np.arctan2(y, x)
 
     # Creating a meshgrid data from (lon,lat,r)
-    points = np.concatenate(
-        [np.array(lon).reshape(-1, 1), np.array(lat).reshape(-1, 1)], axis=1
-    )
+    points = np.concatenate([np.array(lon).reshape(-1, 1), np.array(lat).reshape(-1, 1)], axis=1)
 
     grid_lon, grid_lat = np.meshgrid(
         np.linspace(start=0, stop=2 * np.pi, num=256, endpoint=True),

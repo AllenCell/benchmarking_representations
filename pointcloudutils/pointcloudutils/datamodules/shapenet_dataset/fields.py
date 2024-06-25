@@ -65,12 +65,7 @@ class PointsField(Field):
                 model_path, self.file_name, "%s_%02d.npz" % (self.file_name, num)
             )
 
-        try:
-            points_dict = np.load(file_path)
-        except:
-            import ipdb
-
-            ipdb.set_trace()
+        points_dict = np.load(file_path)
         points = points_dict["points"]
         # Break symmetry if given in float16:
         if points.dtype == np.float16:
@@ -190,7 +185,9 @@ class PartialPointCloudField(Field):
             category (int): index of category
         """
         if mode in ["val", "test"]:  # fix the size in evaluation
-            self.partial_type = "centerz" if "centerz" in self.partial_type else "centery"
+            self.partial_type = (
+                "centerz" if "centerz" in self.partial_type else "centery"
+            )
             self.part_ratio = 0.5
 
         if self.multi_files is None:

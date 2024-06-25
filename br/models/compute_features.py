@@ -162,15 +162,11 @@ def compute_features(
 
     if len(metric_list) != 0:
         if "split" in all_ret.columns:
-            all_ret = all_ret.loc[all_ret["split"].isin(splits_list)].reset_index(
-                drop=True
-            )
+            all_ret = all_ret.loc[all_ret["split"].isin(splits_list)].reset_index(drop=True)
 
         if "Reconstruction" in metric_list:
             print("Getting reconstruction")
-            rec_df = (
-                all_ret[["model", "split", "loss"]].groupby(["model", "split"]).mean()
-            )
+            rec_df = all_ret[["model", "split", "loss"]].groupby(["model", "split"]).mean()
             rec_df.to_csv(path / "reconstruction.csv")
             metric_list.pop(metric_list.index("Reconstruction"))
 
@@ -188,9 +184,7 @@ def compute_features(
                     model = model.eval()
                     all_data_ids, all_splits, all_loss, all_embeds = [], [], [], []
                     this_loss_eval = (
-                        get_pc_loss_chamfer()
-                        if loss_eval_list is None
-                        else loss_eval_list[j]
+                        get_pc_loss_chamfer() if loss_eval_list is None else loss_eval_list[j]
                     )
                     all_embeds, all_data_ids, all_splits, all_loss = compute_embeddings(
                         model,
@@ -228,9 +222,7 @@ def compute_features(
                     all_ret,
                     target_col,
                 )
-                ret_dict_classification.to_csv(
-                    path / Path(f"classification_{target_col}.csv")
-                )
+                ret_dict_classification.to_csv(path / Path(f"classification_{target_col}.csv"))
 
         if "Regression" in metric_list:
             print("Computing regression")

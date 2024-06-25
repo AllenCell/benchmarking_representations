@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pyvista as pv
 from aicsimageio import AICSImage
 from monai.transforms import FillHoles
 
@@ -25,11 +26,14 @@ for i, r in df.iterrows():
 
     out_path_sdf = f"{out_dir_scaled_sdf}/{cellid}"
     out_path_seg = f"{out_dir_scaled_seg}/{cellid}"
+    out_path_mesh = f"{out_dir_mesh}/{cellid}.stl"
 
     seg = AICSImage(r["crop_seg"]).data.squeeze()
     seg = hole_fill_transform(seg).numpy()
 
     mesh, _, _ = get_mesh_from_image(seg, sigma=0, lcc=False, denoise=False)
+
+    pv.wrap(mesh).save(out_path_mesh)
 
     sdf, scale_factor = get_sdf_from_mesh(
         path=None, vox_resolution=32, scale_factor=None, vpolydata=mesh

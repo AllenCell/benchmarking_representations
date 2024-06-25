@@ -36,7 +36,7 @@ transforms:
     value: 2
   - _target_: cyto_dl.image.transforms.RotationMaskd
     keys:
-    - image
+      - image
     group: so3
     spatial_dims: 3
     mask_side: 35
