@@ -1,7 +1,6 @@
-# embedding_save_location: "./pcna_updated_embeds"
-orig_df: /allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_suraj_with_brightfield.csv
-image_path: /allen/aics/modeling/ritvik/pcna/manifest.parquet
-pc_path: /allen/aics/modeling/ritvik/pcna/manifest.parquet
+orig_df: PCNA_SINGLE_CELL_MANIFEST
+image_path: PCNA_SINGLE_CELL_MANIFEST
+pc_path: PCNA_SINGLE_CELL_MANIFEST
 run_ids:
   [
     "0c1bbf0c54f343a083e9c26b476c9469",
@@ -12,11 +11,11 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Classical_pointcloud.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_pointcloud.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Classical_image.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_image.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_pointcloud_jitter.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Classical_pointcloud.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_pointcloud.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Classical_image.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_image.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_pointcloud_jitter.ckpt",
   ]
 names:
   [

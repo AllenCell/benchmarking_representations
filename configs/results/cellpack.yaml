@@ -1,7 +1,7 @@
 # embedding_save_location: "./embeddings_cellpack_pcna"
-orig_df: /allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
-image_path: /allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
-pc_path: /allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
+orig_df: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
+image_path: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
+pc_path: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
 run_ids:
   [
     "2dbec95965374c8a85b2dbdd4d569284",
@@ -12,11 +12,11 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/cellpack/Classical_image.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/cellpack/Rotation_invariant_image.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/cellpack/Classical_pointcloud.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/cellpack/Rotation_invariant_pointcloud.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/cellpack/Rotation_invariant_pointcloud_jitter.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/cellpack/Classical_image.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/cellpack/Rotation_invariant_image.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/cellpack/Classical_pointcloud.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/cellpack/Rotation_invariant_pointcloud.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/cellpack/Rotation_invariant_pointcloud_jitter.ckpt",
   ]
 names:
   [

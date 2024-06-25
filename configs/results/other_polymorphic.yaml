@@ -1,5 +1,4 @@
-# embedding_save_location: "./blobby"
-orig_df: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/combined_blobby_manifest.csv
+orig_df: POLYMORPHIC_STRUCTURE_SINGLE_CELL_MANIFEST
 image_path:
 pc_path:
 run_ids:
@@ -12,11 +11,11 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_pointcloud_SDF.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_image_SDF.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_image_seg.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Classical_image_SDF.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Classical_image_seg.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_pointcloud_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_image_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_image_seg.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Classical_image_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Classical_image_seg.ckpt",
   ]
 names:
   [

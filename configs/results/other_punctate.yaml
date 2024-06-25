@@ -1,7 +1,7 @@
 # embedding_save_location: "./variance_all_punctate"
-orig_df: /allen/aics/assay-dev/MicroscopyOtherData/Viana/projects/cvapipe_analysis/local_staging_variance/loaddata/manifest.csv
-image_path: /allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet
-pc_path: /allen/aics/modeling/ritvik/variance_punctate/manifest_all_punctate.parquet
+orig_df: PUNCTATE_STRUCTURES_SINGLE_CELL_MANIFEST
+image_path: PUNCTATE_STRUCTURES_SINGLE_CELL_MANIFEST
+pc_path: PUNCTATE_STRUCTURES_SINGLE_CELL_MANIFEST
 run_ids:
   [
     "496e2cfa42234378967a88cee66891c9",
@@ -12,11 +12,11 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Classical_image.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_image.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Classical_pointcloud.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_pointcloud.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_pointcloud_structurenorm.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Classical_image.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_image.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Classical_pointcloud.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_pointcloud.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_pointcloud_structurenorm.ckpt",
   ]
 names:
   [

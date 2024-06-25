@@ -1,7 +1,7 @@
 # embedding_save_location: "./npm1_variance"
-orig_df: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv
-image_path: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv
-pc_path: /allen/aics/assay-dev/users/Alex/replearn/rep_paper/data/var_npm1_manifest.csv
+orig_df: NPM1_SINGLE_CELL_MANIFEST
+image_path: NPM1_SINGLE_CELL_MANIFEST
+pc_path: NPM1_SINGLE_CELL_MANIFEST
 run_ids:
   [
     "b88c7f31a44347ba918edce252337468",
@@ -12,11 +12,11 @@ run_ids:
   ]
 model_checkpoints:
   [
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_pointcloud_SDF.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_image_SDF.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_image_seg.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1/Classical_image_SDF.ckpt",
-    "/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/model_checkpoints/npm1/Classical_image_seg.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_pointcloud_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_image_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_image_seg.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Classical_image_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Classical_image_seg.ckpt",
   ]
 names:
   [
