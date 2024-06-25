@@ -22,12 +22,11 @@ export CYTODL_CONFIG_PATH=./br/configs/
 
 1. Datasets are hosted on quilt. Download raw data at the following links
 
-```
-[cellPACK synthetic dataset]()
-[DNA replication foci dataset](https://open.quiltdata.com/b/allencell/packages/aics/nuclear_project_dataset_4)
-[WTC-11 hIPSc single cell image dataset v1](https://staging.allencellquilt.org/b/allencell/tree/aics/hipsc_single_cell_image_dataset/)
-[Nucleolar drug perturbation dataset]()
-```
+* Item [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/)
+* Item [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/packages/aics/nuclear_project_dataset_4)
+* Item [WTC-11 hIPSc single cell image dataset v1](https://staging.allencellquilt.org/b/allencell/tree/aics/hipsc_single_cell_image_dataset/)
+* Item [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/NPM1_single_cell_drug_perturbations/)
+
 
 2. Once data is downloaded, run preprocessing scripts to create the final image/pointcloud/SDF datasets (this step is not necessary for the cellPACK dataset). For image preprocessing used for punctate structures, install [snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) and update the data paths in
 
@@ -109,25 +108,21 @@ python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthm
 
 1. To skip model training, download pre-trained models
 
-```
-[cellPACK synthetic dataset]()
-[DNA replication foci dataset]()
-[WTC-11 hIPSc single cell image dataset v1 punctate structures]()
-[WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)]()
-[WTC-11 hIPSc single cell image dataset v1 polymorphic structures]()
-[Nucleolar drug perturbation dataset]()
-```
+* Item [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/cellpack/)
+* Item [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/pcna/)
+* Item [WTC-11 hIPSc single cell image dataset v1 punctate structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/)
+* Item [WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1/)
+* Item [WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/)
+* Item [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/)
 
 2. Download pre-computed embeddings
 
-```
-[cellPACK synthetic dataset]()
-[DNA replication foci dataset]()
-[WTC-11 hIPSc single cell image dataset v1 punctate structures]()
-[WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)]()
-[WTC-11 hIPSc single cell image dataset v1 polymorphic structures]()
-[Nucleolar drug perturbation dataset]()
-```
+* Item [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/cellpack/)
+* Item [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/pcna/)
+* Item [WTC-11 hIPSc single cell image dataset v1 punctate structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/other_punctate/)
+* Item [WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/npm1/)
+* Item [WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/other_polymorphic/)
+* Item [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/)
 
 ## Steps to run benchmarking analysis
 
