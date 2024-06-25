@@ -10,13 +10,9 @@ force: false
 raise_errors: true
 samples_per_structure:
 
-output_dir: "/allen/aics/modeling/ritvik/projects/benchmarking_representations/out_test/"
+output_dir: 
 
-# input_manifest: /allen/aics/modeling/VariancePlayground/orgmanifests/variance_dataset_07082022.csv
-input_manifest: /allen/aics/modeling/ritvik/projects/benchmarking_representations/variance_data_process_test.csv
-#input_manifest: "s3://variance-dataset/base/manifest.parquet"
-# input_manifest: /allen/aics/modeling/nick.gomez/EMT_scRNA/DeepLearning/manifest/Early_EMT_manifest_with_lamin_curation.parquet
-# input_manifest: /allen/aics/assay-dev/computational/data/4DN_handoff_Apr2022_testing/PCNA_manifest_for_ritvik.csv
+input_manifest: 
 
 remote_provider:
 
