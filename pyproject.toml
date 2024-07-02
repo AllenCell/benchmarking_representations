@@ -38,7 +38,7 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/AllenCellModeling/benchmarking_representations"
+Homepage = "https://github.com/AllenCell/benchmarking_representations"
 
 [tool.pdm.build]
 includes = ["br", "README.md", "LICENSE", "**/*.yaml" ]
