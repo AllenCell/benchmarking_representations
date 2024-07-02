@@ -4,6 +4,15 @@ Code for training and benchmarking morphology appropriate representation learnin
 
 ## Installation
 
+First, create a virtual environment
+
+```bash
+conda create --name br python=3.10
+conda activate br
+```
+
+Next, install all required packages
+
 ```bash
 pip install numpy
 pip install cyto-dl[all] git+https://github.com/AllenCellModeling/cyto-dl@br_release
