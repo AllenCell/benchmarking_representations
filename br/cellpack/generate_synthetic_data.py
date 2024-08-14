@@ -26,7 +26,7 @@ SHAPE_ROTATIONS = [
 CREATE_FILES = True
 RUN_PACKINGS = True
 
-DATADIR = Path(__file__).parent.parent / "data"
+DATADIR = Path(__file__).parent.parent / "data/cellpack"
 
 CONFIG_PATH = DATADIR / "config/pcna_parallel_packing_config.json"
 
