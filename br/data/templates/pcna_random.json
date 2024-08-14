@@ -1,0 +1,66 @@
+{
+    "version": "random",
+    "format_version": "2.1",
+    "name": "pcna",
+    "bounding_box": [
+        [
+            -55,
+            -118,
+            -118
+        ],
+        [
+            64,
+            118,
+            118
+        ]
+    ],
+    "objects": {
+        "mean_nucleus": {
+            "type": "mesh",
+            "color": [
+                0,
+                1,
+                1
+            ],
+            "representations": {
+                "mesh": {
+                    "path": "https://www.dl.dropboxusercontent.com/s/3194r3t40ewypxh/",
+                    "name": "mean-nuc.obj",
+                    "format": "obj"
+                }
+            }
+        },
+        "pcna": {
+            "jitter_attempts": 300,
+            "type": "single_sphere",
+            "color": [
+                0.2,
+                0.7,
+                0.1
+            ],
+            "radius": 1,
+            "packing_mode": "random"
+        }
+    },
+    "composition": {
+        "bounding_area": {
+            "regions": {
+                "interior": [
+                    "nucleus"
+                ]
+            }
+        },
+        "nucleus": {
+            "object": "mean_nucleus",
+            "count": 1,
+            "regions": {
+                "interior": [
+                    {
+                        "object": "pcna",
+                        "count": 256
+                    }
+                ]
+            }
+        }
+    }
+}
