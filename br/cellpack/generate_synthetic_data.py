@@ -116,6 +116,19 @@ def update_cellpack_config(config_path=CONFIG_PATH, output_path=DEFAULT_OUTPUT_P
 
 
 def get_files_to_use(generated_recipe_path, rules_to_use, shape_rotations):
+    """
+    Retrieves a list of input files to use based on the given rules and shape rotations.
+
+    Args:
+        generated_recipe_path (str): The path to the directory containing the generated
+            recipe files.
+        rules_to_use (list): A list of rules to filter the files.
+        shape_rotations (list): A list of shape rotations to filter the files.
+
+    Returns:
+        input_files_to_use (list): A list of input files to use.
+
+    """
     files = os.listdir(generated_recipe_path)
     max_num_files = np.inf
     input_files_to_use = []
@@ -176,6 +189,36 @@ def run_workflow(
     generated_recipe_path=GENERATED_RECIPE_PATH,
     template_files=TEMPLATE_FILES,
 ):
+    """
+    Runs the workflow for generating synthetic data using cellPack.
+
+    Args:
+        output_path (str): Path to the output directory.
+            Defaults to DEFAULT_OUTPUT_PATH.
+        skip_completed (bool): Whether to skip completed files.
+            Defaults to False.
+        input_files_to_use (list): List of input files to use.
+            Defaults to None.
+        rules_to_use (list): List of rules to use.
+            Defaults to RULES.
+        shape_rotations (list): List of shape rotations.
+            Defaults to SHAPE_ROTATIONS.
+        ids (list): List of IDs.
+            Defaults to IDS.
+        angles (list): List of angles.
+            Defaults to ANGLES.
+        create_files (bool): Whether to create recipe files for rules.
+            Defaults to CREATE_FILES.
+        run_packings (bool): Whether to run packings.
+            Defaults to RUN_PACKINGS.
+        config_path (str): Path to the cellPack configuration file.
+            Defaults to CONFIG_PATH.
+        generated_recipe_path (str): Path to the generated recipe files.
+            Defaults to GENERATED_RECIPE_PATH.
+        template_files (list): List of template files.
+            Defaults to TEMPLATE_FILES.
+    """
+
     if create_files:
         print("Creating recipe files for rules.")
         create_rule_files(template_files, shape_df, generated_recipe_path, ids, angles)
