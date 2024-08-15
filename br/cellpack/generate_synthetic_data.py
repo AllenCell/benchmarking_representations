@@ -41,7 +41,7 @@ TEMPLATE_FILES = [
 GENERATED_RECIPE_PATH = DATADIR / "generated_recipes"
 GENERATED_RECIPE_PATH.mkdir(exist_ok=True)
 
-MESH_PATH = DATADIR / "meshes"
+MESH_PATH = DATADIR / "reference_nuclear_shapes"
 
 shape_df = pd.read_csv(DATADIR / "manifest.csv")
 IDS = shape_df["CellId"].unique()
