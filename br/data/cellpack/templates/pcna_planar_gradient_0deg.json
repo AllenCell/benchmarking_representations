@@ -1,0 +1,91 @@
+{
+    "version": "planar_gradient_0deg",
+    "format_version": "2.1",
+    "name": "pcna",
+    "bounding_box": [
+        [
+            -55,
+            -118,
+            -118
+        ],
+        [
+            64,
+            118,
+            118
+        ]
+    ],
+    "gradients": {
+        "planar_gradient": {
+            "description": "gradient based on distance from a plane",
+            "weight_mode": "exponential",
+            "pick_mode": "rnd",
+            "mode": "vector",
+            "invert": "distance",
+            "mode_settings": {
+                "direction": [
+                    0.0,
+                    0.0,
+                    1.0
+                ],
+                "center": [
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "weight_mode_settings": {
+                "decay_length": 0.1
+            }
+        }
+    },
+    "objects": {
+        "mean_nucleus": {
+            "type": "mesh",
+            "color": [
+                0,
+                1,
+                1
+            ],
+            "representations": {
+                "mesh": {
+                    "path": "https://www.dl.dropboxusercontent.com/s/3194r3t40ewypxh/",
+                    "name": "mean-nuc.obj",
+                    "format": "obj"
+                }
+            }
+        },
+        "pcna": {
+            "jitter_attempts": 300,
+            "type": "single_sphere",
+            "color": [
+                0.2,
+                0.7,
+                0.1
+            ],
+            "radius": 1,
+            "gradient": "planar_gradient",
+            "packing_mode": "gradient"
+        }
+    },
+    "composition": {
+        "bounding_area": {
+            "regions": {
+                "interior": [
+                    "nucleus"
+                ]
+            }
+        },
+        "nucleus": {
+            "object": "mean_nucleus",
+            "count": 1,
+            "regions": {
+                "interior": [
+                    {
+                        "object": "pcna",
+                        "count": 256
+                    }
+                ]
+            }
+        }
+    }
+}

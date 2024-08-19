@@ -1,0 +1,28 @@
+{
+    "name": "analyze",
+    "format": "simularium",
+    "inner_grid_method": "trimesh",
+    "out": "out",
+    "place_method": "spheresSST",
+    "save_analyze_result": true,
+    "show_grid_plot": false,
+    "save_plot_figures": false,
+    "parallel": false,
+    "load_from_grid_file": true,
+    "number_of_packings": 1,
+    "show_progress_bar": true,
+    "upload_results": false,
+    "open_results_in_browser": false,
+    "spacing": 2,
+    "use_periodicity": false,
+    "show_sphere_trees": false,
+    "image_export_options": {
+        "hollow": false,
+        "voxel_size": [
+            0.5,
+            0.5,
+            0.5
+        ],
+        "projection_axis": "y"
+    }
+}
