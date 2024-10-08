@@ -12,8 +12,8 @@ packing_rules:
   - surface_gradient_
   - random_
   - radial_gradient_
-structure_path: /allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/packings/
-ref_path: /allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/reference_nuclear_shapes/
+structure_path: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/packings/
+ref_path: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/reference_nuclear_shapes/
 return_id: true
 x_label: pcloud
 ref_label: shcoeff
