@@ -3,7 +3,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import mitsuba as mi
 mi.set_variant("scalar_rgb")
-
+# Use scalar backend for mitsuba rendering 
+# For more detailes refer to
+# https://mitsuba.readthedocs.io/en/stable/src/key_topics/variants.html
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
