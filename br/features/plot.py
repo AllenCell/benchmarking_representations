@@ -2,16 +2,15 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import mitsuba as mi
+mi.set_variant("scalar_rgb")
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import seaborn as sns
 import trimesh
 from mitsuba import ScalarTransform4f as T
-
 from .utils import normalize_intensities_and_get_colormap
-
-mi.set_variant("scalar_rgb")
 
 
 METRIC_DICT = {
