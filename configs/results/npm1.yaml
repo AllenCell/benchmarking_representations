@@ -1,14 +1,6 @@
-orig_df: NPM1_SINGLE_CELL_MANIFEST
-image_path: NPM1_SINGLE_CELL_MANIFEST
-pc_path: NPM1_SINGLE_CELL_MANIFEST
-run_ids:
-  [
-    "b88c7f31a44347ba918edce252337468",
-    "af07517eec5e496994ddc9d471eebb29",
-    "f5c3a8f0705541b69cada937b7dc27d2",
-    "1e0b6c9ea34345728c4d8f0f7211f5ad",
-    "89d7de1dd292434883f9e737ec7cc74d",
-  ]
+orig_df: ./morphology_appropriate_representation_learning/preprocessed_data/npm1/manifest.csv
+image_path: ./morphology_appropriate_representation_learning/preprocessed_data/npm1/manifest.csv
+pc_path: ./morphology_appropriate_representation_learning/preprocessed_data/npm1/manifest.csv
 model_checkpoints:
   [
     "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_pointcloud_SDF.ckpt",

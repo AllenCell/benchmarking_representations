@@ -1,5 +1,5 @@
 _target_: pointcloudutils.datamodules.ShapenetDataModule
-dataset_folder: SINGLE_CELL_DATASET_POINTCLOUD_FOLDER
+dataset_folder: ./morphology_appropriate_representation_learning/preprocessed_data/npm1_perturb/pointcloud/
 method: shapenet_dfnet
 dataset_type: pointcloud
 train_split: train

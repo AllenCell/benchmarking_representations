@@ -1,13 +1,13 @@
 _target_: cyto_dl.datamodules.DataframeDatamodule
 _convert_: all
-path: SINGLE_CELL_DATASET_PATH
+path: ./morphology_appropriate_representation_learning/preprocessed_data/other_polymorphic/manifest.csv
 split_column: split
 batch_size: 32
 num_workers: 4
 transforms:
   - _target_: cyto_dl.dataframe.transforms.GroupCols
     groups:
-      image: SEG_COLUMN
+      image: seg_path
       cell_id: CellId
   - _target_: cyto_dl.image.io.ReadNumpyFile
     keys:

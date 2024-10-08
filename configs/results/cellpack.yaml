@@ -1,14 +1,6 @@
 orig_df: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
 image_path: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
 pc_path: ./morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/manifest.csv
-run_ids:
-  [
-    "2dbec95965374c8a85b2dbdd4d569284",
-    "a2c2c55d2f2f4b329e3003279c8d4e09",
-    "43f3bb2ffc76466c8023a593d78faf05",
-    "15a4ea21eea3482bb7b5a41ca4b4b180",
-    "575c95fad4614d7e83ca6b85f069f6e5",
-  ]
 model_checkpoints:
   [
     "./morphology_appropriate_representation_learning/model_checkpoints/cellpack/Classical_image.ckpt",
