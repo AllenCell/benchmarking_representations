@@ -20,7 +20,12 @@ dependencies = [
     "scipy==1.8.1", #pycytominer requires scipy < 1.9
     "mitsuba>=3.5.0",
     "seaborn>=0.13.2",
-    "plotly>=5.22.0"
+    "plotly>=5.22.0",
+    "cyto-dl @ git+https://github.com/AllenCellModeling/cyto-dl.git@a4a061d1808e0f94f906933642920142b581ba38",
+    "torch==2.0.1",
+    "torchvision==0.15.2",
+    "monai",
+    "pytorch-lightning",
 ]
 requires-python = "==3.10.*"
 license = {text = "MIT"}
@@ -35,6 +40,8 @@ distribution = false
 includes = ["br", "README.md", "LICENSE", "**/*.yaml" ]
 excludes = ["**/*.pyc", "**/__pycache__"]
 
+[tool.pdm.dev-dependencies]
+dev = ["-e git+https://github.com/AllenCell/benchmarking_representations.git@3ec2a4437afccf0fa8a0f3e093771896993a17b2#egg=pointcloudutils&subdirectory=pointcloudutils"]
 [tool.flake8]
 ignore = [
     "E203",
