@@ -24,8 +24,8 @@ dependencies = [
     "cyto-dl @ git+https://github.com/AllenCellModeling/cyto-dl.git@a4a061d1808e0f94f906933642920142b581ba38",
     "torch==2.0.1",
     "torchvision==0.15.2",
-    "monai",
     "pytorch-lightning",
+    "monai-weekly",
 ]
 requires-python = "==3.10.*"
 license = {text = "MIT"}
