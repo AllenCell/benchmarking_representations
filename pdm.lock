@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:9fc28421d58f3cdb70d586ac1675889375c9327f54e9b64c74af2c4377f90c2f"
+content_hash = "sha256:fe0beaae71d579e0a95154b6edf40578406db4c881adf2f2db146356fd335dac"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -1714,17 +1714,17 @@ files = [
 
 [[package]]
 name = "monai-weekly"
-version = "1.4.dev2440"
-requires_python = ">=3.9"
+version = "1.4.dev2407"
+requires_python = ">=3.8"
 summary = "AI Toolkit for Healthcare Imaging"
 groups = ["default"]
 dependencies = [
-    "numpy<2.0,>=1.24",
+    "numpy>=1.20",
     "torch>=1.9",
 ]
 files = [
-    {file = "monai_weekly-1.4.dev2440-py3-none-any.whl", hash = "sha256:612fa0c35d2810e6bf5983a8d06737dd86f9f17ebf303c0c6e6613283070b70c"},
-    {file = "monai_weekly-1.4.dev2440.tar.gz", hash = "sha256:bd6124762550556892bccaf4addcbcee7b825a17b4a230e964c70f993b5fdc38"},
+    {file = "monai-weekly-1.4.dev2407.tar.gz", hash = "sha256:9321dfb0390ed3aca01a45e213df782bbd79eccc4bb3dd7d7007fff2b106f75d"},
+    {file = "monai_weekly-1.4.dev2407-py3-none-any.whl", hash = "sha256:5a594df7c826df28082c3ebe09c3ecf8dcee6e03ef2c59c7244cd37e7a2674b0"},
 ]
 
 [[package]]
@@ -3306,7 +3306,7 @@ files = [
 name = "torch-scatter"
 version = "2.1.2"
 requires_python = ">=3.8"
-summary = ""
+summary = "PyTorch Extension Library of Optimized Scatter Operations"
 groups = ["default"]
 files = [
     {file = "torch_scatter-2.1.2.tar.gz", hash = "sha256:69b3aa435f2424ac6a1bfb6ff702da6eb73b33ca0db38fb26989c74159258e47"},
