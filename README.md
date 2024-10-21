@@ -14,11 +14,13 @@ conda activate br
 Next, install all required packages
 
 ```bash
-pip install numpy
-pip install cyto-dl[all] git+https://github.com/AllenCellModeling/cyto-dl@br_release
-pip install -e .[all]
+pip install -r requirements.txt
+pip install -r requirements2.txt
+pip install -e .
 pip install -e ./pointcloudutils
 ```
+
+For `pdm` users, follow [these installation steps instead](./ADVANCED_INSTALLATION.md).
 
 ## Set env variables
 
