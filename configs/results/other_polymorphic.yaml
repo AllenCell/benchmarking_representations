@@ -1,14 +1,6 @@
-orig_df: POLYMORPHIC_STRUCTURE_SINGLE_CELL_MANIFEST
+orig_df: ./morphology_appropriate_representation_learning/preprocessed_data/other_polymorphic/manifest.csv
 image_path:
 pc_path:
-run_ids:
-  [
-    "f00ec5e5271d44048d78ca43ea270fb9",
-    "bd4ccbf3f80b4a009acf086e7ff42210",
-    "25f894a409f3415497e035b3190cba9f",
-    "10c70b65c0224eb086a2482ae8a241b9",
-    "e59986a466964951854cd8360c89306c",
-  ]
 model_checkpoints:
   [
     "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_pointcloud_SDF.ckpt",

@@ -1,14 +1,6 @@
-orig_df: "./NPM1_single_cell_drug_perturbations/manifest.csv"
+orig_df: ./morphology_appropriate_representation_learning/preprocessed_data/npm1_perturb/manifest.csv
 image_path:
 pc_path:
-run_ids:
-  [
-    "656168ce30614e00ad7fde249f239138",
-    "820f3e0af53c4a21a8f4b40aa7f7758c",
-    "688851f1bd3747c59dce25627db2b55b",
-    "1ed54b284fbf42d3ad99d388a7bdacfc",
-    "afd757c799194b18a39c67c66346717d",
-  ]
 model_checkpoints:
   [
     "./morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Rotation_invariant_pointcloud_SDF.ckpt",

@@ -1,14 +1,6 @@
-orig_df: PCNA_SINGLE_CELL_MANIFEST
-image_path: PCNA_SINGLE_CELL_MANIFEST
-pc_path: PCNA_SINGLE_CELL_MANIFEST
-run_ids:
-  [
-    "0c1bbf0c54f343a083e9c26b476c9469",
-    "1c1ca294eb6d4c3092cbfa062dea934a",
-    "bc9a169ca7c943debcb3352bb80b19ac",
-    "d172d8f823dc437b9fae7ab6b2673d3e",
-    "ac43b8bbeb3a493bacc69927c8f21276",
-  ]
+orig_df: ./morphology_appropriate_representation_learning/preprocessed_data/pcna/manifest.csv
+image_path: ./morphology_appropriate_representation_learning/preprocessed_data/pcna/manifest.csv
+pc_path: ./morphology_appropriate_representation_learning/preprocessed_data/pcna/manifest.csv
 model_checkpoints:
   [
     "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Classical_pointcloud.ckpt",
