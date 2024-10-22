@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:fe0beaae71d579e0a95154b6edf40578406db4c881adf2f2db146356fd335dac"
+content_hash = "sha256:c8f48105141a975e03202004acf3832d73039f6ca52089e99633e5342dc4f1bb"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -2215,6 +2215,17 @@ files = [
 ]
 
 [[package]]
+name = "pdm-pep517"
+version = "1.1.4"
+requires_python = ">=3.7"
+summary = "A PEP 517 backend for PDM that supports PEP 621 metadata"
+groups = ["default"]
+files = [
+    {file = "pdm-pep517-1.1.4.tar.gz", hash = "sha256:7f49121e70b42dca296fac962210dd2da07a39575fc5673137ad661633b2cf3f"},
+    {file = "pdm_pep517-1.1.4-py3-none-any.whl", hash = "sha256:c9fe65d06cf193f864ac2b38372a355450ff7f847aefc9b59e89fe2cf19f32b9"},
+]
+
+[[package]]
 name = "pillow"
 version = "10.2.0"
 requires_python = ">=3.8"
@@ -3306,7 +3317,7 @@ files = [
 name = "torch-scatter"
 version = "2.1.2"
 requires_python = ">=3.8"
-summary = "PyTorch Extension Library of Optimized Scatter Operations"
+summary = ""
 groups = ["default"]
 files = [
     {file = "torch_scatter-2.1.2.tar.gz", hash = "sha256:69b3aa435f2424ac6a1bfb6ff702da6eb73b33ca0db38fb26989c74159258e47"},

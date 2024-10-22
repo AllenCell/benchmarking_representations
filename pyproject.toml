@@ -26,6 +26,7 @@ dependencies = [
     "torchvision==0.15.2",
     "pytorch-lightning",
     "monai-weekly",
+    "pdm-pep517>=1.0.0",  # This is a build-time dependency of cyto-dl, required here because we instruct installation with --no-isolation
 ]
 requires-python = "==3.10.*"
 license = {text = "MIT"}
