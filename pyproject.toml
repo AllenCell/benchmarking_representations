@@ -82,3 +82,6 @@ exclude_lines = [
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+[tool.pdm.scripts]
+requirements = { shell = "pdm export --no-hashes | grep -v torch-scatter > requirements.txt" }
