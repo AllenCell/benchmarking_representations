@@ -11,10 +11,10 @@ conda create --name br python=3.10
 conda activate br
 ```
 
-Depending on your GPU set-up, you may need to set the `CUDA_VISIBLE_DEVICES` [environment variable](https://developer.nvidia.com/blog/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/), as in the following example.
+Depending on your GPU set-up, you may need to set the `CUDA_VISIBLE_DEVICES` [environment variable](https://developer.nvidia.com/blog/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/). To achieve this, you will first need to get the Universally Unique IDs for the GPUs and then set the `CUDA_VISIBLE_DEVICES` [environment variable] to either/all of those, as in the following example. For the example, we tested our installation on a MIG partitioned GPU and hence set the UUID for one the MIG partitions!
 
 ```bash
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=MIG-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
 Next, install all required packages
