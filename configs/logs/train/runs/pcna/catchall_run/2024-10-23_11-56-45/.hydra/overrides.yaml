@@ -1,0 +1,4 @@
+- experiment=pcna/image_equiv
+- ++mlflow.experiment_name=reproducibility_rl
+- ++mlflow.run_name=pcna_image_equiv
+- ++paths.data_dir=/allen/aics/modeling/ritvik/projects/aws_uploads/morphology_appropriate_representation_learning/preprocessed_data/pcna/manifest.csv
