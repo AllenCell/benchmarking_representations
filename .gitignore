@@ -91,3 +91,4 @@ target/
 *.csv
 
 /notebooks/*
+/logs/
