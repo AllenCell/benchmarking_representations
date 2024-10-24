@@ -91,4 +91,5 @@ target/
 *.csv
 
 /notebooks/*
-/logs/
+/logs
+csv_fp_editor.py

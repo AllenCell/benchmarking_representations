@@ -25,6 +25,7 @@ dependencies = [
     "torch==2.0.1",
     "torchvision==0.15.2",
     "pytorch-lightning",
+    "pip", # This is needed for the loggers to work
     "monai-weekly",
     "pdm-pep517>=1.0.0",  # This is a build-time dependency of cyto-dl, required here because we instruct installation with --no-isolation
     "setuptools<74.0.0",  # New versions prevent numpy.distutils (now deprecated) from working, and py3nj installation depends on numpy.distutils

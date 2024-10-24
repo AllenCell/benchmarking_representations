@@ -1,0 +1,4 @@
+- experiment=pcna/image_equiv
+- ++mlflow.experiment_name=reproducibility_rl
+- ++mlflow.run_name=pcna_image_equiv
+- ++data.path=/allen/aics/assay-dev/users/Fatwir/benchmarking_representations/pcna_manifest.csv

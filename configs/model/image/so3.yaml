@@ -1,5 +1,4 @@
 _target_: cyto_dl.models.vae.ImageVAE
-decoder_res_units: 0
 group: so3
 latent_dim: 256
 spatial_dims: 3
