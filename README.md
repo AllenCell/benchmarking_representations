@@ -22,7 +22,6 @@ Next, install all required packages
 ```bash
 pip install -r requirements1.txt
 pip install -r requirements2.txt
-pip install -r requirements3.txt
 pip install -e .
 pip install -e ./pointcloudutils
 ```
