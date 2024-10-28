@@ -1,11 +1,10 @@
 [project]
 name = "benchmarking_representations"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "Collection of methods for performing morphology appropriate representation learning"
 readme = "README.md"
 authors = [
     { name = "Ritvik Vasan", email = "ritvik.vasan@alleninstitute.org" },
-    {name = "", email = ""},
 ]
 dependencies = [
     "torch-scatter>=2.1.2",
@@ -31,7 +30,7 @@ dependencies = [
     "numpy>=1.25.2",
 ]
 requires-python = "==3.10.*"
-license = {text = "MIT"}
+license = {file = "LICENSE"}
 
 [project.urls]
 Homepage = "https://github.com/AllenCell/benchmarking_representations"
