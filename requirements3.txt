@@ -1,0 +1,2 @@
+# This file is manually managed to install from a pre-built source
+torch-scatter==2.1.2 -f https://data.pyg.org/whl/torch-2.0.1+cu117.html

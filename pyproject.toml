@@ -85,4 +85,4 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm.scripts]
-requirements = { shell = "pdm export --no-hashes | grep -v -e torch-scatter > requirements.txt" }
+requirements = { shell = "pdm export --no-hashes | grep -e numpy > requirements1.txt && pdm export --no-hashes | grep -v -e torch-scatter -e numpy > requirements2.txt" }
