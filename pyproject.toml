@@ -30,27 +30,12 @@ dependencies = [
     "pdm-pep517>=1.0.0",  # This is a build-time dependency of cyto-dl, required here because we instruct installation with --no-isolation
     "setuptools<74.0.0",  # New versions prevent numpy.distutils (now deprecated) from working, and py3nj installation depends on numpy.distutils
     "numpy>=1.25.2",
+    "mesh-to-sdf>=0.0.15",
 ]
-
-[[tool.pdm.source]]
-url = "https://data.pyg.org/whl/torch-2.0.1+cu117.html"
-verify_ssl = true
-name = "torch"
-type = "find_links"
 
 [project.urls]
 Homepage = "https://github.com/AllenCell/benchmarking_representations"
 
-[tool.pdm]
-distribution = false
-
-[tool.pdm.build]
-includes = ["br", "README.md", "LICENSE", "**/*.yaml" ]
-excludes = ["**/*.pyc", "**/__pycache__"]
-
-
-[tool.pdm.dev-dependencies]
-dev = ["-e git+https://github.com/AllenCell/benchmarking_representations.git@3ec2a4437afccf0fa8a0f3e093771896993a17b2#egg=pointcloudutils&subdirectory=pointcloudutils"]
 [tool.flake8]
 ignore = [
     "E203",
@@ -86,9 +71,30 @@ exclude_lines = [
     "if __name__ == .__main__.:",
 ]
 
+
+[tool.pdm]
+distribution = false
+[[tool.pdm.source]]
+url = "https://data.pyg.org/whl/torch-2.0.1+cu117.html"
+verify_ssl = true
+name = "torch"
+type = "find_links"
+
+
+[tool.pdm.build]
+includes = ["br", "README.md", "LICENSE", "**/*.yaml" ]
+excludes = ["**/*.pyc", "**/__pycache__"]
+
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "-e git+https://github.com/AllenCell/benchmarking_representations.git@3ec2a4437afccf0fa8a0f3e093771896993a17b2#egg=pointcloudutils&subdirectory=pointcloudutils",
+    "ipython",
+]
+
+[tool.pdm.scripts]
+requirements = { shell = "pdm export --no-hashes | grep numpy > requirements1.txt && pdm export --no-hashes | grep -v numpy > requirements2.txt" }
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
-[tool.pdm.scripts]
-requirements = { shell = "pdm export --no-hashes | grep numpy > requirements1.txt && pdm export --no-hashes | grep -v numpy > requirements2.txt" }
