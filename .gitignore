@@ -92,4 +92,7 @@ target/
 
 /notebooks/*
 /logs
+/output_sdf_pc/*
+test.ipynb
+tester.py
 csv_fp_editor.py
