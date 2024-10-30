@@ -29,6 +29,11 @@ dependencies = [
     "monai-weekly",
     "pdm-pep517>=1.0.0",  # This is a build-time dependency of cyto-dl, required here because we instruct installation with --no-isolation
     "setuptools<74.0.0",  # New versions prevent numpy.distutils (now deprecated) from working, and py3nj installation depends on numpy.distutils
+    "ipykernel>=6.29.5",
+    "mesh-to-sdf==0.0.15",
+    "pygame>=2.6.1",
+    "PyOpenGL>=3.1.0",
+    "PyOpenGL-accelerate>=3.1.7",
 ]
 requires-python = "==3.10.*"
 license = {text = "MIT"}
