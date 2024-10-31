@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:6714cd96cee33e4c3b2de21282966b544db3123a83dba57364738a66c785ebd0"
+content_hash = "sha256:f997df7913e1f393fae131c55a43afa5c3de40552fc1f80fca31e87cd3a75772"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -2805,6 +2805,17 @@ files = [
     {file = "pillow-10.2.0-pp310-pypy310_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:3c31822339516fb3c82d03f30e22b1d038da87ef27b6a78c9549888f8ceda39a"},
     {file = "pillow-10.2.0-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:a2b56ba36e05f973d450582fb015594aaa78834fefe8dfb8fcd79b93e64ba4c6"},
     {file = "pillow-10.2.0.tar.gz", hash = "sha256:e87f0b2c78157e12d7686b27d63c070fd65d994e8ddae6f328e0dcf4a0cd007e"},
+]
+
+[[package]]
+name = "pip"
+version = "24.3.1"
+requires_python = ">=3.8"
+summary = "The PyPA recommended tool for installing Python packages."
+groups = ["default"]
+files = [
+    {file = "pip-24.3.1-py3-none-any.whl", hash = "sha256:3790624780082365f47549d032f3770eeb2b1e8bd1f7b2e02dace1afa361b4ed"},
+    {file = "pip-24.3.1.tar.gz", hash = "sha256:ebcb60557f2aefabc2e0f918751cd24ea0d56d8ec5445fe1807f1d2109660b99"},
 ]
 
 [[package]]
