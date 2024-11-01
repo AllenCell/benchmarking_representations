@@ -1,0 +1,32 @@
+name: Tests
+
+on:
+  pull_request:
+  # If merge queues are enabled, test against the result of a merge before finalizing the merge
+  merge_group:
+  workflow_dispatch:
+
+# Cancel actions when new commits are pushed to PR
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: ./.github/actions/dependencies
+
+      - name: Check that pdm.lock matches pyproject.toml
+        shell: bash
+        run: pdm lock --check
+
+      - name: Run mypy for type checking
+        shell: bash
+        run: pdm run mypy
+
+      - name: Unit tests
+        shell: bash
+        run: pdm run pytest
