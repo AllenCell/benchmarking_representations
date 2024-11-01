@@ -7,13 +7,18 @@ from br.data.get_datamodules import get_data
 from br.models.utils import get_all_configs_per_dataset
 
 
-def load_model_from_path(dataset, results_path, strict=False, split="val", device="cuda:0"):
+def load_model_from_path(
+    dataset, results_path, strict=False, split="val", device="cuda:0"
+):
     MODEL_INFO = get_all_configs_per_dataset(results_path)
     models = MODEL_INFO[dataset]
     model_sizes = []
     all_models = []
-    for ckpt_path in models["model_checkpoints"]:
-        config_path = ckpt_path.split("ckpt")[0] + "yaml"
+    for j, ckpt_path in enumerate(models["model_checkpoints"]):
+        if "model_paths" in models.keys():
+            config_path = models["model_paths"][j]
+        else:
+            config_path = ckpt_path.split("ckpt")[0] + "yaml"
         with open(config_path) as stream:
             config = yaml.safe_load(stream)
         model_conf = config["model"]

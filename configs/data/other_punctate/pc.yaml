@@ -1,7 +1,7 @@
 _target_: cyto_dl.datamodules.DataframeDatamodule
 _convert_: all
 
-path: SINGLE_CELL_DATASET_PATH
+path: ./morphology_appropriate_representation_learning/preprocessed_data/other_punctate/manifest.csv
 split_column: split
 
 batch_size: 32
@@ -14,7 +14,7 @@ shuffle: false
 transforms:
   - _target_: cyto_dl.dataframe.transforms.GroupCols
     groups:
-      pcloud: POINTCLOUD_COLUMN
+      pcloud: pointcloud_path
       cell_id: CellId
 
   - _target_: cyto_dl.point_cloud.io.ReadPointCloud
