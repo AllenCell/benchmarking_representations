@@ -1,48 +1,42 @@
-[build-system]
-requires = ["pdm-pep517>=1.0.0", "numpy>=1.23.5"]
-build-backend = "pdm.pep517.api"
-
 [project]
-name = "br"
-version = "0.0.0"
-description = """\
-  Collection of methods for performing morphology appropriate representation learning\
-  """
+name = "benchmarking_representations"
+version = "0.1.0"
+description = "Collection of methods for performing morphology appropriate representation learning"
 readme = "README.md"
 authors = [
     { name = "Ritvik Vasan", email = "ritvik.vasan@alleninstitute.org" },
 ]
+requires-python = "==3.10.*"
+license = {file = "LICENSE"}
 dependencies = [
     "torch-scatter>=2.1.2",
     "codecarbon>=2.4.2",
     "PyMCubes>=0.1.4",
     "copairs @ git+https://github.com/cytomining/copairs.git@880f22a551bd897896d148a0b07baa99d981c6a9",
-    "pycytominer @ git+https://github.com/cytomining/pycytominer.git@36241269c4293c24484986568ca16b2d7eb9e808",
+    "pycytominer==1.2.0",
     "trimesh>=4.4.0",
     "pyvista>=0.43.8",
-    "kaleido>=0.2.1",
+    "kaleido>=0.2.1,!=0.2.1.post1",  # kaleido 0.2.1.post1 is published incorrectly
     "pacmap>=0.7.2",
-    "scipy==1.8.1", #pycytominer requires scipy < 1.9
-]
-requires-python = ">=3.9,<3.11"
-
-[project.optional-dependencies]
-viz = [
+    "scipy>=1.9.3",
     "mitsuba>=3.5.0",
+    "seaborn>=0.13.2",
     "plotly>=5.22.0",
-    "seaborn>=0.13.2"
-]
-
-all = [
-    "br[viz]",
+    "cyto-dl[equiv,pcloud,s3,spharm,torchserve] @ git+https://github.com/AllenCellModeling/cyto-dl.git@a4a061d1808e0f94f906933642920142b581ba38",
+    "torch==2.0.1",
+    "torchvision==0.15.2",
+    "pytorch-lightning",
+    "monai-weekly",
+    "pdm-pep517>=1.0.0",  # This is a build-time dependency of cyto-dl, required here because we instruct installation with --no-isolation
+    "setuptools<74.0.0",  # New versions prevent numpy.distutils (now deprecated) from working, and py3nj installation depends on numpy.distutils
+    "numpy>=1.25.2",
+    "mesh-to-sdf>=0.0.15",
+    "pyopengl>=3.1.0",
+    "pip",
 ]
 
 [project.urls]
 Homepage = "https://github.com/AllenCell/benchmarking_representations"
-
-[tool.pdm.build]
-includes = ["br", "README.md", "LICENSE", "**/*.yaml" ]
-excludes = ["**/*.pyc", "**/__pycache__"]
 
 [tool.flake8]
 ignore = [
@@ -78,3 +72,32 @@ exclude_lines = [
     "raise NotImplementedError()",
     "if __name__ == .__main__.:",
 ]
+
+
+[tool.pdm]
+distribution = false
+[[tool.pdm.source]]
+url = "https://data.pyg.org/whl/torch-2.0.1+cu117.html"
+verify_ssl = true
+name = "torch"
+type = "find_links"
+
+
+[tool.pdm.build]
+includes = ["br", "README.md", "LICENSE", "**/*.yaml" ]
+excludes = ["**/*.pyc", "**/__pycache__"]
+
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "-e git+https://github.com/AllenCell/benchmarking_representations.git@3ec2a4437afccf0fa8a0f3e093771896993a17b2#egg=pointcloudutils&subdirectory=pointcloudutils",
+    "ipython",
+    "ipykernel>=6.29.5",
+]
+
+[tool.pdm.scripts]
+requirements = { shell = "pdm export --no-hashes | grep numpy > requirements1.txt && pdm export --no-hashes | grep -v numpy > requirements2.txt" }
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+

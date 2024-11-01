@@ -11,19 +11,41 @@ conda create --name br python=3.10
 conda activate br
 ```
 
+Depending on your GPU set-up, you may need to set the `CUDA_VISIBLE_DEVICES` [environment variable](https://developer.nvidia.com/blog/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/).
+To achieve this, you will first need to get the Universally Unique IDs for the GPUs and then set `CUDA_VISIBLE_DEVICES` to some/all of those (a comma-separated list), as in the following examples.
+
+**Example 1**
+```bash
+export CUDA_VISIBLE_DEVICES=0,1
+```
+
+**Example 2:** Using one partition of a MIG partitioned GPU
+```bash
+export CUDA_VISIBLE_DEVICES=MIG-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+
 Next, install all required packages
 
 ```bash
-pip install numpy
-pip install cyto-dl[all] git+https://github.com/AllenCellModeling/cyto-dl@br_release
-pip install -e .[all]
+pip install -r requirements1.txt
+pip install -r requirements2.txt
+pip install -e .
 pip install -e ./pointcloudutils
 ```
+
+For `pdm` users, follow [these installation steps instead](./ADVANCED_INSTALLATION.md).
+
+## Troubleshooting
+**Q:** When installing dependencies, pytorch fails to install with the following error message.
+```bash
+torch.cuda.DeferredCudaCallError: CUDA call failed lazily at initialization with error: device >= 0 && device < num_gpus
+```
+
+**A:** You may need to configure the `CUDA_VISIBLE_DEVICES` [environment variable](https://developer.nvidia.com/blog/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/).
 
 ## Set env variables
 
 ```bash
-[optional] export CUDA_VISIBLE_DEVICES=...
 export CYTODL_CONFIG_PATH=./br/configs/
 ```
 
