@@ -38,6 +38,11 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/AllenCell/benchmarking_representations"
 
+[project.optional-dependencies]
+interactive = [
+    "ipykernel>=6.29.5",
+    "ipython",
+]
 [tool.flake8]
 ignore = [
     "E203",
@@ -89,14 +94,14 @@ excludes = ["**/*.pyc", "**/__pycache__"]
 
 
 [tool.pdm.dev-dependencies]
+# These packages won't be exported to requirements.txt
 dev = [
-    "-e git+https://github.com/AllenCell/benchmarking_representations.git@3ec2a4437afccf0fa8a0f3e093771896993a17b2#egg=pointcloudutils&subdirectory=pointcloudutils",
-    "ipython",
-    "ipykernel>=6.29.5",
+    "-e file:///${PROJECT_ROOT}/#egg=benchmarking-representations",
+    "-e file:///${PROJECT_ROOT}/pointcloudutils#egg=pointcloudutils",
 ]
 
 [tool.pdm.scripts]
-requirements = { shell = "pdm export --no-hashes | grep numpy > requirements1.txt && pdm export --no-hashes | grep -v numpy > requirements2.txt" }
+requirements = { shell = "pdm export --prod -G interactive --no-hashes | grep numpy > requirements1.txt && pdm export --prod -G interactive --no-hashes | grep -v numpy > requirements2.txt" }
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"

@@ -170,7 +170,6 @@ pip==24.3.1
 platformdirs==4.2.0
 plotly==5.24.1
 point-cloud-utils==0.30.4
--e git+https://github.com/AllenCell/benchmarking_representations.git@3ec2a4437afccf0fa8a0f3e093771896993a17b2#egg=pointcloudutils&subdirectory=pointcloudutils
 pooch==1.8.1
 prettytable==3.10.0
 prometheus-client==0.21.0
