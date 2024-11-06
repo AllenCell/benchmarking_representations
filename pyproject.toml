@@ -33,16 +33,13 @@ dependencies = [
     "mesh-to-sdf>=0.0.15",
     "pyopengl>=3.1.0",
     "pip",
+    "ipython",
+    "ipykernel>=6.29.5",
 ]
 
 [project.urls]
 Homepage = "https://github.com/AllenCell/benchmarking_representations"
 
-[project.optional-dependencies]
-interactive = [
-    "ipykernel>=6.29.5",
-    "ipython",
-]
 [tool.flake8]
 ignore = [
     "E203",
@@ -101,7 +98,8 @@ dev = [
 ]
 
 [tool.pdm.scripts]
-requirements = { shell = "pdm export --prod -G interactive --no-hashes | grep numpy > requirements1.txt && pdm export --prod -G interactive --no-hashes | grep -v numpy > requirements2.txt" }
+requirements = { shell = "pdm export --prod --no-hashes | grep numpy > requirements1.txt && pdm export --prod --no-hashes | grep -v numpy > requirements2.txt" }
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
