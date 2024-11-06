@@ -2,9 +2,20 @@
 
 Code for training and benchmarking morphology appropriate representation learning methods.
 
-## Installation
+# Installation
 
-First, create a virtual environment
+To install and use this software, you need:
+* A GPU running CUDA 11.7 (other CUDA versions may work, but they are not officially supported),
+* [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) (or Python 3.10 and [pdm](https://pdm-project.org/)), and
+* [git](https://github.com/git-guides/install-git).
+
+First, clone this repository.
+```bash
+git clone https://github.com/AllenCell/benchmarking_representations
+cd benchmarking_representations
+```
+
+Create a virtual environment.
 
 ```bash
 conda create --name br python=3.10
@@ -49,6 +60,7 @@ torch.cuda.DeferredCudaCallError: CUDA call failed lazily at initialization with
 export CYTODL_CONFIG_PATH=./br/configs/
 ```
 
+# Usage
 ## Steps to download and preprocess data
 
 1. Datasets are hosted on quilt. Download raw data at the following links
@@ -170,6 +182,7 @@ python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthm
 │   │   ├── fig7_drug_data.ipynb      <- Reproduce Fig 7 drug data results
 ```
 
+# Development
 ## Project Organization
 
 ```
