@@ -1,0 +1,24 @@
+name: Validate pdm.lock
+
+on:
+  pull_request:
+  # If merge queues are enabled, test against the result of a merge before finalizing the merge
+  merge_group:
+  workflow_dispatch:
+
+# Cancel actions when new commits are pushed to PR
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: ./.github/actions/pdm
+
+      - name: Check that pdm.lock matches pyproject.toml
+        shell: bash
+        run: pdm lock --check
