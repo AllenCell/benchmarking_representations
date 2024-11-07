@@ -137,6 +137,7 @@ nibabel==5.2.0
 ninja==1.11.1.1
 numba==0.60.0
 numcodecs==0.12.1
+numpy==1.25.2
 nvidia-cublas-cu11==11.10.3.66; platform_system == "Linux" and platform_machine == "x86_64"
 nvidia-cuda-cupti-cu11==11.7.101; platform_system == "Linux" and platform_machine == "x86_64"
 nvidia-cuda-nvrtc-cu11==11.7.99; platform_system == "Linux" and platform_machine == "x86_64"
@@ -163,14 +164,12 @@ parso==0.8.4
 partd==1.4.1
 patsy==0.5.6
 pbr==6.0.0
-pdm-pep517==1.1.4
 pexpect==4.9.0; sys_platform != "win32" and sys_platform != "emscripten"
 pillow==10.2.0
 pip==24.3.1
 platformdirs==4.2.0
 plotly==5.24.1
 point-cloud-utils==0.30.4
--e git+https://github.com/AllenCell/benchmarking_representations.git@3ec2a4437afccf0fa8a0f3e093771896993a17b2#egg=pointcloudutils&subdirectory=pointcloudutils
 pooch==1.8.1
 prettytable==3.10.0
 prometheus-client==0.21.0
@@ -286,4 +285,3 @@ zarr==2.16.1
 zict==3.0.0
 zipp==3.17.0
 --find-links https://data.pyg.org/whl/torch-2.0.1+cu117.html
-
