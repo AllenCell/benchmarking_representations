@@ -27,8 +27,6 @@ dependencies = [
     "torchvision==0.15.2",
     "pytorch-lightning",
     "monai-weekly",
-    "pdm-pep517>=1.0.0",  # This is a build-time dependency of cyto-dl, required here because we instruct installation with --no-isolation
-    "setuptools<74.0.0",  # New versions prevent numpy.distutils (now deprecated) from working, and py3nj installation depends on numpy.distutils
     "numpy>=1.25.2",
     "mesh-to-sdf>=0.0.15",
     "pyopengl>=3.1.0",
@@ -40,55 +38,26 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/AllenCell/benchmarking_representations"
 
-[tool.flake8]
-ignore = [
-    "E203",
-    "E402",
-    "W291",
-    "W503",
+[project.optional-dependencies]
+build-requires = [
+    "pdm-backend>=2.4.3",
+    "numpy>=1.25.2",
+    "pdm-pep517>=1.0.0",  # This is a build-time dependency of cyto-dl, required here because we instruct installation with --no-isolation
+    "setuptools<74.0.0",  # New versions prevent numpy.distutils (now deprecated) from working, and py3nj installation depends on numpy.distutils
 ]
-max-line-length = 88
-
-[tool.pytest.ini_options]
-addopts = [
-    "--color=yes",
-    "--durations=0",
-    "--strict-markers",
-    "--doctest-modules",
-]
-filterwarnings = [
-    "ignore::DeprecationWarning",
-    "ignore::UserWarning",
-]
-log_cli = "True"
-markers = [
-    "slow: slow tests",
-]
-minversion = "6.0"
-testpaths = "tests/"
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: nocover",
-    "raise NotImplementedError",
-    "raise NotImplementedError()",
-    "if __name__ == .__main__.:",
-]
-
 
 [tool.pdm]
 distribution = false
+
 [[tool.pdm.source]]
 url = "https://data.pyg.org/whl/torch-2.0.1+cu117.html"
 verify_ssl = true
 name = "torch"
 type = "find_links"
 
-
 [tool.pdm.build]
 includes = ["br", "README.md", "LICENSE", "**/*.yaml" ]
 excludes = ["**/*.pyc", "**/__pycache__"]
-
 
 [tool.pdm.dev-dependencies]
 # These packages won't be exported to requirements.txt
@@ -98,7 +67,13 @@ dev = [
 ]
 
 [tool.pdm.scripts]
-requirements = { shell = "pdm export --prod --no-hashes | grep numpy > requirements1.txt && pdm export --prod --no-hashes | grep -v numpy > requirements2.txt" }
+# The name "post_lock" is special: this command will run automatically after any invocation of `pdm lock`
+post_lock = { shell = "pdm export -G build-requires --prod --no-default --no-hashes -o requirements1.txt && pdm export --prod --no-hashes -o requirements2.txt" }
+
+[tool.pdm.options]
+# Always install without any build isolation, to support torch-scatter and py3nj
+sync = ["--no-isolation"]
+install = ["--no-isolation"]
 
 [build-system]
 requires = ["pdm-backend"]
