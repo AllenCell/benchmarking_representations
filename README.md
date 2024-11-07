@@ -55,9 +55,10 @@ torch.cuda.DeferredCudaCallError: CUDA call failed lazily at initialization with
 **A:** You may need to configure the `CUDA_VISIBLE_DEVICES` [environment variable](https://developer.nvidia.com/blog/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/).
 
 ## Set env variables
-
+To run the models, you must set the `CYTODL_CONFIG_PATH` environment variable to point to the `br/configs` folder.
+Check that your current working directory is the `benchmarking_representations` folder, then run the following command (this will last for only the duration of your shell session).
 ```bash
-export CYTODL_CONFIG_PATH=./br/configs/
+export CYTODL_CONFIG_PATH=$PWD/br/configs/
 ```
 
 # Usage
