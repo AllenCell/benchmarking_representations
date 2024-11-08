@@ -4,7 +4,7 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: other_polymorphic/image_sdf.yaml
+  - override /data: other_polymorphic/classical_image_sdf.yaml
   - override /model: image/classical_sdf_35.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml

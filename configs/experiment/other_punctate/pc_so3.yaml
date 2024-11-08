@@ -4,7 +4,7 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: other_punctate/pc_intensity.yaml # instance norm for intensity to be comparable to image model
+  - override /data: other_punctate/pc_intensity_structurenorm.yaml # instance norm for intensity to be comparable to image model
   - override /model: pc/so3_earthmovers_intensity.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml

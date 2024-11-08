@@ -4,7 +4,7 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: npm1/image_seg.yaml
+  - override /data: npm1/classical_image_seg.yaml
   - override /model: image/classical_seg_35.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
