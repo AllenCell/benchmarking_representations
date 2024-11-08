@@ -8,7 +8,7 @@ defaults:
   - override /model: pc/so3_earthmovers_sphere.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
-  - override /logger: mlflow.yaml
+  - override /logger: csv.yaml
   # - override /hydra: private/joblib
 
 # all parameters below will be merged with parameters from default configurations set above

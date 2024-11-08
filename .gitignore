@@ -90,4 +90,6 @@ target/
 
 *.csv
 
+/configs/logs/*
+/logs/*
 /notebooks/*

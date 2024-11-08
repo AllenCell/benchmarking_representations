@@ -4,11 +4,11 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: other_polymorphic/image_sdf.yaml
+  - override /data: other_polymorphic/classical_image_sdf.yaml
   - override /model: image/classical_sdf_35.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
-  - override /logger: mlflow.yaml
+  - override /logger: csv.yaml
 
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
