@@ -22,6 +22,6 @@ data_paths: [
     "./configs/data/pcna/pc_intensity.yaml",
     "./configs/data/pcna/image.yaml",
     "./configs/data/pcna/image.yaml",
-    # "./br/configs/data/pcna/pc_intensity_jitter.yaml",
+    # "./src/br/configs/data/pcna/pc_intensity_jitter.yaml",
     "./configs/data/pcna/pc_intensity.yaml",
   ]

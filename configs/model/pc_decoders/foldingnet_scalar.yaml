@@ -4,6 +4,6 @@ num_output_points: 2048
 hidden_dim: 512
 std: 0.3
 shape: "plane"
-sphere_path: ./br/models/sphere.npy
-gaussian_path: ./br/models/gaussian.npy
+sphere_path: ./src/br/models/sphere.npy
+gaussian_path: ./src/br/models/gaussian.npy
 num_coords: 4

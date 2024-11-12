@@ -22,6 +22,6 @@ data_paths: [
     "./configs/data/cellpack/image.yaml",
     "./configs/data/cellpack/pc.yaml",
     "./configs/data/cellpack/pc.yaml",
-    # "./br/configs/data/cellpack/pc_jitter.yaml",
+    # "./src/br/configs/data/cellpack/pc_jitter.yaml",
     "./configs/data/cellpack/pc.yaml",
   ]
