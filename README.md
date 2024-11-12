@@ -30,7 +30,6 @@ Next, install all required packages
 pip install -r requirements1.txt
 pip install -r requirements2.txt
 pip install -e .
-pip install -e ./pointcloudutils
 ```
 
 For `pdm` users, follow [these installation steps instead](./ADVANCED_INSTALLATION.md).
