@@ -45,6 +45,9 @@ build-requires = [
     "pdm-pep517>=1.0.0",  # This is a build-time dependency of cyto-dl, required here because we instruct installation with --no-isolation
     "setuptools<74.0.0",  # New versions prevent numpy.distutils (now deprecated) from working, and py3nj installation depends on numpy.distutils
 ]
+test = [
+    "pytest>=8.3.3",
+]
 
 [tool.pdm]
 distribution = false
@@ -55,26 +58,17 @@ verify_ssl = true
 name = "torch"
 type = "find_links"
 
-[tool.pdm.build]
-includes = ["br", "README.md", "LICENSE", "**/*.yaml" ]
-excludes = ["**/*.pyc", "**/__pycache__"]
-
-[tool.pdm.dev-dependencies]
-# These packages won't be exported to requirements.txt
-dev = [
-    "-e file:///${PROJECT_ROOT}/#egg=benchmarking-representations",
-    "-e file:///${PROJECT_ROOT}/pointcloudutils#egg=pointcloudutils",
-]
-
 [tool.pdm.scripts]
 # The name "post_lock" is special: this command will run automatically after any invocation of `pdm lock`
-post_lock = { shell = "pdm export -G build-requires --prod --no-default --no-hashes -o requirements1.txt && pdm export --prod --no-hashes -o requirements2.txt" }
+post_lock = { shell = "pdm export -G build-requires --prod --no-default --no-hashes -o requirements1.txt && pdm export --prod -G test --no-hashes -o requirements2.txt" }
 
 [tool.pdm.options]
 # Always install without any build isolation, to support torch-scatter and py3nj
 sync = ["--no-isolation"]
 install = ["--no-isolation"]
 
+[tool.pdm.dev-dependencies]
+dev = ["-e file:///${PROJECT_ROOT}/#egg=benchmarking-representations"]
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"

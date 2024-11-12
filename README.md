@@ -41,7 +41,6 @@ Next, install all required packages
 pip install -r requirements1.txt
 pip install -r requirements2.txt
 pip install -e .
-pip install -e ./pointcloudutils
 ```
 
 For `pdm` users, follow [these installation steps instead](./ADVANCED_INSTALLATION.md).
@@ -71,6 +70,7 @@ export CYTODL_CONFIG_PATH=$PWD/br/configs/
 * [WTC-11 hIPSc single cell image dataset v1](https://staging.allencellquilt.org/b/allencell/tree/aics/hipsc_single_cell_image_dataset/)
 * [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/NPM1_single_cell_drug_perturbations/)
 
+Ensure to download all the data in the same folder where the repo was cloned!
 
 2. Once data is downloaded, run preprocessing scripts to create the final image/pointcloud/SDF datasets (this step is not necessary for the cellPACK dataset). For image preprocessing used for punctate structures, install [snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) and update the data paths in
 
@@ -126,7 +126,7 @@ In all cases, create a single cell manifest (e.g. csv, parquet) for each dataset
 │   │   │   ├── pc_intensity_jitter.yaml       <- Datamodule for PCNA point clouds with intensity and jitter
 ```
 
-2. Train models using cyto_dl. Experiment configs for point cloud and image models are located here -
+2. Train models using cyto_dl. Ensure to run the training scripts from the folder where the repo was cloned (and where all the data was downloaded). Experiment configs for point cloud and image models are located here -
 
 ```
 ├── configs

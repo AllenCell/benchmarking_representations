@@ -94,6 +94,7 @@ idna==3.6
 imagecodecs==2023.3.16
 imageio==2.34.0
 importlib-metadata==7.0.1
+iniconfig==2.0.0
 inquirer==3.1.4
 ipykernel==6.29.5
 ipython==8.27.0
@@ -169,6 +170,7 @@ pillow==10.2.0
 pip==24.3.1
 platformdirs==4.2.0
 plotly==5.24.1
+pluggy==1.5.0
 point-cloud-utils==0.30.4
 pooch==1.8.1
 prettytable==3.10.0
@@ -201,6 +203,7 @@ pyreadline3==3.5.4; sys_platform == "win32"
 pyrender==0.1.45
 pyrootutils==1.0.4
 pyshtools==4.10.4
+pytest==8.3.3
 python-dateutil==2.8.2
 python-dotenv==1.0.1
 python-editor==1.0.4
@@ -249,6 +252,7 @@ termcolor==2.4.0
 threadpoolctl==3.3.0
 tifffile==2023.7.10
 timm==0.9.16
+tomli==2.1.0; python_version < "3.11"
 toolz==0.12.1
 torch==2.0.1
 torch-geometric==2.5.0

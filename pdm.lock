@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "build-requires", "dev"]
+groups = ["default", "build-requires", "dev", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:83e2d05bfc865c6cd6d8681e9304175cf7062bbed5e6b70a0d0ffbc2b1636d52"
+content_hash = "sha256:98810061b17f4aafcf5418bcb4eced76c4ceadc79c2d483333a73a3c56c70ff0"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -717,7 +717,7 @@ name = "colorama"
 version = "0.4.6"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 summary = "Cross-platform colored terminal text."
-groups = ["default", "dev"]
+groups = ["default", "dev", "test"]
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -1149,7 +1149,7 @@ name = "exceptiongroup"
 version = "1.2.0"
 requires_python = ">=3.7"
 summary = "Backport of PEP 654 (exception groups)"
-groups = ["default", "dev"]
+groups = ["default", "dev", "test"]
 marker = "python_version < \"3.11\""
 files = [
     {file = "exceptiongroup-1.2.0-py3-none-any.whl", hash = "sha256:4bfd3996ac73b41e9b9628b04e079f193850720ea5945fc96a08633c66912f14"},
@@ -1610,6 +1610,17 @@ files = [
 ]
 
 [[package]]
+name = "iniconfig"
+version = "2.0.0"
+requires_python = ">=3.7"
+summary = "brain-dead simple config-ini parsing"
+groups = ["test"]
+files = [
+    {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
+    {file = "iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
+]
+
+[[package]]
 name = "inquirer"
 version = "3.1.4"
 requires_python = ">=3.8"
@@ -1845,7 +1856,7 @@ files = [
 name = "lie-learn"
 version = "0.0.1.post1"
 requires_python = ">2.7,!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
-summary = "A python package that knows how to do various tricky computations related to Lie groups and manifolds (mainly the sphere S2 and rotation group SO3)."
+summary = ""
 groups = ["default", "dev"]
 dependencies = [
     "numpy; python_version >= \"3.0\"",
@@ -2693,7 +2704,7 @@ name = "packaging"
 version = "23.2"
 requires_python = ">=3.7"
 summary = "Core utilities for Python packages"
-groups = ["default", "dev"]
+groups = ["default", "dev", "test"]
 files = [
     {file = "packaging-23.2-py3-none-any.whl", hash = "sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7"},
     {file = "packaging-23.2.tar.gz", hash = "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5"},
@@ -2894,6 +2905,17 @@ files = [
 ]
 
 [[package]]
+name = "pluggy"
+version = "1.5.0"
+requires_python = ">=3.8"
+summary = "plugin and hook calling mechanisms for python"
+groups = ["test"]
+files = [
+    {file = "pluggy-1.5.0-py3-none-any.whl", hash = "sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669"},
+    {file = "pluggy-1.5.0.tar.gz", hash = "sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1"},
+]
+
+[[package]]
 name = "point-cloud-utils"
 version = "0.30.4"
 summary = "A Python library for common tasks on 3D point clouds and meshes"
@@ -2910,14 +2932,6 @@ files = [
     {file = "point_cloud_utils-0.30.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dfc0c8a36a3dc3cae1c0d7de62ef37e13572e60ce6e6222fac6071969dc48c64"},
     {file = "point_cloud_utils-0.30.4-cp310-cp310-win_amd64.whl", hash = "sha256:ae271edbca13b6d5ff5ccc61cdc19181cdc4133858f995dce297d8c068af1294"},
 ]
-
-[[package]]
-name = "pointcloudutils"
-version = "0.1.0"
-editable = true
-path = "./pointcloudutils"
-summary = "Utils for point cloud models"
-groups = ["dev"]
 
 [[package]]
 name = "pooch"
@@ -3040,7 +3054,7 @@ files = [
 [[package]]
 name = "py3nj"
 version = "0.1.2"
-summary = "numpy compatible wigner 3n-J symbols"
+summary = ""
 groups = ["default", "dev"]
 files = [
     {file = "py3nj-0.1.2.tar.gz", hash = "sha256:d1c68634381c82d2a5642e8dc9fc109faaf89e7c9fc5844f287713634fbc2cd7"},
@@ -3373,6 +3387,25 @@ files = [
     {file = "pyshtools-4.10.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5e3cfcbbde9fb2d896688f6c8ed92279337d8415cd1476c48ea46eb18f8a96ec"},
     {file = "pyshtools-4.10.4-cp310-cp310-win_amd64.whl", hash = "sha256:fe1892d9dfeef323ab14432ee0994fb8799da1755667e0a7dab1f91c30507c4c"},
     {file = "pyshtools-4.10.4.tar.gz", hash = "sha256:4edbee572990603c40f25daf1c8ff5d3429ec1c52343e0118fc2ae28f1d5588a"},
+]
+
+[[package]]
+name = "pytest"
+version = "8.3.3"
+requires_python = ">=3.8"
+summary = "pytest: simple powerful testing with Python"
+groups = ["test"]
+dependencies = [
+    "colorama; sys_platform == \"win32\"",
+    "exceptiongroup>=1.0.0rc8; python_version < \"3.11\"",
+    "iniconfig",
+    "packaging",
+    "pluggy<2,>=1.5",
+    "tomli>=1; python_version < \"3.11\"",
+]
+files = [
+    {file = "pytest-8.3.3-py3-none-any.whl", hash = "sha256:a6853c7375b2663155079443d2e45de913a911a11d669df02a50814944db57b2"},
+    {file = "pytest-8.3.3.tar.gz", hash = "sha256:70b98107bd648308a7952b06e6ca9a50bc660be218d53c257cc1fc94fda10181"},
 ]
 
 [[package]]
@@ -4118,6 +4151,18 @@ files = [
 ]
 
 [[package]]
+name = "tomli"
+version = "2.1.0"
+requires_python = ">=3.8"
+summary = "A lil' TOML parser"
+groups = ["test"]
+marker = "python_version < \"3.11\""
+files = [
+    {file = "tomli-2.1.0-py3-none-any.whl", hash = "sha256:a5c57c3d1c56f5ccdf89f6523458f60ef716e210fc47c4cfb188c5ba473e0391"},
+    {file = "tomli-2.1.0.tar.gz", hash = "sha256:3f646cae2aec94e17d04973e4249548320197cfabdf130015d023de4b74d8ab8"},
+]
+
+[[package]]
 name = "toolz"
 version = "0.12.1"
 requires_python = ">=3.7"
@@ -4188,7 +4233,7 @@ files = [
 name = "torch-scatter"
 version = "2.1.2"
 requires_python = ">=3.8"
-summary = "PyTorch Extension Library of Optimized Scatter Operations"
+summary = ""
 groups = ["default", "dev"]
 files = [
     {file = "torch_scatter-2.1.2.tar.gz", hash = "sha256:69b3aa435f2424ac6a1bfb6ff702da6eb73b33ca0db38fb26989c74159258e47"},
