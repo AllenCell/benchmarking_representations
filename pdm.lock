@@ -5,7 +5,7 @@
 groups = ["default", "build-requires", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:83e2d05bfc865c6cd6d8681e9304175cf7062bbed5e6b70a0d0ffbc2b1636d52"
+content_hash = "sha256:9d6f9414d66d9e4fb1a0b3dc7bf0aca3035e368f1a2839c2b60d390365305eb1"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -1845,7 +1845,7 @@ files = [
 name = "lie-learn"
 version = "0.0.1.post1"
 requires_python = ">2.7,!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
-summary = "A python package that knows how to do various tricky computations related to Lie groups and manifolds (mainly the sphere S2 and rotation group SO3)."
+summary = ""
 groups = ["default", "dev"]
 dependencies = [
     "numpy; python_version >= \"3.0\"",
@@ -2912,14 +2912,6 @@ files = [
 ]
 
 [[package]]
-name = "pointcloudutils"
-version = "0.1.0"
-editable = true
-path = "./pointcloudutils"
-summary = "Utils for point cloud models"
-groups = ["dev"]
-
-[[package]]
 name = "pooch"
 version = "1.8.1"
 requires_python = ">=3.7"
@@ -3040,7 +3032,7 @@ files = [
 [[package]]
 name = "py3nj"
 version = "0.1.2"
-summary = "numpy compatible wigner 3n-J symbols"
+summary = ""
 groups = ["default", "dev"]
 files = [
     {file = "py3nj-0.1.2.tar.gz", hash = "sha256:d1c68634381c82d2a5642e8dc9fc109faaf89e7c9fc5844f287713634fbc2cd7"},
@@ -4188,7 +4180,7 @@ files = [
 name = "torch-scatter"
 version = "2.1.2"
 requires_python = ">=3.8"
-summary = "PyTorch Extension Library of Optimized Scatter Operations"
+summary = ""
 groups = ["default", "dev"]
 files = [
     {file = "torch_scatter-2.1.2.tar.gz", hash = "sha256:69b3aa435f2424ac6a1bfb6ff702da6eb73b33ca0db38fb26989c74159258e47"},

@@ -55,17 +55,6 @@ verify_ssl = true
 name = "torch"
 type = "find_links"
 
-[tool.pdm.build]
-includes = ["br", "README.md", "LICENSE", "**/*.yaml" ]
-excludes = ["**/*.pyc", "**/__pycache__"]
-
-[tool.pdm.dev-dependencies]
-# These packages won't be exported to requirements.txt
-dev = [
-    "-e file:///${PROJECT_ROOT}/#egg=benchmarking-representations",
-    "-e file:///${PROJECT_ROOT}/pointcloudutils#egg=pointcloudutils",
-]
-
 [tool.pdm.scripts]
 # The name "post_lock" is special: this command will run automatically after any invocation of `pdm lock`
 post_lock = { shell = "pdm export -G build-requires --prod --no-default --no-hashes -o requirements1.txt && pdm export --prod --no-hashes -o requirements2.txt" }
@@ -75,6 +64,8 @@ post_lock = { shell = "pdm export -G build-requires --prod --no-default --no-has
 sync = ["--no-isolation"]
 install = ["--no-isolation"]
 
+[tool.pdm.dev-dependencies]
+dev = ["-e file:///${PROJECT_ROOT}/#egg=benchmarking-representations"]
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
