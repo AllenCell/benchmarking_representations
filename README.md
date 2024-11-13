@@ -57,7 +57,7 @@ torch.cuda.DeferredCudaCallError: CUDA call failed lazily at initialization with
 To run the models, you must set the `CYTODL_CONFIG_PATH` environment variable to point to the `br/configs` folder.
 Check that your current working directory is the `benchmarking_representations` folder, then run the following command (this will last for only the duration of your shell session).
 ```bash
-export CYTODL_CONFIG_PATH=$PWD/br/configs/
+export CYTODL_CONFIG_PATH=$PWD/configs/
 ```
 
 # Usage
@@ -82,7 +82,7 @@ Ensure to download all the data in the same folder where the repo was cloned!
 │   │   │   │   ├── config.yaml     <- Data config for image processing workflow
 ```
 
-Then follow the [installation](br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
+Then follow the [installation](src/br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
 
 ```
 ├── data
@@ -139,13 +139,13 @@ In all cases, create a single cell manifest (e.g. csv, parquet) for each dataset
 Here is an example of training a rotation invariant point cloud model
 
 ```bash
-python br/models/train.py experiment=cellpack/pc_equiv ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
+python src/br/models/train.py experiment=cellpack/pc_equiv ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
 ```
 
 Override parts of the experiment config via command line or manually in the configs. For example, to train a classical model, run
 
 ```bash
-python br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthmovers_sphere ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
+python src/br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthmovers_sphere ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
 ```
 
 ## Steps to download pre-trained models and pre-computed embeddings

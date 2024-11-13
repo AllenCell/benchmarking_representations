@@ -92,8 +92,8 @@ def get_evolve_data_list(
 
 def compute_features(
     dataset: str = "pcna",
-    results_path: str = "./br/configs/results/",
-    embeddings_path: str = "./br/embeddings/",
+    results_path: str = "./src/br/configs/results/",
+    embeddings_path: str = "./src/br/embeddings/",
     save_folder: str = "./",
     data_list: list = [],
     all_models: list = [],
