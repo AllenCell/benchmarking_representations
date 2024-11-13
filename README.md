@@ -70,7 +70,8 @@ export CYTODL_CONFIG_PATH=$PWD/configs/
 * [WTC-11 hIPSc single cell image dataset v1](https://staging.allencellquilt.org/b/allencell/tree/aics/hipsc_single_cell_image_dataset/)
 * [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/NPM1_single_cell_drug_perturbations/)
 
-Ensure to download all the data in the same folder where the repo was cloned!
+> [!NOTE]  
+> Ensure to download all the data in the same folder where the repo was cloned!
 
 2. Once data is downloaded, run preprocessing scripts to create the final image/pointcloud/SDF datasets (this step is not necessary for the cellPACK dataset). For image preprocessing used for punctate structures, install [snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) and update the data paths in
 
