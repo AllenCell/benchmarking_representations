@@ -499,9 +499,17 @@ def get_packing(tup):
 
         # for image models
         if get_image:
-            this_path = this_path + "figures/"
-            this_path = this_path.replace("positions", "voxelized_image").split(".")[0]
+            # Replace "positions" with "/figures/voxelized_image"
+            if "positions" in this_path:
+                this_path = this_path.replace("positions", "figures/voxelized_image")
+
+            # Remove the original file extension (.json in this case)
+            this_path = this_path.rsplit(".", 1)[0]  # This splits on the last dot and keeps the first part
+
+            # Append the new file extension
             this_path = this_path + "_seed_0.ome.tiff"
+
+            # Now you can load the image as before
             tmp = imread(this_path)
             points = tmp[:, 1, :, :]
             points = np.pad(points, ((0, 0), (0, 0), (117, 117)))
