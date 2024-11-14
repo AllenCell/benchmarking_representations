@@ -1,12 +1,16 @@
 [project]
-name = "benchmarking_representations"
-version = "0.1.0"
-description = "Collection of methods for performing morphology appropriate representation learning"
+name = "image_preprocessing"
+version = "0.0.1"
+description = "A snakemake workflow to preprocess a 3D single cell image dataset"
 readme = "README.md"
 authors = [
     { name = "Ritvik Vasan", email = "ritvik.vasan@alleninstitute.org" },
+    {name = "Nick Gomez", email = "nick.gomez@alleninstitute.org"},
+    {name = "Guilherme Pires", email = "guilherme.pires@alleninstitute.org"},
+    {name = "Ryan Spangler", email = "ryan.spangler@alleninstitute.org"},
+    {name = "Theo Knijnenburg", email = "theo.knijnenburg@alleninstitute.org"},
 ]
-requires-python = "==3.10.*"
+requires-python = "<3.11,>=3.8"
 license = {file = "LICENSE"}
 dependencies = [
     "torch-scatter>=2.1.2",
@@ -48,6 +52,30 @@ build-requires = [
 test = [
     "pytest>=8.3.3",
 ]
+preprocessing = [
+    "aicsimageio>=4.9.4",
+    "numpy",
+    "pandas",
+    "universal-pathlib",
+    "s3fs",
+    "fsspec",
+    "hydra-core",
+    "snakemake",
+    "scipy",
+    "tqdm",
+    "fastparquet",
+    "plotly",
+    "dash",
+    "aicsshparam",
+    "bfio",
+    "zarr",
+    "aiobotocore",
+    "ome-zarr",
+    "boto3",
+    "multiprocessing-on-dill",
+    "fire",
+    "pulp==2.7.0",
+]
 
 [tool.pdm]
 distribution = false
@@ -60,7 +88,7 @@ type = "find_links"
 
 [tool.pdm.scripts]
 # The name "post_lock" is special: this command will run automatically after any invocation of `pdm lock`
-post_lock = { shell = "pdm export -G build-requires --prod --no-default --no-hashes -o requirements1.txt && pdm export --prod -G test --no-hashes -o requirements2.txt" }
+post_lock = { shell = "pdm export -G build-requires --prod --no-default --no-hashes -o requirements1.txt && pdm export --prod -G preprocessing -G test --no-hashes -o requirements2.txt" }
 
 [tool.pdm.options]
 # Always install without any build isolation, to support torch-scatter and py3nj
@@ -69,6 +97,10 @@ install = ["--no-isolation"]
 
 [tool.pdm.dev-dependencies]
 dev = ["-e file:///${PROJECT_ROOT}/#egg=benchmarking-representations"]
+
+[tool.pdm.build]
+includes = ["image_preprocessing"]
+excludes = ["**/*.pyc", "**/__pycache__"]
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
