@@ -74,7 +74,7 @@ preprocessing = [
     "boto3",
     "multiprocessing-on-dill",
     "fire",
-    "pulp==2.7.0",
+    "pulp",
 ]
 
 [tool.pdm]
