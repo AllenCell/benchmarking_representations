@@ -35,12 +35,13 @@ export CUDA_VISIBLE_DEVICES=0,1
 export CUDA_VISIBLE_DEVICES=MIG-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
-Next, install all required packages
+Next, install all required packages.
 
 ```bash
 pip install -r requirements1.txt
 pip install -r requirements2.txt
 pip install -e .
+pip install -e subpackages/image_preprocessing/
 ```
 
 For `pdm` users, follow [these installation steps instead](./ADVANCED_INSTALLATION.md).
