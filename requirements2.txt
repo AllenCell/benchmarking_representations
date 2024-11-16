@@ -52,6 +52,7 @@ copairs @ git+https://github.com/cytomining/copairs.git@880f22a551bd897896d148a0
 cramjam==2.9.0
 croniter==1.4.1
 cycler==0.12.1
+cython==3.0.11
 cyto-dl[equiv,pcloud,s3,spharm,torchserve] @ git+https://github.com/AllenCellModeling/cyto-dl.git@a4a061d1808e0f94f906933642920142b581ba38
 dash==2.18.2
 dash-core-components==2.0.0

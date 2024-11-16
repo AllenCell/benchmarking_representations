@@ -33,6 +33,8 @@ dependencies = [
     "pip",
     "ipython",
     "ipykernel>=6.29.5",
+    "cython>=3.0.11",
+    "poetry>=1.8.4",
 ]
 
 [project.urls]
