@@ -72,34 +72,8 @@ class Register(Step):
             image_name="default",
         )
 
-        # self.output_format = "ome.tiff"
-        # base_output_dir = Path(self.output_dir).parent
-        # for ix, axis in enumerate(["z", "y", "x"]):
-        #     for projection_type in ["max", "mean", "median"]:
-        #         op = getattr(np, projection_type)
-        #         projection = op(img_data, axis=ix + 1)  # c = 0, z = 1, y = 2, x = 3
-
-        #         prefix = f"{projection_type}_projection_{axis}"
-        #         self.output_dir = base_output_dir / prefix
-        #         paths[f"{projection_type}_projection_{axis}"] = self.store_image(
-        #             projection,
-        #             img.channel_names,
-        #             None,
-        #             cell_id,
-        #         )
-
-        # self.output_dir = base_output_dir / "center_slice"
-        # center_slice = img_data[:, img_data.shape[1] // 2, :, :]
-        # paths["center_slice"] = self.store_image(
-        #     center_slice,
-        #     img.channel_names,
-        #     None,
-        #     cell_id,
-        # )
-
         return {
             self.cell_id_col: cell_id,
-            self.fov_id_col: row[self.fov_id_col],
             self.structure_name_col: row[self.structure_name_col],
             "success": True,
             **paths,

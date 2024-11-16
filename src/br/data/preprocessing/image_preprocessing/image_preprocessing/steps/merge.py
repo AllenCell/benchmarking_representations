@@ -129,32 +129,16 @@ class Merge(Step):
             ]
         ]
 
-        # Read in fov image and create brightfield cell channel
-        # as well as DNA if available
-        fov_img = _FOV_IMG if _FOV_IMG is not None else read_image(path_fov)
-
-        # get channel indices
-        bf_channel, dna_channel = self.parse_channelnames(fov_img.channel_names)
-        if dna_channel is not None:
-            raw_dna = raw_img.get_image_data(
-                "ZYX", S=0, T=0, C=channel_map[self.raw_col].index("dna")
-            )
-            check_dna_channel(fov_img, raw_dna, dna_channel, roi)
-
-        # do conversion step to get bright-field channel
-        cropped_bf = get_resized_fov_channel(fov_img, bf_channel, roi)
-
         # stack channels
         data_new = np.vstack(
             (
-                np.expand_dims(cropped_bf, axis=0),
                 raw_img.get_image_data("CZYX", S=0, T=0),
                 seg_img.get_image_data("CZYX", S=0, T=0, C=seg_channels_to_use),
             )
         ).astype("uint16")
 
         channel_names = (
-            ["bf"] + raw_channel_names + [seg_channel_names[ix] for ix in seg_channels_to_use]
+            raw_channel_names + [seg_channel_names[ix] for ix in seg_channels_to_use]
         )
 
         output_path = self.store_image(
@@ -163,7 +147,6 @@ class Merge(Step):
 
         return {
             self.cell_id_col: cell_id,
-            self.fov_id_col: row[self.fov_id_col],
             self.structure_name_col: row[self.structure_name_col],
             "merged_channels": str(output_path),
             "success": True,
