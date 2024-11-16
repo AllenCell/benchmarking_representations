@@ -157,7 +157,6 @@ class AlignMaskNormalize(Step):
 
         return {
             self.cell_id_col: cell_id,
-            self.fov_id_col: row[self.fov_id_col],
             self.structure_name_col: row[self.structure_name_col],
             "aligned_image": str(output_path),
             "angle": angle,
