@@ -42,8 +42,10 @@ Homepage = "https://github.com/AllenCell/benchmarking_representations"
 build-requires = [
     "pdm-backend>=2.4.3",
     "numpy>=1.25.2",
-    "pdm-pep517>=1.0.0",  # This is a build-time dependency of cyto-dl, required here because we instruct installation with --no-isolation
-    "setuptools<74.0.0",  # New versions prevent numpy.distutils (now deprecated) from working, and py3nj installation depends on numpy.distutils
+    "pdm-pep517>=1.0.0",
+    "setuptools<74.0.0",
+    "poetry-core>=1.9.1",
+    "cython>=3.0.11",
 ]
 test = [
     "pytest>=8.3.3",
