@@ -44,7 +44,7 @@ callbacks:
 
 logger:
   csv:
-    save_dir: ./outputs
+    save_dir: ./cellpack
     name: "so3_image"
     prefix:
 
