@@ -140,13 +140,13 @@ In all cases, create a single cell manifest (e.g. csv, parquet) for each dataset
 Here is an example of training a rotation invariant point cloud model
 
 ```bash
-python src/br/models/train.py experiment=cellpack/pc_equiv ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
+python src/br/models/train.py experiment=cellpack/pc_so3
 ```
 
 Override parts of the experiment config via command line or manually in the configs. For example, to train a classical model, run
 
 ```bash
-python src/br/models/train.py experiment=cellpack/pc_equiv model=pc/classical_earthmovers_sphere ++mlflow.experiment_name=[EXPERIMENT_NAME] ++mlflow.run_name=[RUN_NAME]
+python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_earthmovers_sphere ++csv.save_dir=[SAVE_DIR]
 ```
 
 ## Steps to download pre-trained models and pre-computed embeddings
