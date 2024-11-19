@@ -4,8 +4,8 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: pcna/pc_intensity.yaml
-  - override /model: pc/so3_earthmovers_intensity.yaml
+  - override /data: other_punctate/image.yaml
+  - override /model: image/classical.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
   - override /logger: csv.yaml
@@ -13,16 +13,16 @@ defaults:
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 
-experiment_name: pcna
+experiment_name: other_punctate
 tags: ["equivariance"]
 
 seed: 42
 
-model:
-  x_label: pcloud
-
 data:
-  batch_size: 32
+  batch_size: 4
+
+model:
+  x_label: image
 
 trainer:
   check_val_every_n_epoch: 1
@@ -44,7 +44,7 @@ callbacks:
 logger:
   csv:
     save_dir: ./outputs
-    name: "so3_pointcloud"
+    name: "classical_image"
     prefix:
 
 ##### ONLY USE WITH A100s

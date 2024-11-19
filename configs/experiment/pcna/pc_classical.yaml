@@ -36,15 +36,16 @@ callbacks:
     monitor: val/loss
 
   model_checkpoint:
-    dirpath: ${paths.output_dir}/ckpts
+    dirpath: ./ckpts
     monitor: val/loss
     save_top_k: 2
     every_n_epochs: 1
 
 logger:
-  mlflow:
-    experiment_name: test_br
-    run_name: test
+  csv:
+    save_dir: ./outputs
+    name: "classical_pointcloud"
+    prefix:
 
 ##### ONLY USE WITH A100s
 extras:

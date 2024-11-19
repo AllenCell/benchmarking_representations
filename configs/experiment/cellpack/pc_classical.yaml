@@ -4,16 +4,17 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: pcna/pc_intensity.yaml
-  - override /model: pc/so3_earthmovers_intensity.yaml
+  - override /data: cellpack/pc_jitter.yaml
+  - override /model: pc/classical_earthmovers_sphere.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
   - override /logger: csv.yaml
+  # - override /hydra: private/joblib
 
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 
-experiment_name: pcna
+experiment_name: cellpack
 tags: ["equivariance"]
 
 seed: 42
@@ -27,7 +28,7 @@ data:
 trainer:
   check_val_every_n_epoch: 1
   min_epochs: 400
-  max_epochs: 2000
+  max_epochs: 800
   accelerator: gpu
   devices: [0]
 
@@ -44,7 +45,7 @@ callbacks:
 logger:
   csv:
     save_dir: ./outputs
-    name: "so3_pointcloud"
+    name: "classical_pointcloud"
     prefix:
 
 ##### ONLY USE WITH A100s
