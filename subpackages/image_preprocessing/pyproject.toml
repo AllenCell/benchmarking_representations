@@ -1,0 +1,50 @@
+[tool.pdm.build]
+includes = ["image_preprocessing"]
+excludes = ["**/*.pyc", "**/__pycache__"]
+
+[project]
+# PEP 621 project metadata
+# See https://www.python.org/dev/peps/pep-0621/
+authors = [
+    {name = "Nick Gomez", email = "nick.gomez@alleninstitute.org"},
+    {name = "Guilherme Pires", email = "guilherme.pires@alleninstitute.org"},
+    {name = "Ryan Spangler", email = "ryan.spangler@alleninstitute.org"},
+    {name = "Ritvik Vasan", email = "ritvik.vasan@alleninstitute.org"},
+    {name = "Theo Knijnenburg", email = "theo.knijnenburg@alleninstitute.org"},
+]
+requires-python = "==3.10.*"
+dependencies = [
+    "aicsimageio>=4.9.4",
+    "numpy<2.0,>=1.18",
+    "pandas<2.0,>=1.1",
+    "universal-pathlib<1.0.0,>=0.0.18",
+    "s3fs<2023.0.0,>=2022.3.0",
+    "fsspec<2023.0.0,>=2022.3.0",
+    "hydra-core<2.0.0.0,>=1.2.0.dev2",
+    "snakemake<8.0.0,>=7.8.3",
+    "scipy<2.0.0,>=1.8.1",
+    "tqdm<5.0.0,>=4.64.0",
+    "fastparquet<1.0.0,>=0.8.1",
+    "plotly<6.0.0,>=5.9.0",
+    "dash<3.0.0,>=2.5.1",
+    "aicsshparam<1.0.0,>=0.1.1",
+    "bfio==2.3.0",
+    "zarr<3.0.0,>=2.12.0",
+    "aiobotocore<3.0.0,>=2.3.4",
+    "ome-zarr",
+    "boto3==1.21.0",
+    "multiprocessing-on-dill<4.0.0.0,>=3.5.0-alpha.4",
+    "fire<1.0.0,>=0.4.0",
+    "pulp==2.7.0",
+]
+name = "image_preprocessing"
+version = "0.0.1"
+description = "A snakemake workflow to preprocess a 3D single cell image dataset"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.scripts]
+# The name "post_lock" is special: this command will run automatically after any invocation of `pdm lock`
+post_lock = { shell = "pdm export --no-hashes -o requirements.txt" }
