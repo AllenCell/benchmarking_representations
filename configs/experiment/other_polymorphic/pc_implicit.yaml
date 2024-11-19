@@ -36,14 +36,14 @@ callbacks:
     monitor: val/loss
 
   model_checkpoint:
-    dirpath: ./ckpts
+    dirpath: ./other_polymorphic/ckpts
     monitor: val/loss
     save_top_k: 2
     every_n_epochs: 1
 
 logger:
   csv:
-    save_dir: ./outputs
+    save_dir: ./other_polymorphic
     name: "pc_implicit"
     prefix:
 
