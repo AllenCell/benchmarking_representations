@@ -205,9 +205,9 @@ def save_embeddings_across_models(args, manifest, data_list, all_models, run_nam
 
 
 def compute_relevant_features():
-
-    batch_size = 1
-    data_list, all_models, run_names, model_sizes = get_data_and_models(
+    batch_size = 1 # set batch size to 1 for emission stats and related metrics
+    # Load data and models
+    data_list, all_models, run_names, model_sizes, manifest = get_data_and_models(
         dataset_name, batch_size, results_path, debug
     )
 
