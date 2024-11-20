@@ -19,11 +19,11 @@ names:
   ]
 data_paths:
   [
-    "./configs/data/npm1/pc.yaml",
-    "./configs/data/npm1/so3_image_sdf.yaml",
-    "./configs/data/npm1/so3_image_seg.yaml",
-    "./configs/data/npm1/classical_image_sdf.yaml",
-    "./configs/data/npm1/classical_image_seg.yaml",
+    "/data/npm1/pc.yaml",
+    "/data/npm1/so3_image_sdf.yaml",
+    "/data/npm1/so3_image_seg.yaml",
+    "/data/npm1/classical_image_sdf.yaml",
+    "/data/npm1/classical_image_seg.yaml",
   ]
 classification_label: ["STR_connectivity_cc_thresh"]
 regression_label:

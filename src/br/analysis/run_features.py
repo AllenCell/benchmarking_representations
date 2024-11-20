@@ -39,9 +39,12 @@ def main(args):
     # set batch size to 1 for emission stats/features
     batch_size = 1
 
+    # Get config path from CYTODL_CONFIG_PATH
+    config_path = os.environ.get('CYTODL_CONFIG_PATH')
+
     # Load data and models
     data_list, all_models, run_names, model_sizes, manifest, keys, latent_dims = get_data_and_models(
-        args.dataset_name, batch_size, args.results_path, args.debug
+        args.dataset_name, batch_size, config_path + '/results/', args.debug
     )
     max_embed_dim = min(latent_dims)
 
@@ -125,9 +128,6 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--embeddings_path", type=str, required=True, help="Path to the saved embeddings."
-    )
-    parser.add_argument(
-        "--results_path", type=str, required=True, help="Path to the results directory."
     )
     parser.add_argument(
         "--meta_key",
