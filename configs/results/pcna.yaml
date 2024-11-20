@@ -18,12 +18,12 @@ names:
     "Rotation_invariant_pointcloud_jitter",
   ]
 data_paths: [
-    "./configs/data/pcna/image.yaml",
-    "./configs/data/pcna/image.yaml",
-    "./configs/data/pcna/pc.yaml",
-    "./configs/data/pcna/pc_intensity.yaml",
+    "/data/pcna/image.yaml",
+    "/data/pcna/image.yaml",
+    "/data/pcna/pc.yaml",
+    "/data/pcna/pc_intensity.yaml",
     # "./src/br/configs/data/pcna/pc_intensity_jitter.yaml",
-    "./configs/data/pcna/pc_intensity.yaml",
+    "/data/pcna/pc_intensity.yaml",
   ]
 classification_label: ["cell_stage_fine", "flag_comment"]
 regression_label:

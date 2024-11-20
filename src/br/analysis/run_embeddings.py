@@ -31,12 +31,15 @@ def main(args):
     # Set the device
     device = "cuda:0"
 
-    # Set working directory and paths
-    os.chdir(args.src_path)
+    # # Set working directory and paths
+    # os.chdir(args.src_path)
+
+    # Get config path from CYTODL_CONFIG_PATH
+    config_path = os.environ.get('CYTODL_CONFIG_PATH')
 
     # Load data and models
     data_list, all_models, run_names, model_sizes, manifest, _, _ = get_data_and_models(
-        args.dataset_name, args.batch_size, args.results_path, args.debug
+        args.dataset_name, args.batch_size, config_path + '/results/', args.debug
     )
 
     # Load evaluation params
@@ -75,12 +78,10 @@ if __name__ == "__main__":
         "--save_path", type=str, required=True, help="Path to save the embeddings."
     )
     parser.add_argument(
-        "--results_path", type=str, required=True, help="Path to the results directory."
-    )
-    parser.add_argument(
         "--meta_key",
         type=str,
-        required=True,
+        default=None,
+        required=False,
         help="Metadata to add to the embeddings aside from CellId",
     )
     parser.add_argument(
@@ -96,7 +97,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Validate that required paths are provided
-    if not args.src_path or not args.save_path or not args.results_path or not args.dataset_name:
+    if not args.src_path or not args.save_path or not args.dataset_name:
         print("Error: Required arguments are missing.")
         sys.exit(1)
 

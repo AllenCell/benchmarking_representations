@@ -19,11 +19,11 @@ names:
   ]
 data_paths:
   [
-    "./configs/data/other_punctate/image.yaml",
-    "./configs/data/other_punctate/image.yaml",
-    "./configs/data/other_punctate/pc.yaml",
-    "./configs/data/other_punctate/pc_intensity.yaml",
-    "./configs/data/other_punctate/pc_intensity_structurenorm.yaml",
+    "/data/other_punctate/image.yaml",
+    "/data/other_punctate/image.yaml",
+    "/data/other_punctate/pc.yaml",
+    "/data/other_punctate/pc_intensity.yaml",
+    "/data/other_punctate/pc_intensity_structurenorm.yaml",
   ]
 classification_label: ["structure_name", "cell_stage"]
 regression_label:
