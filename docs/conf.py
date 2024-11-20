@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # benchmarking_representations documentation build configuration file, created by
 # sphinx-quickstart.

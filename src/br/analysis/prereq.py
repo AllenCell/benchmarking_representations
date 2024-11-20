@@ -1,25 +1,36 @@
 # Free up cache
-import gc, torch
+import gc
+
+import torch
+
 gc.collect()
 torch.cuda.empty_cache()
 
-import os, subprocess
 import argparse
+import os
+import subprocess
 from pathlib import Path
 
 # Based on the utilization, set the GPU ID
 
+
 def get_gpu_info():
     # Run nvidia-smi command and get the output
-    cmd = ["nvidia-smi", "--query-gpu=index,uuid,name,utilization.gpu", "--format=csv,noheader,nounits"]
+    cmd = [
+        "nvidia-smi",
+        "--query-gpu=index,uuid,name,utilization.gpu",
+        "--format=csv,noheader,nounits",
+    ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     return result.stdout.strip()
+
 
 def check_mig():
     # Check if MIG is enabled
     cmd = ["nvidia-smi", "-L"]
     result = subprocess.run(cmd, capture_output=True, text=True)
     return "MIG" in result.stdout
+
 
 def get_mig_ids():
     # Get the MIG UUIDs
@@ -28,9 +39,10 @@ def get_mig_ids():
     mig_ids = []
     for line in result.stdout.splitlines():
         if "MIG" in line:
-            mig_id = line.split("(UUID: ")[-1].strip(')')
+            mig_id = line.split("(UUID: ")[-1].strip(")")
             mig_ids.append(mig_id)
     return mig_ids
+
 
 def config_gpu():
     selected_gpu_id_or_uuid = ""
@@ -41,7 +53,7 @@ def config_gpu():
 
     for line in lines:
         index, uuid, name, utilization = map(str.strip, line.split(","))
-        
+
         # If utilization is [N/A], treat it as less than 10
         if utilization == "[N/A]":
             utilization = -1  # Assign a value less than 10 to simulate "idle"
@@ -60,6 +72,7 @@ def config_gpu():
                 print(f"Selected UUID is {selected_gpu_id_or_uuid}")
                 break
     return selected_gpu_id_or_uuid
+
 
 selected_gpu_id_or_uuid = config_gpu()
 
@@ -102,6 +115,7 @@ from br.models.save_embeddings import (
 )
 from br.models.utils import get_all_configs_per_dataset
 
+
 def main(args):
     # Set working directory and paths
     os.chdir(args.src_path)
@@ -124,6 +138,7 @@ def main(args):
 
     compute_embeddings()
     compute_relevant_features()
+
 
 def compute_embeddings():
     # Compute embeddings and reconstructions for each model
@@ -152,6 +167,7 @@ def compute_embeddings():
         eval_scaled_img,
         eval_scaled_img_params,
     )
+
 
 def compute_relevant_features():
 
@@ -219,8 +235,7 @@ def compute_relevant_features():
         "Reconstruction",
         "Classification",
         "Compactness",
-    ] # Different again
-
+    ]  # Different again
 
     compute_features(
         dataset=dataset_name,
@@ -245,22 +260,22 @@ def compute_relevant_features():
         compactness_params=compactness_params,
     )
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script for Benchmarking Representations")
-    parser.add_argument("--src_path", type=str, required=True,
-                        help="Path to the source directory.")
-    parser.add_argument("--save_path", type=str, required=True,
-                        help="Path to save the embeddings.")
-    parser.add_argument("--results_path", type=str, required=True,
-                        help="Path to the results directory.")
-    parser.add_argument("--dataset_name", type=str, required=True,
-                        help="Name of the dataset.")
-    parser.add_argument("--batch_size", type=int, default=2,
-                        help="Batch size for processing.")
-    parser.add_argument("--debug", type=bool, default=True,
-                        help="Enable debug mode.")
+    parser.add_argument(
+        "--src_path", type=str, required=True, help="Path to the source directory."
+    )
+    parser.add_argument(
+        "--save_path", type=str, required=True, help="Path to save the embeddings."
+    )
+    parser.add_argument(
+        "--results_path", type=str, required=True, help="Path to the results directory."
+    )
+    parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
+    parser.add_argument("--batch_size", type=int, default=2, help="Batch size for processing.")
+    parser.add_argument("--debug", type=bool, default=True, help="Enable debug mode.")
 
- 
     args = parser.parse_args()
 
     # Validate that required paths are provided

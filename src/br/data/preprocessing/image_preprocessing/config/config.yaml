@@ -10,9 +10,9 @@ force: false
 raise_errors: true
 samples_per_structure:
 
-output_dir: 
+output_dir:
 
-input_manifest: 
+input_manifest:
 
 remote_provider:
 

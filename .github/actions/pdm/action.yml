@@ -4,7 +4,7 @@ runs:
   using: composite
   steps:
     - name: Set up PDM
-      uses: pdm-project/setup-pdm@568ddd69406b30de1774ec0044b73ae06e716aa4  # v4.1
+      uses: pdm-project/setup-pdm@568ddd69406b30de1774ec0044b73ae06e716aa4 # v4.1
       with:
         python-version: "3.10"
         version: 2.20.0.post1

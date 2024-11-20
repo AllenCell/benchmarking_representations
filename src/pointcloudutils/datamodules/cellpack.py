@@ -504,7 +504,9 @@ def get_packing(tup):
                 this_path = this_path.replace("positions", "figures/voxelized_image")
 
             # Remove the original file extension (.json in this case)
-            this_path = this_path.rsplit(".", 1)[0]  # This splits on the last dot and keeps the first part
+            this_path = this_path.rsplit(".", 1)[
+                0
+            ]  # This splits on the last dot and keeps the first part
 
             # Append the new file extension
             this_path = this_path + "_seed_0.ome.tiff"
