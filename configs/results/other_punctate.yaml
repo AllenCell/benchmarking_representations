@@ -25,3 +25,5 @@ data_paths:
     "./configs/data/other_punctate/pc_intensity.yaml",
     "./configs/data/other_punctate/pc_intensity_structurenorm.yaml",
   ]
+classification_label: ["structure_name", "cell_stage"]
+regression_label:
