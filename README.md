@@ -3,6 +3,7 @@
 Code for training and benchmarking morphology appropriate representation learning methods.
 
 # Preprocessing
+
 This README gives instructions for running our analysis against preprocessed image data. Because the preprocessing can take a long time, we are publishing preprocessed data along with the original movies. To do the preprocessing yourself, see the instructions in [subpackages/image_preprocessing/README.md](./subpackages/image_preprocessing/README.md).
 
 # Installation
