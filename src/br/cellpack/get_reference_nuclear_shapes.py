@@ -1,6 +1,7 @@
 # %%
-import quilt3
 import os
+
+import quilt3
 
 # %%
 b = quilt3.Bucket("s3://allencell")

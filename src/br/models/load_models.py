@@ -7,9 +7,7 @@ from br.data.get_datamodules import get_data
 from br.models.utils import get_all_configs_per_dataset
 
 
-def load_model_from_path(
-    dataset, results_path, strict=False, split="val", device="cuda:0"
-):
+def load_model_from_path(dataset, results_path, strict=False, split="val", device="cuda:0"):
     MODEL_INFO = get_all_configs_per_dataset(results_path)
     models = MODEL_INFO[dataset]
     model_sizes = []

@@ -1,14 +1,15 @@
-import os
-import json
-import pandas as pd
-import numpy as np
 import concurrent.futures
+import gc
+import json
 import multiprocessing
-from time import time
+import os
 import subprocess
 from pathlib import Path
-import gc
+from time import time
+
 import fire
+import numpy as np
+import pandas as pd
 
 RULES = [
     "random",
@@ -33,9 +34,7 @@ CONFIG_PATH = DATADIR / "config/pcna_parallel_packing_config.json"
 RECIPE_TEMPLATE_PATH = DATADIR / "templates"
 TEMPLATE_FILES = os.listdir(RECIPE_TEMPLATE_PATH)
 TEMPLATE_FILES = [
-    RECIPE_TEMPLATE_PATH / file
-    for file in TEMPLATE_FILES
-    if file.split(".")[-1] == "json"
+    RECIPE_TEMPLATE_PATH / file for file in TEMPLATE_FILES if file.split(".")[-1] == "json"
 ]
 
 GENERATED_RECIPE_PATH = DATADIR / "generated_recipes"
@@ -59,8 +58,7 @@ def create_rule_files(
     shape_angles=ANGLES,
     mesh_path=MESH_PATH,
 ):
-    """
-    Create rule files for each combination of shape IDs and angles.
+    """Create rule files for each combination of shape IDs and angles.
 
     Args:
         cellpack_rules (list): List of rule file paths.
@@ -72,7 +70,7 @@ def create_rule_files(
     """
     for rule in cellpack_rules:
         print(f"Creating files for {rule}")
-        with open(rule, "r") as j:
+        with open(rule) as j:
             contents = json.load(j)
             contents_shape = contents.copy()
             base_version = contents_shape["version"]
@@ -82,24 +80,22 @@ def create_rule_files(
                     this_row = this_row.loc[this_row["angle"] == ang]
 
                     contents_shape["version"] = f"{base_version}_{this_id}_{ang}"
-                    contents_shape["objects"]["mean_nucleus"]["representations"][
-                        "mesh"
-                    ]["name"] = f"{this_id}_{ang}.obj"
-                    contents_shape["objects"]["mean_nucleus"]["representations"][
-                        "mesh"
-                    ]["path"] = str(mesh_path)
+                    contents_shape["objects"]["mean_nucleus"]["representations"]["mesh"][
+                        "name"
+                    ] = f"{this_id}_{ang}.obj"
+                    contents_shape["objects"]["mean_nucleus"]["representations"]["mesh"][
+                        "path"
+                    ] = str(mesh_path)
                     # save json
                     with open(
-                        generated_recipe_path
-                        / f"{base_version}_{this_id}_rotation_{ang}.json",
+                        generated_recipe_path / f"{base_version}_{this_id}_rotation_{ang}.json",
                         "w",
                     ) as f:
                         json.dump(contents_shape, f, indent=4)
 
 
 def update_cellpack_config(config_path=CONFIG_PATH, output_path=DEFAULT_OUTPUT_PATH):
-    """
-    Update the cellPack configuration file with the specified output path.
+    """Update the cellPack configuration file with the specified output path.
 
     Args:
         config_path (str): The path to the CellPack configuration file.
@@ -108,7 +104,7 @@ def update_cellpack_config(config_path=CONFIG_PATH, output_path=DEFAULT_OUTPUT_P
     Returns:
         None
     """
-    with open(config_path, "r") as j:
+    with open(config_path) as j:
         contents = json.load(j)
         contents["out"] = str(output_path)
     with open(config_path, "w") as f:
@@ -116,8 +112,7 @@ def update_cellpack_config(config_path=CONFIG_PATH, output_path=DEFAULT_OUTPUT_P
 
 
 def get_files_to_use(generated_recipe_path, rules_to_use, shape_rotations):
-    """
-    Retrieves a list of input files to use based on the given rules and shape rotations.
+    """Retrieves a list of input files to use based on the given rules and shape rotations.
 
     Args:
         generated_recipe_path (str): The path to the directory containing the generated
@@ -127,7 +122,6 @@ def get_files_to_use(generated_recipe_path, rules_to_use, shape_rotations):
 
     Returns:
         input_files_to_use (list): A list of input files to use.
-
     """
     files = os.listdir(generated_recipe_path)
     max_num_files = np.inf
@@ -147,8 +141,7 @@ def get_files_to_use(generated_recipe_path, rules_to_use, shape_rotations):
 
 
 def run_single_packing(recipe_path, config_path=CONFIG_PATH):
-    """
-    Run the packing using the specified recipe and configuration files.
+    """Run the packing using the specified recipe and configuration files.
 
     Args:
         recipe_path (str): The path to the recipe file.
@@ -189,8 +182,7 @@ def run_workflow(
     generated_recipe_path=GENERATED_RECIPE_PATH,
     template_files=TEMPLATE_FILES,
 ):
-    """
-    Runs the workflow for generating synthetic data using cellPack.
+    """Runs the workflow for generating synthetic data using cellPack.
 
     Args:
         output_path (str): Path to the output directory.
@@ -227,9 +219,7 @@ def run_workflow(
     update_cellpack_config(config_path, output_path)
 
     if input_files_to_use is None:
-        input_files_to_use = get_files_to_use(
-            generated_recipe_path, rules_to_use, shape_rotations
-        )
+        input_files_to_use = get_files_to_use(generated_recipe_path, rules_to_use, shape_rotations)
 
     num_files = len(input_files_to_use)
     print(f"Found {num_files} files")
@@ -247,9 +237,7 @@ def run_workflow(
         skipped_count = 0
         count = 0
         failed_count = 0
-        with concurrent.futures.ProcessPoolExecutor(
-            max_workers=num_processes
-        ) as executor:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=num_processes) as executor:
             for file in input_files_to_use:
                 fname = Path(file).stem
                 fname = "".join(fname.split("_rotation"))

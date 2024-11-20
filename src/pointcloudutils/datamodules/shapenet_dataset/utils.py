@@ -1,12 +1,11 @@
-from torchvision import transforms
 import numpy as np
+from torchvision import transforms
+
 from .fields import IndexField, PartialPointCloudField, PointCloudField, PointsField
 from .transforms import PointcloudNoise, SubsamplePointcloud, SubsamplePoints
 
 
-def get_data_fields(
-    mode, points_subsample, input_type, points_file, multi_files, points_iou_file
-):
+def get_data_fields(mode, points_subsample, input_type, points_file, multi_files, points_iou_file):
     """Returns the data fields.
 
     Args:
@@ -58,9 +57,7 @@ def get_inputs_field(
         transform = transforms.Compose(
             [SubsamplePointcloud(pointcloud_n), PointcloudNoise(pointcloud_noise)]
         )
-        inputs_field = PointCloudField(
-            pointcloud_file, transform, multi_files=multi_files
-        )
+        inputs_field = PointCloudField(pointcloud_file, transform, multi_files=multi_files)
     elif input_type == "partial_pointcloud":
         transform = transforms.Compose(
             [
