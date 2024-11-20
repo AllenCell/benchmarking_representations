@@ -5,7 +5,11 @@
 groups = ["default", "build-requires", "dev", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
+<<<<<<< Updated upstream
 content_hash = "sha256:98810061b17f4aafcf5418bcb4eced76c4ceadc79c2d483333a73a3c56c70ff0"
+=======
+content_hash = "sha256:b0658248d3d3a886709f40b825c169eab76c18d5d8ff1c0005e7dabd7212fa38"
+>>>>>>> Stashed changes
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -1752,13 +1756,13 @@ files = [
 
 [[package]]
 name = "joblib"
-version = "1.3.2"
-requires_python = ">=3.7"
+version = "1.4.2"
+requires_python = ">=3.8"
 summary = "Lightweight pipelining with Python functions"
 groups = ["default", "dev"]
 files = [
-    {file = "joblib-1.3.2-py3-none-any.whl", hash = "sha256:ef4331c65f239985f3f2220ecc87db222f08fd22097a3dd5698f693875f8cbb9"},
-    {file = "joblib-1.3.2.tar.gz", hash = "sha256:92f865e621e17784e7955080b6d042489e3b8e294949cc44c6eac304f59772b1"},
+    {file = "joblib-1.4.2-py3-none-any.whl", hash = "sha256:06d478d5674cbc267e7496a410ee875abd68e4340feff4490bcb7afb88060ae6"},
+    {file = "joblib-1.4.2.tar.gz", hash = "sha256:2382c5816b2636fbd20a09e0f4e9dad4736765fdfb7dca582943b9c1366b3f0e"},
 ]
 
 [[package]]
@@ -1856,8 +1860,13 @@ files = [
 name = "lie-learn"
 version = "0.0.1.post1"
 requires_python = ">2.7,!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
+<<<<<<< Updated upstream
 summary = ""
 groups = ["default", "dev"]
+=======
+summary = "A python package that knows how to do various tricky computations related to Lie groups and manifolds (mainly the sphere S2 and rotation group SO3)."
+groups = ["default"]
+>>>>>>> Stashed changes
 dependencies = [
     "numpy; python_version >= \"3.0\"",
     "numpy<1.17; python_version < \"3.0\"",
@@ -3054,8 +3063,13 @@ files = [
 [[package]]
 name = "py3nj"
 version = "0.1.2"
+<<<<<<< Updated upstream
 summary = ""
 groups = ["default", "dev"]
+=======
+summary = "numpy compatible wigner 3n-J symbols"
+groups = ["default"]
+>>>>>>> Stashed changes
 files = [
     {file = "py3nj-0.1.2.tar.gz", hash = "sha256:d1c68634381c82d2a5642e8dc9fc109faaf89e7c9fc5844f287713634fbc2cd7"},
 ]
