@@ -31,12 +31,9 @@ dependencies = [
     "mesh-to-sdf>=0.0.15",
     "pyopengl>=3.1.0",
     "pip",
-<<<<<<< Updated upstream
     "ipython",
     "ipykernel>=6.29.5",
-=======
     "joblib>=1.4.2",
->>>>>>> Stashed changes
 ]
 
 [project.urls]
