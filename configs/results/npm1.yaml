@@ -25,3 +25,6 @@ data_paths:
     "./configs/data/npm1/classical_image_sdf.yaml",
     "./configs/data/npm1/classical_image_seg.yaml",
   ]
+classification_label: ["STR_connectivity_cc_thresh"]
+regression_label:
+  ["mean_centroid_distances", "mean_nucleolus_volume", "mean_nucleolus_area"]

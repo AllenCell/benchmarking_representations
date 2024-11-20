@@ -25,3 +25,5 @@ data_paths: [
     # "./src/br/configs/data/cellpack/pc_jitter.yaml",
     "./configs/data/cellpack/pc.yaml",
   ]
+classification_label: ["rule"]
+regression_label:
