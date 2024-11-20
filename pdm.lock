@@ -5,11 +5,7 @@
 groups = ["default", "build-requires", "dev", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-<<<<<<< Updated upstream
-content_hash = "sha256:98810061b17f4aafcf5418bcb4eced76c4ceadc79c2d483333a73a3c56c70ff0"
-=======
 content_hash = "sha256:b0658248d3d3a886709f40b825c169eab76c18d5d8ff1c0005e7dabd7212fa38"
->>>>>>> Stashed changes
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
