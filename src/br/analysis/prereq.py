@@ -1,15 +1,23 @@
 # Free up cache
+import argparse
 import gc
+import os
+import subprocess
 
+import pandas as pd
 import torch
+
+from br.models.compute_features import compute_features
+from br.models.load_models import get_data_and_models
+from br.models.save_embeddings import (
+    get_pc_loss_chamfer,
+    save_embeddings,
+    save_emissions,
+)
+from br.models.utils import get_all_configs_per_dataset
 
 gc.collect()
 torch.cuda.empty_cache()
-
-import argparse
-import os
-import subprocess
-from pathlib import Path
 
 # Based on the utilization, set the GPU ID
 
@@ -89,32 +97,6 @@ device = "cuda:0"
 
 # Setting a GPU ID is crucial for the script to work well!
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import torch
-import yaml
-from hydra.utils import instantiate
-from PIL import Image
-from torch.utils.data import DataLoader, Dataset
-
-from br.features.archetype import AA_Fast
-from br.features.plot import collect_outputs, plot, plot_stratified_pc
-from br.features.reconstruction import stratified_latent_walk
-from br.features.utils import (
-    normalize_intensities_and_get_colormap,
-    normalize_intensities_and_get_colormap_apply,
-)
-from br.models.compute_features import compute_features, get_embeddings
-from br.models.load_models import get_data_and_models
-from br.models.save_embeddings import (
-    get_pc_loss,
-    get_pc_loss_chamfer,
-    save_embeddings,
-    save_emissions,
-)
-from br.models.utils import get_all_configs_per_dataset
-
 
 def main(args):
     # Set working directory and paths
@@ -126,41 +108,94 @@ def main(args):
     debug = args.debug
 
     # Load data and models
-    data_list, all_models, run_names, model_sizes = get_data_and_models(
+    data_list, all_models, run_names, model_sizes, manifest = get_data_and_models(
         dataset_name, batch_size, results_path, debug
     )
 
     # Save model sizes to CSV
-    gg = pd.DataFrame()
-    gg["model"] = run_names
-    gg["model_size"] = model_sizes
-    gg.to_csv(os.path.join(save_path, "model_sizes.csv"))
+    sizes_ = pd.DataFrame()
+    sizes_["model"] = run_names
+    sizes_["model_size"] = model_sizes
+    sizes_.to_csv(os.path.join(save_path, "model_sizes.csv"))
 
-    compute_embeddings()
+    save_embeddings_across_models(args, manifest, data_list, all_models, run_names)
     compute_relevant_features()
 
 
-def compute_embeddings():
+def _setup_evaluation_params(manifest, run_names):
+    """Return evaluation params related to.
+
+    1. loss_eval_list - which loss to use for each model (Defaults to Chamfer loss)
+    2. skew_scale - Hyperparameter associated with sampling of pointclouds from images
+    3. sample_points_list - whether to sample pointclouds for each model
+    4. eval_scaled_img - whether to scale the images for evaluation (specific to SDF models)
+    5. eval_scaled_img_params - parameters like mesh paths, scale factors, pointcloud paths associated
+    with evaluating scaled images
+    """
+    eval_scaled_img = [False] * len(run_names)
+    eval_scaled_img_params = [{}] * len(run_names)
+
+    if "SDF" in "\t".join(run_names):
+        eval_scaled_img_resolution = 32
+        gt_mesh_dir = manifest["mesh_folder"].iloc[0]
+        gt_sampled_pts_dir = manifest["pointcloud_folder"].iloc[0]
+        gt_scale_factor_dict_path = manifest["scale_factor"].iloc[0]
+        eval_scaled_img_params = []
+        for name_ in run_names:
+            if "seg" in name_:
+                model_type = "seg"
+            elif "SDF" in name_:
+                model_type = "sdf"
+            elif "pointcloud" in name_:
+                model_type = "iae"
+            eval_scaled_img_params.append(
+                {
+                    "eval_scaled_img_model_type": model_type,
+                    "eval_scaled_img_resolution": eval_scaled_img_resolution,
+                    "gt_mesh_dir": gt_mesh_dir,
+                    "gt_scale_factor_dict_path": gt_scale_factor_dict_path,
+                    "gt_sampled_pts_dir": gt_sampled_pts_dir,
+                    "mesh_ext": "stl",
+                }
+            )
+        loss_eval_list = [torch.nn.MSELoss(reduction="none")] * len(run_names)
+        sample_points_list = [False] * len(run_names)
+        skew_scale = None
+    else:
+        loss_eval_list = None
+        skew_scale = 100
+        sample_points_list = []
+        for name_ in run_names:
+            if "image" in name_:
+                sample_points_list.append(True)
+            else:
+                sample_points_list.append(False)
+    return eval_scaled_img, eval_scaled_img_params, loss_eval_list, sample_points_list, skew_scale
+
+
+def save_embeddings_across_models(args, manifest, data_list, all_models, run_names):
+    """
+    Save embeddings across models
+    """
     # Compute embeddings and reconstructions for each model
-    debug = False
     splits_list = ["train", "val", "test"]
-    meta_key = "rule"
-    eval_scaled_img = [False] * 5
-    eval_scaled_img_params = [{}] * 5
-    loss_eval_list = None
-    # sample_points_list = [True, True, False, False, False] # This is also different for each of PCNA and Cellpack - RITVIK
-    sample_points_list = [False, False, True, True, False]
-    skew_scale = 100
+    (
+        eval_scaled_img,
+        eval_scaled_img_params,
+        loss_eval_list,
+        sample_points_list,
+        skew_scale,
+    ) = _setup_evaluation_params(manifest, run_names)
 
     save_embeddings(
-        save_path,
+        args.save_path,
         data_list,
         all_models,
         run_names,
-        debug,
+        args.debug,
         splits_list,
         device,
-        meta_key,
+        args.meta_key,
         loss_eval_list,
         sample_points_list,
         skew_scale,
@@ -271,6 +306,18 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--results_path", type=str, required=True, help="Path to the results directory."
+    )
+    parser.add_argument(
+        "--meta_key",
+        type=str,
+        required=True,
+        help="Metadata to add to the embeddings aside from CellId",
+    )
+    parser.add_argument(
+        "--sdf",
+        type=bool,
+        required=True,
+        help="boolean indicating whether the experiments involve SDFs",
     )
     parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     parser.add_argument("--batch_size", type=int, default=2, help="Batch size for processing.")
