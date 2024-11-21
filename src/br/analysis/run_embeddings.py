@@ -19,10 +19,6 @@ def main(args):
     # Based on the utilization, set the GPU ID
     # Setting a GPU ID is crucial for the script to work well!
     selected_gpu_id_or_uuid = config_gpu()
-    selected_gpu_id_or_uuid = "MIG-5c1d3311-7294-5551-9e4f-3535560f5f82"
-    import ipdb
-
-    ipdb.set_trace()
 
     # Set the CUDA_VISIBLE_DEVICES environment variable using the selected ID
     if selected_gpu_id_or_uuid:
