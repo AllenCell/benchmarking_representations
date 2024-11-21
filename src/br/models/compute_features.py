@@ -166,7 +166,7 @@ def compute_features(
 
         if "Reconstruction" in metric_list:
             print("Getting reconstruction")
-            rec_df = all_ret.loc[all_ret['split'] == 'test'].reset_index(drop=True)
+            rec_df = all_ret.loc[all_ret["split"] == "test"].reset_index(drop=True)
             rec_df.to_csv(path / "reconstruction.csv")
             metric_list.pop(metric_list.index("Reconstruction"))
 

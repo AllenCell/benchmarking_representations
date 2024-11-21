@@ -1,6 +1,9 @@
-import subprocess
-import torch
+import gc
 import os
+import subprocess
+
+import torch
+
 from br.models.utils import get_all_configs_per_dataset
 
 
@@ -62,6 +65,24 @@ def config_gpu():
                 print(f"Selected UUID is {selected_gpu_id_or_uuid}")
                 break
     return selected_gpu_id_or_uuid
+
+
+def _setup_gpu():
+    # Free up cache
+    gc.collect()
+    torch.cuda.empty_cache()
+
+    # Based on the utilization, set the GPU ID
+    # Setting a GPU ID is crucial for the script to work well!
+    selected_gpu_id_or_uuid = config_gpu()
+
+    # Set the CUDA_VISIBLE_DEVICES environment variable using the selected ID
+    if selected_gpu_id_or_uuid:
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        os.environ["CUDA_VISIBLE_DEVICES"] = selected_gpu_id_or_uuid
+        print(f"CUDA_VISIBLE_DEVICES set to: {selected_gpu_id_or_uuid}")
+    else:
+        print("No suitable GPU or MIG ID found. Exiting...")
 
 
 def _setup_evaluation_params(manifest, run_names):
