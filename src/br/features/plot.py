@@ -283,7 +283,7 @@ def plot_pc_saved(
     if "inorm" not in df.columns:
         df, cmap, _, _ = normalize_intensities_and_get_colormap(df=df, pcts=[5, 95])
     else:
-        cmap = "inferno"
+        cmap = "YlGnBu"
 
     for sub_key in df[key].unique():
         df_sub = df.loc[df[key] == sub_key]

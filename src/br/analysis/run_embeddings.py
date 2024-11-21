@@ -2,6 +2,7 @@
 import argparse
 import os
 import sys
+
 from br.analysis.analysis_utils import _setup_evaluation_params, _setup_gpu
 from br.models.load_models import get_data_and_models
 from br.models.save_embeddings import save_embeddings
