@@ -1,7 +1,6 @@
 import subprocess
-
 import torch
-
+import os
 from br.models.utils import get_all_configs_per_dataset
 
 
@@ -119,9 +118,8 @@ def _setup_evaluation_params(manifest, run_names):
 def _setup_evolve_params(run_names, data_config_list, keys):
     eval_meshed_img = [False] * len(run_names)
     eval_meshed_img_model_type = [None] * len(run_names)
-    compute_evolve_dataloaders = False
+    compute_evolve_dataloaders = True
     if "SDF" in "\t".join(run_names):
-        compute_evolve_dataloaders = True
         eval_meshed_img = [True] * len(run_names)
         eval_meshed_img_model_type = []
         for name_ in run_names:
@@ -140,7 +138,7 @@ def _setup_evolve_params(run_names, data_config_list, keys):
         "compute_evolve_dataloaders": compute_evolve_dataloaders,
         "eval_meshed_img": eval_meshed_img,
         "eval_meshed_img_model_type": eval_meshed_img_model_type,
-        "skew_scale": None,
+        "skew_scale": 100,
         "only_embedding": False,
         "fit_pca": False,
         "pc_is_iae": False,
@@ -151,6 +149,8 @@ def _setup_evolve_params(run_names, data_config_list, keys):
 def _get_feature_params(results_path, dataset_name, manifest, keys, run_names):
     DATA_LIST = get_all_configs_per_dataset(results_path)
     data_config_list = DATA_LIST[dataset_name]["data_paths"]
+    cytodl_config_path = os.environ.get("CYTODL_CONFIG_PATH")
+    data_config_list = [cytodl_config_path + i for i in data_config_list]
     class_label = DATA_LIST[dataset_name]["classification_label"]
     regression_label = DATA_LIST[dataset_name]["regression_label"]
     evolve_params = _setup_evolve_params(run_names, data_config_list, keys)

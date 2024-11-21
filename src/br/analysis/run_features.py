@@ -15,6 +15,7 @@ from br.analysis.analysis_utils import (
 from br.models.compute_features import compute_features
 from br.models.load_models import get_data_and_models
 from br.models.save_embeddings import save_emissions
+from br.features.plot import collect_outputs, plot
 
 
 def main(args):
@@ -25,7 +26,6 @@ def main(args):
     # Based on the utilization, set the GPU ID
     # Setting a GPU ID is crucial for the script to work well!
     selected_gpu_id_or_uuid = config_gpu()
-    selected_gpu_id_or_uuid = "MIG-5c1d3311-7294-5551-9e4f-3535560f5f82"
 
     # Set the CUDA_VISIBLE_DEVICES environment variable using the selected ID
     if selected_gpu_id_or_uuid:
@@ -72,7 +72,6 @@ def main(args):
     ) = _setup_evaluation_params(manifest, run_names)
 
     # Save emission stats for each model
-    args.debug = True
     max_batches = 40
     save_emissions(
         args.save_path,
@@ -134,6 +133,18 @@ def main(args):
         compactness_params=compactness_params,
     )
 
+    # Polar plot visualization
+    # Load saved csvs
+    csvs = [i for i in os.listdir(args.save_path) if i.split('.')[-1] == 'csv']
+    csvs = [i.split('.')[0] for i in csvs]
+    # Remove non metric related csvs
+    csvs = [i for i in csvs if i not in run_names and i not in keys]
+    # classification and regression metrics are unique to each dataset
+    unique_metrics = [i for i in csvs if "classification" in i or "regression" in i]
+    # Collect dataframe and make plots
+    df, df_non_agg = collect_outputs(args.save_path, "std", run_names, csvs)
+    plot(args.save_path, df, run_names, args.dataset_name, "std", unique_metrics)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script for computing features")
@@ -170,5 +181,5 @@ if __name__ == "__main__":
 
     """
     Example run:
-    python src/br/analysis/run_features.py --save_path "./testing/" --embeddings_path "/allen/aics/modeling/ritvik/projects/second_clones/benchmarking_representations/test_pcna_save_embeddings_revisit/" --sdf False --dataset_name "pcna"
+    python src/br/analysis/run_features.py --save_path "./outputs/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --sdf False --dataset_name "pcna"
     """

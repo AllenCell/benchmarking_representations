@@ -157,7 +157,6 @@ def plot(
     df,
     models,
     title,
-    colors_list=None,
     norm="std",
     unique_expressivity_metrics=None,
 ):
@@ -192,7 +191,6 @@ def plot(
     # if colors_list is not None:
     #     colors = pal.as_hex()
     # else:
-    colors = colors_list
 
     all_models = []
     for i in models:
@@ -203,11 +201,11 @@ def plot(
             this_model.append(val)
         all_models.append(this_model)
     if len(models) == 5:
-        colors = ["#636EFA", "#00CC96", "#AB63FA", "#FFA15A", "#EF553B"]
+        colors = ["#9CA2D6", "#6277D1", "#CF8D84", "#CE553B", "#2ED9FF"]
     elif len(models) == 4:
-        colors = ["#636EFA", "#00CC96", "#AB63FA", "#EF553B"]
+        colors = ["#9CA2D6", "#6277D1", "#CF8D84", "#CE553B"]
     elif len(models) == 2:
-        colors = ["#636EFA", "#EF553B"]
+        colors = ["#9CA2D6", "#6277D1"]
     else:
         pal = sns.color_palette("pastel")
         colors = pal.as_hex()
@@ -238,8 +236,8 @@ def plot(
             title=go.layout.Title(text=f"{title}"),
             polar={"radialaxis": {"visible": True, "range": range_vals, "dtick": 2}},
             showlegend=True,
-            margin=dict(l=170, r=150, t=120, b=80),
-            legend=dict(orientation="h", xanchor="center", x=1.2, y=1.5),
+            margin=dict(l=170, r=150, t=20, b=80),
+            legend=dict(orientation="h", xanchor="center", x=1.2, y=1.8),
             font=dict(
                 family="Myriad Pro",
                 size=20,  # Set the font size here
@@ -248,8 +246,8 @@ def plot(
         ),
     )
 
-    fig.write_image(path / f"{title}.png", scale=2)
-    fig.write_image(path / f"{title}.pdf", scale=2)
+    fig.write_image(path / f"{title}.png", scale=3)
+    fig.write_image(path / f"{title}.pdf", scale=3)
     # fig.write_image(path / f"{title}.eps", scale=2)
     # fig.write_image(path / f"{title}.pdf")
 

@@ -19,7 +19,7 @@ def get_classification_df(all_ret, target_col, df_feat=None):
 
     for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
-        if df_feat and target_col not in this_mo.columns:
+        if df_feat is not None and target_col not in this_mo.columns:
             this_mo = this_mo.merge(df_feat, on="CellId")
         k1, k2, k3 = get_classification(this_mo, target_col)
         for i in range(len(k1)):

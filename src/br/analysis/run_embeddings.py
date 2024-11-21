@@ -106,5 +106,5 @@ if __name__ == "__main__":
 
     """
     Example run:
-    python src/br/analysis/run_embeddings.py --save_path "./testing/" --sdf False --dataset_name "pcna" --batch_size 5 --debug True
+    python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name "pcna" --batch_size 5 --debug False
     """
