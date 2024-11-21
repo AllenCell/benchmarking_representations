@@ -2,13 +2,13 @@
 import argparse
 import gc
 import os
-import torch
-from br.models.load_models import get_data_and_models
-from br.models.save_embeddings import (
-    save_embeddings,
-)
 import sys
-from br.analysis.analysis_utils import config_gpu, _setup_evaluation_params
+
+import torch
+
+from br.analysis.analysis_utils import _setup_evaluation_params, config_gpu
+from br.models.load_models import get_data_and_models
+from br.models.save_embeddings import save_embeddings
 
 
 def main(args):
@@ -19,6 +19,10 @@ def main(args):
     # Based on the utilization, set the GPU ID
     # Setting a GPU ID is crucial for the script to work well!
     selected_gpu_id_or_uuid = config_gpu()
+    selected_gpu_id_or_uuid = "MIG-5c1d3311-7294-5551-9e4f-3535560f5f82"
+    import ipdb
+
+    ipdb.set_trace()
 
     # Set the CUDA_VISIBLE_DEVICES environment variable using the selected ID
     if selected_gpu_id_or_uuid:
@@ -35,11 +39,11 @@ def main(args):
     # os.chdir(args.src_path)
 
     # Get config path from CYTODL_CONFIG_PATH
-    config_path = os.environ.get('CYTODL_CONFIG_PATH')
+    config_path = os.environ.get("CYTODL_CONFIG_PATH")
 
     # Load data and models
     data_list, all_models, run_names, model_sizes, manifest, _, _ = get_data_and_models(
-        args.dataset_name, args.batch_size, config_path + '/results/', args.debug
+        args.dataset_name, args.batch_size, config_path + "/results/", args.debug
     )
 
     # Load evaluation params
@@ -58,7 +62,7 @@ def main(args):
         all_models,
         run_names,
         args.debug,
-        ["train", "val", "test"], # splits to compute embeddings
+        ["train", "val", "test"],  # splits to compute embeddings
         device,
         args.meta_key,
         loss_eval_list,
@@ -71,9 +75,6 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Script for computing embeddings")
-    parser.add_argument(
-        "--src_path", type=str, required=True, help="Path to the source directory."
-    )
     parser.add_argument(
         "--save_path", type=str, required=True, help="Path to save the embeddings."
     )
@@ -97,19 +98,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Validate that required paths are provided
-    if not args.src_path or not args.save_path or not args.dataset_name:
+    if not args.save_path or not args.dataset_name:
         print("Error: Required arguments are missing.")
         sys.exit(1)
 
     main(args)
 
-"""
-Example
-os.chdir(r"/allen/aics/assay-dev/users/Fatwir/benchmarking_representations/src/")
-save_path = r"/allen/aics/assay-dev/users/Fatwir/benchmarking_representations/src/test_cellpack_save_embeddings/"
-results_path = r"/allen/aics/assay-dev/users/Fatwir/benchmarking_representations/configs/results/"
-dataset_name = "cellpack"
-batch_size = 2
-debug = True
-
-"""
+    """
+    Example run:
+    python src/br/analysis/run_embeddings.py --save_path "./testing/" --sdf False --dataset_name "pcna" --batch_size 5 --debug True
+    """

@@ -1,5 +1,7 @@
 import subprocess
+
 import torch
+
 from br.models.utils import get_all_configs_per_dataset
 
 
@@ -132,16 +134,16 @@ def _setup_evolve_params(run_names, data_config_list, keys):
             eval_meshed_img_model_type.append(model_type)
 
     evolve_params = {
-        'modality_list_evolve': keys, 
-        'config_list_evolve': data_config_list, 
-        'num_evolve_samples': 40,
-        'compute_evolve_dataloaders': compute_evolve_dataloaders,
-        'eval_meshed_img': eval_meshed_img,
-        'eval_meshed_img_model_type': eval_meshed_img_model_type,
+        "modality_list_evolve": keys,
+        "config_list_evolve": data_config_list,
+        "num_evolve_samples": 40,
+        "compute_evolve_dataloaders": compute_evolve_dataloaders,
+        "eval_meshed_img": eval_meshed_img,
+        "eval_meshed_img_model_type": eval_meshed_img_model_type,
         "skew_scale": None,
         "only_embedding": False,
         "fit_pca": False,
-        "pc_is_iae":False
+        "pc_is_iae": False,
     }
     return evolve_params
 
@@ -149,16 +151,26 @@ def _setup_evolve_params(run_names, data_config_list, keys):
 def _get_feature_params(results_path, dataset_name, manifest, keys, run_names):
     DATA_LIST = get_all_configs_per_dataset(results_path)
     data_config_list = DATA_LIST[dataset_name]["data_paths"]
-    class_label = DATA_LIST[dataset_name]['classification_label']
-    regression_label = DATA_LIST[dataset_name]['regression_label']
+    class_label = DATA_LIST[dataset_name]["classification_label"]
+    regression_label = DATA_LIST[dataset_name]["regression_label"]
     evolve_params = _setup_evolve_params(run_names, data_config_list, keys)
     classification_params = {"class_labels": class_label, "df_feat": manifest}
     rot_inv_params = {"squeeze_2d": False, "id": "cell_id", "max_batches": 4000}
-    regression_params = {"df_feat": manifest, "target_cols": regression_label, "feature_df_path": None}
+    regression_params = {
+        "df_feat": manifest,
+        "target_cols": regression_label,
+        "feature_df_path": None,
+    }
     compactness_params = {
         "method": "mle",
         "num_PCs": None,
         "blobby_outlier_max_cc": None,
         "check_duplicates": True,
     }
-    return rot_inv_params, compactness_params, classification_params, evolve_params, regression_params
+    return (
+        rot_inv_params,
+        compactness_params,
+        classification_params,
+        evolve_params,
+        regression_params,
+    )

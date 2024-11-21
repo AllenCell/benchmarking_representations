@@ -11,7 +11,7 @@ def get_data(dataset_name, batch_size, results_path, debug=False):
     config_list = DATA_LIST[dataset_name]
 
     # Get config path from CYTODL_CONFIG_PATH
-    cytodl_config_path = os.environ.get('CYTODL_CONFIG_PATH')
+    cytodl_config_path = os.environ.get("CYTODL_CONFIG_PATH")
 
     data = []
     for config_path in config_list["data_paths"]:
