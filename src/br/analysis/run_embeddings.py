@@ -1,38 +1,17 @@
 # Free up cache
 import argparse
-import gc
 import os
 import sys
-
-import torch
-
-from br.analysis.analysis_utils import _setup_evaluation_params, config_gpu
+from br.analysis.analysis_utils import _setup_evaluation_params, _setup_gpu
 from br.models.load_models import get_data_and_models
 from br.models.save_embeddings import save_embeddings
 
 
 def main(args):
-    # Free up cache
-    gc.collect()
-    torch.cuda.empty_cache()
 
-    # Based on the utilization, set the GPU ID
-    # Setting a GPU ID is crucial for the script to work well!
-    selected_gpu_id_or_uuid = config_gpu()
-
-    # Set the CUDA_VISIBLE_DEVICES environment variable using the selected ID
-    if selected_gpu_id_or_uuid:
-        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        os.environ["CUDA_VISIBLE_DEVICES"] = selected_gpu_id_or_uuid
-        print(f"CUDA_VISIBLE_DEVICES set to: {selected_gpu_id_or_uuid}")
-    else:
-        print("No suitable GPU or MIG ID found. Exiting...")
-
-    # Set the device
+    # Setup GPUs and set the device
+    _setup_gpu()
     device = "cuda:0"
-
-    # # Set working directory and paths
-    # os.chdir(args.src_path)
 
     # Get config path from CYTODL_CONFIG_PATH
     config_path = os.environ.get("CYTODL_CONFIG_PATH")
