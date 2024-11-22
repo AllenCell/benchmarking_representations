@@ -2,9 +2,7 @@ import argparse
 import os
 import sys
 from pathlib import Path
-
 import pandas as pd
-
 from br.analysis.analysis_utils import (
     _archetypes_polymorphic,
     _archetypes_save_recons,
@@ -13,6 +11,7 @@ from br.analysis.analysis_utils import (
     _latent_walk_save_recons,
     _pseudo_time_analysis,
     _setup_gpu,
+    str2bool,
 )
 from br.features.archetype import AA_Fast
 from br.features.reconstruction import stratified_latent_walk
@@ -47,7 +46,7 @@ def main(args):
     this_save_path.mkdir(parents=True, exist_ok=True)
 
     if args.sdf:
-        _latent_walk_polymorphic(stratify_key, all_ret, x_label, this_save_path, latent_dim)
+        _latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim)
     else:
         stratified_latent_walk(
             model,
@@ -97,7 +96,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     parser.add_argument(
         "--sdf",
-        type=bool,
+        type=str2bool,
         required=True,
         help="boolean indicating whether the model involves SDFs",
     )
