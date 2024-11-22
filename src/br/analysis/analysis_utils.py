@@ -1,7 +1,9 @@
+import argparse
 import gc
 import os
 import subprocess
 from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -10,7 +12,7 @@ import torch
 import yaml
 from sklearn.decomposition import PCA
 from tqdm import tqdm
-import argparse
+
 from br.features.plot import plot_pc_saved, plot_stratified_pc
 from br.features.reconstruction import save_pcloud
 from br.features.utils import (
@@ -23,12 +25,12 @@ from br.models.utils import get_all_configs_per_dataset
 def str2bool(v):
     if isinstance(v, bool):
         return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+    if v.lower() in ("yes", "true", "t", "y", "1"):
         return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+    elif v.lower() in ("no", "false", "f", "n", "0"):
         return False
     else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
+        raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
 def get_gpu_info():
@@ -269,12 +271,12 @@ def _dataset_specific_subsetting(all_ret, dataset_name):
         stratify_key = "structure_name"
         viz_params = {"z_max": None, "z_ind": 2, "flip": False, "structs": structs}
         n_archetypes = 7
-    elif dataset_name == 'npm1':
-        stratify_key = 'STR_connectivity_cc_thresh'
+    elif dataset_name == "npm1":
+        stratify_key = "STR_connectivity_cc_thresh"
         n_archetypes = 5
         viz_params = {}
-    elif dataset_name == 'other_polymorphic':
-        stratify_key = 'structure_name'
+    elif dataset_name == "other_polymorphic":
+        stratify_key = "structure_name"
         structs = ["NPM1", "FBL", "LAMP1", "ST6GAL1"]
         all_ret = all_ret.loc[all_ret["structure_name"].isin(structs)]
         n_archetypes = 4
@@ -390,11 +392,14 @@ def _latent_walk_save_recons(this_save_path, stratify_key, viz_params, dataset_n
         fname = fnames[idx]
         df = pd.read_csv(f"{this_save_path}/{fname}", index_col=0)
         this_name = names[idx]
-        df = normalize_intensities_and_get_colormap_apply(df, vmin, vmax)
-        np_arr = df[["x", "y", "z"]].values
-        colors = cmap(df["inorm"].values)[:, :3]
-        np_arr2 = colors
-        np_arr = np.concatenate([np_arr, np_arr2], axis=1)
+        if "s" in df.columns:
+            df = normalize_intensities_and_get_colormap_apply(df, vmin, vmax)
+            np_arr = df[["x", "y", "z"]].values
+            colors = cmap(df["inorm"].values)[:, :3]
+            np_arr2 = colors
+            np_arr = np.concatenate([np_arr, np_arr2], axis=1)
+        else:
+            np_arr = df[["x", "y", "z"]].values
         np.save(this_save_path / Path(f"{this_name}.npy"), np_arr)
 
 
@@ -512,7 +517,7 @@ def _pseudo_time_analysis(model, all_ret, save_path, device, key, viz_params, bi
 
 def _latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim):
     lw_dict = {stratify_key: [], "PC": [], "bin": [], "CellId": []}
-    mesh_folder = all_ret['mesh_folder'].iloc[0] # mesh folder
+    mesh_folder = all_ret["mesh_folder"].iloc[0]  # mesh folder
     for strat in all_ret[stratify_key].unique():
         this_sub_m = all_ret.loc[all_ret[stratify_key] == strat].reset_index(drop=True)
         all_features = this_sub_m[[i for i in this_sub_m.columns if "mu" in i]].values
@@ -533,7 +538,7 @@ def _latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim):
                 dist = np.sum(dist, axis=1)
                 closest_idx = np.argmin(dist)
                 closest_real_id = this_sub_m.iloc[closest_idx]["CellId"]
-                mesh = pv.read(mesh_folder + str(closest_real_id) + '.stl')
+                mesh = pv.read(mesh_folder + str(closest_real_id) + ".stl")
                 mesh.save(this_save_path / Path(f"{strat}_{rank}_{value_index}.ply"))
 
                 lw_dict[stratify_key].append(strat)
@@ -546,7 +551,7 @@ def _latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim):
 
 def _archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features):
     arch_dict = {"CellId": [], "archetype": []}
-    mesh_folder = all_ret['mesh_folder'].iloc[0] # mesh folder
+    mesh_folder = all_ret["mesh_folder"].iloc[0]  # mesh folder
     for i in range(len(archetypes_df)):
         this_mu = archetypes_df.iloc[i].values
         dist = (all_features - this_mu) ** 2
@@ -554,7 +559,7 @@ def _archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features
         closest_idx = np.argmin(dist)
         closest_real_id = all_ret.iloc[closest_idx]["CellId"]
         print(dist, closest_real_id)
-        mesh = pv.read(mesh_folder + str(closest_real_id) + '.stl')
+        mesh = pv.read(mesh_folder + str(closest_real_id) + ".stl")
         mesh.save(this_save_path / Path(f"{i}.ply"))
         arch_dict["archetype"].append(i)
         arch_dict["CellId"].append(closest_real_id)

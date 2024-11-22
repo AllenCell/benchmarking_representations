@@ -2,7 +2,9 @@ import argparse
 import os
 import sys
 from pathlib import Path
+
 import pandas as pd
+
 from br.analysis.analysis_utils import (
     _archetypes_polymorphic,
     _archetypes_save_recons,
@@ -41,7 +43,7 @@ def main(args):
     )
 
     # Compute stratified latent walk
-    key = "pcloud" # all analysis on pointcloud models
+    key = "pcloud"  # all analysis on pointcloud models
     this_save_path = Path(args.save_path) / Path("latent_walks")
     this_save_path.mkdir(parents=True, exist_ok=True)
 
@@ -113,13 +115,13 @@ if __name__ == "__main__":
     Example runs for each dataset:
 
     cellpack dataset
-    python src/br/analysis/run_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter"
+    python src/br/analysis/run_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False
 
     pcna dataset
-    python src/br/analysis/run_analysis.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna" --run_name "Rotation_invariant_pointcloud_jitter"
+    python src/br/analysis/run_analysis.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False
 
     other punctate structures dataset:
-    python src/br/analysis/run_analysis.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate/" --dataset_name "other_punctate" --run_name "Rotation_invariant_pointcloud_structurenorm"
+    python src/br/analysis/run_analysis.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate/" --dataset_name "other_punctate" --run_name "Rotation_invariant_pointcloud_structurenorm" --sdf False
 
     npm1 dataset:
     python src/br/analysis/run_analysis.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1/" --dataset_name "npm1" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True
