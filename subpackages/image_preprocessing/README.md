@@ -6,7 +6,7 @@ Code for preprocessing 3D single cell images
 
 Move to this `image_preprocessing` directory.
 ```bash
-cd subpackages/image_preprocessing`
+cd subpackages/image_preprocessing
 ```
 
 Install dependencies.
