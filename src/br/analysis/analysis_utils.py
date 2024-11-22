@@ -262,13 +262,13 @@ def _dataset_specific_subsetting(all_ret, dataset_name):
     elif dataset_name == 'npm1':
         stratify_key = 'STR_connectivity_cc_thresh'
         n_archetypes = 5
-        viz_params = None
+        viz_params = {}
     elif dataset_name == 'other_polymorphic':
         stratify_key = 'structure_name'
         structs = ["NPM1", "FBL", "LAMP1", "ST6GAL1"]
         all_ret = all_ret.loc[all_ret["structure_name"].isin(structs)]
         n_archetypes = 4
-        viz_params = None
+        viz_params = {}
     else:
         raise ValueError("Dataset not in pre-configured list")
     viz_params["views"] = ["xy"]
