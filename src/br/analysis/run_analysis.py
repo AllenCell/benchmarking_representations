@@ -114,14 +114,17 @@ if __name__ == "__main__":
     Example runs for each dataset:
 
     cellpack dataset
-    python src/br/analysis/punctate_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter"
+    python src/br/analysis/run_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter"
 
     pcna dataset
-    python src/br/analysis/punctate_analysis.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna" --run_name "Rotation_invariant_pointcloud_jitter"
+    python src/br/analysis/run_analysis.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna" --run_name "Rotation_invariant_pointcloud_jitter"
 
-    Other punctate structures dataset:
-    python src/br/analysis/punctate_analysis.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate/" --dataset_name "other_punctate" --run_name "Rotation_invariant_pointcloud_structurenorm"
+    other punctate structures dataset:
+    python src/br/analysis/run_analysis.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate/" --dataset_name "other_punctate" --run_name "Rotation_invariant_pointcloud_structurenorm"
 
     npm1 dataset:
-    python src/br/analysis/punctate_analysis.py --save_path "./testing_npm/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1/" --dataset_name "npm1" --run_name "Rotation_invariant_pointcloud_SDF"
+    python src/br/analysis/run_analysis.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1/" --dataset_name "npm1" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True
+
+    other polymorphic dataset:
+    python src/br/analysis/run_analysis.py --save_path "./outputs_other_polymorphic/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_polymorphic/" --dataset_name "other_polymorphic" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True
     """

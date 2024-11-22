@@ -502,6 +502,7 @@ def _pseudo_time_analysis(model, all_ret, save_path, device, key, viz_params, bi
 
 def _latent_walk_polymorphic(stratify_key, all_ret, x_label, this_save_path, latent_dim):
     lw_dict = {stratify_key: [], "PC": [], "bin": [], "CellId": []}
+    mesh_folder = all_ret['mesh_folder'].iloc[0] # mesh folder
     for strat in all_ret[stratify_key].unique():
         this_sub_m = all_ret.loc[all_ret[stratify_key] == strat].reset_index(drop=True)
         all_features = this_sub_m[[i for i in this_sub_m.columns if "mu" in i]].values
@@ -516,15 +517,13 @@ def _latent_walk_polymorphic(stratify_key, all_ret, x_label, this_save_path, lat
             ):
                 z_inf = torch.zeros(1, dim_size)
                 z_inf[:, rank] += value * pca_std_list[rank]
-                z_inf = pca.inverse_transform(z_inf).numpy()
+                z_inf = pca.inverse_transform(z_inf)
 
                 dist = (all_features - z_inf) ** 2
                 dist = np.sum(dist, axis=1)
                 closest_idx = np.argmin(dist)
                 closest_real_id = this_sub_m.iloc[closest_idx]["CellId"]
-                mesh = pv.read(
-                    all_ret.loc[all_ret["CellId"] == closest_real_id]["mesh_path"].iloc[0]
-                )
+                mesh = pv.read(mesh_folder + str(closest_real_id) + '.stl')
                 mesh.save(this_save_path / Path(f"{strat}_{rank}_{value_index}.ply"))
 
                 lw_dict[stratify_key].append(strat)
@@ -537,6 +536,7 @@ def _latent_walk_polymorphic(stratify_key, all_ret, x_label, this_save_path, lat
 
 def _archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features):
     arch_dict = {"CellId": [], "archetype": []}
+    mesh_folder = all_ret['mesh_folder'].iloc[0] # mesh folder
     for i in range(len(archetypes_df)):
         this_mu = archetypes_df.iloc[i].values
         dist = (all_features - this_mu) ** 2
@@ -544,7 +544,7 @@ def _archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features
         closest_idx = np.argmin(dist)
         closest_real_id = all_ret.iloc[closest_idx]["CellId"]
         print(dist, closest_real_id)
-        mesh = pv.read(all_ret.loc[all_ret["CellId"] == closest_real_id]["mesh_path"].iloc[0])
+        mesh = pv.read(mesh_folder + str(closest_real_id) + '.stl')
         mesh.save(this_save_path / Path(f"{i}.ply"))
         arch_dict["archetype"].append(i)
         arch_dict["CellId"].append(closest_real_id)
