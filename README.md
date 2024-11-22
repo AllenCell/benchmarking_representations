@@ -3,6 +3,7 @@
 Code for training and benchmarking morphology appropriate representation learning methods.
 
 Our analysis is organized as follows.
+
 ![1. Original movies, 2. Preprocessing, 3a. Punctate structures: Generate pointclouds, 3b. Polymorphic structures: Generate SDFs, 4. Model training, 5. Model inference, 6. Data analysis](./docs/dataflow.svg)
 
 Continue below for guidance on using these models on your own data.
