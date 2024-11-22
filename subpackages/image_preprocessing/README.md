@@ -43,7 +43,7 @@ snakemake -s Snakefile --cores ..
     └── preprocessing
         └── image_preprocessing
             └── config
-                └── config.yaml     <- Data config for image processing workflow
+                └── config.yaml <- Data config for image processing workflow
 ```
 
 Then follow the [installation](src/br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
@@ -52,7 +52,7 @@ Then follow the [installation](src/br/data/preprocessing/image_preprocessing/REA
 └── data
     └── preprocessing
         └── image_preprocessing
-            └── Snakefile      <- Image preprocessing workflow. Combines alignment, masking, registration
+            └── Snakefile <- Image preprocessing workflow. Combines alignment, masking, registration
 ```
 
 For point cloud preprocessing for punctate structures, update data paths and run the workflow in
@@ -61,7 +61,7 @@ For point cloud preprocessing for punctate structures, update data paths and run
 └── data
     └── preprocessing
         └── pc_preprocessing
-            └── punctate_cyto.py      <- Point cloud sampling from raw images for punctate structures here
+            └── punctate_cyto.py <- Point cloud sampling from raw images for punctate structures here
 ```
 
 For SDF preprocessing for polymorphic structures, update data paths and run the workflows in
@@ -70,8 +70,8 @@ For SDF preprocessing for polymorphic structures, update data paths and run the 
 └── data
     └── preprocessing
         └── sdf_preprocessing
-            ├── image_sdfs.py      <- Create 32**3 resolution SDF images
-            └── pc_sdfs.py      <- Sample point clouds from 32**3 resolution SDF images
+            ├── image_sdfs.py <- Create 32**3 resolution SDF images
+            └── pc_sdfs.py    <- Sample point clouds from 32**3 resolution SDF images
 ```
 
 In all cases, create a single cell manifest (e.g. csv, parquet) for each dataset with a column corresponding to final processed paths, and create a split column corresponding to train/test/validation split.
