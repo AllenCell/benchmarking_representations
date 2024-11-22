@@ -1,20 +1,22 @@
+import argparse
 import os
-from pathlib import Path
-import pandas as pd
 import sys
+from pathlib import Path
+
+import pandas as pd
+
 from br.analysis.analysis_utils import (
-    _setup_gpu, 
-    _latent_walk_save_recons, 
+    _archetypes_save_recons,
     _dataset_specific_subsetting,
-    _archetypes_save_recons, 
-    _pseudo_time_analysis
+    _latent_walk_save_recons,
+    _pseudo_time_analysis,
+    _setup_gpu,
 )
+from br.features.archetype import AA_Fast
+from br.features.reconstruction import stratified_latent_walk
 from br.models.compute_features import get_embeddings
 from br.models.load_models import _load_model_from_path
 from br.models.utils import get_all_configs_per_dataset
-from br.features.reconstruction import stratified_latent_walk
-import argparse
-from br.features.archetype import AA_Fast
 
 
 def main(args):
@@ -24,7 +26,7 @@ def main(args):
     config_path = os.environ.get("CYTODL_CONFIG_PATH")
     results_path = config_path + "/results/"
 
-    run_name = "Rotation_invariant_pointcloud_jitter"
+    run_name = args.run_name
     DATASET_INFO = get_all_configs_per_dataset(results_path)
     models = DATASET_INFO[args.dataset_name]
     checkpoints = models["model_checkpoints"]
@@ -53,12 +55,12 @@ def main(args):
         this_save_path,
         stratify_key,
         latent_walk_range=[-2, 0, 2],
-        z_max=viz_params['z_max'],
-        z_ind=viz_params['z_ind'],
+        z_max=viz_params["z_max"],
+        z_ind=viz_params["z_ind"],
     )
 
     # Save reconstruction plots
-    _latent_walk_save_recons(this_save_path, stratify_key, viz_params)
+    _latent_walk_save_recons(this_save_path, stratify_key, viz_params, args.dataset_name)
 
     # Archetype analysis
     matrix = all_ret[[i for i in all_ret.columns if "mu" in i]].values
@@ -68,9 +70,7 @@ def main(args):
     this_save_path = Path(args.save_path) / Path("archetypes")
     this_save_path.mkdir(parents=True, exist_ok=True)
 
-    _archetypes_save_recons(
-        model, archetypes_df, device, key, viz_params, this_save_path
-    )
+    _archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_save_path)
 
     # Pseudotime analysis
     if "volume_of_nucleus_um3" in all_ret.columns:
@@ -82,6 +82,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--save_path", type=str, required=True, help="Path to save the embeddings."
     )
+    parser.add_argument("--run_name", type=str, required=True, help="Name of model")
     parser.add_argument(
         "--embeddings_path", type=str, required=True, help="Path to the saved embeddings."
     )
@@ -97,6 +98,14 @@ if __name__ == "__main__":
     main(args)
 
     """
-    Example run:
-    python src/br/analysis/punctate_analysis.py --save_path "./testing/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna"
+    Example runs for each dataset:
+
+    cellpack dataset
+    python src/br/analysis/punctate_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter"
+
+    pcna dataset
+    python src/br/analysis/punctate_analysis.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna" --run_name "Rotation_invariant_pointcloud_jitter"
+
+    Other punctate structures dataset:
+    python src/br/analysis/punctate_analysis.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate/" --dataset_name "other_punctate" --run_name "Rotation_invariant_pointcloud_structurenorm"
     """

@@ -3,9 +3,11 @@ import os
 import subprocess
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
+import yaml
 
 from br.features.plot import plot_pc_saved, plot_stratified_pc
 from br.features.reconstruction import save_pcloud
@@ -84,7 +86,7 @@ def _setup_gpu():
     # Based on the utilization, set the GPU ID
     # Setting a GPU ID is crucial for the script to work well!
     selected_gpu_id_or_uuid = config_gpu()
-    selected_gpu_id_or_uuid = 'MIG-ffdee303-0dd4-513d-b18c-beba028b49c7'
+    selected_gpu_id_or_uuid = "MIG-ffdee303-0dd4-513d-b18c-beba028b49c7"
 
     # Set the CUDA_VISIBLE_DEVICES environment variable using the selected ID
     if selected_gpu_id_or_uuid:
@@ -147,9 +149,7 @@ def _setup_evaluation_params(manifest, run_names):
 
 
 def _setup_evolve_params(run_names, data_config_list, keys):
-    """
-    Set up dataloader parameters specific to the evolution energy metric 
-    """
+    """Set up dataloader parameters specific to the evolution energy metric."""
     eval_meshed_img = [False] * len(run_names)
     eval_meshed_img_model_type = [None] * len(run_names)
     compute_evolve_dataloaders = True
@@ -183,7 +183,7 @@ def _setup_evolve_params(run_names, data_config_list, keys):
 def _get_feature_params(results_path, dataset_name, manifest, keys, run_names):
     """
     Get parameters associated with calculation of
-    1. Rot invariance 
+    1. Rot invariance
     2. Compactness
     3. Classification
     4. Evolution/Interpolation distance
@@ -219,10 +219,9 @@ def _get_feature_params(results_path, dataset_name, manifest, keys, run_names):
 
 
 def _dataset_specific_subsetting(all_ret, dataset_name):
-    """
-    Subset each dataset for analysis. 
-    E.g. For PCNA dataset, only look at interphase.
-    Also specify dataset specific visualization params
+    """Subset each dataset for analysis. E.g. For PCNA dataset, only look at interphase. Also
+    specify dataset specific visualization params.
+
     - z_max (Max value of z at which to slice data)
     - z_ind (Which index is Z - 1, 2, 3)
     - views = ['xy'] (show xy projection)
@@ -252,9 +251,10 @@ def _dataset_specific_subsetting(all_ret, dataset_name):
         n_archetypes = 6
     elif dataset_name == "other_punctate":
         structs = ["NUP153", "SON", "HIST1H2BJ", "SMC1A", "CETN2", "SLC25A17", "RAB5A"]
-        all_ret = all_ret.loc[all_ret["structure_name"].isin(structs)].reset_index(drop=True)
+        all_ret = all_ret.loc[all_ret["structure_name"].isin(structs)]
+        all_ret = all_ret.loc[all_ret["cell_stage"].isin(["M0"])].reset_index(drop=True)
         stratify_key = "structure_name"
-        viz_params = {"z_max": None, "z_ind": 2, "flip": False}
+        viz_params = {"z_max": None, "z_ind": 2, "flip": False, "structs": structs}
         n_archetypes = 7
     else:
         raise ValueError("Dataset not in pre-configured list")
@@ -264,17 +264,79 @@ def _dataset_specific_subsetting(all_ret, dataset_name):
     return all_ret, stratify_key, n_archetypes, viz_params
 
 
-def _latent_walk_save_recons(this_save_path, stratify_key, viz_params):
-    """
-    Visualize saved latent walks from csvs
+def _viz_other_punctate(this_save_path, viz_params, stratify_key):
+    # Norms based on Viana 2023
+    # norms used for model training
+    model_norms = "./src/br/data/preprocessing/pc_preprocessing/model_structnorms.yaml"
+    with open(model_norms) as stream:
+        model_norms = yaml.safe_load(stream)
+
+    # norms used for viz
+    viz_norms = "./src/br/data/preprocessing/pc_preprocessing/viz_structnorms.yaml"
+    with open(viz_norms) as stream:
+        viz_norms = yaml.safe_load(stream)
+
+    items = os.listdir(this_save_path)
+    for struct in viz_params["structs"]:
+        fnames = [i for i in items if i.split(".")[-1] == "csv"]
+        fnames = [i for i in fnames if i.split("_")[1] == "0"]
+        fnames = [i for i in fnames if i.split("_")[0] in [struct]]
+        names = [i.split(".")[0] for i in fnames]
+
+        renorm = model_norms[struct]
+        this_viz_norm = viz_norms[struct]
+        use_vmin = this_viz_norm[0]
+        use_vmax = this_viz_norm[1]
+
+        all_df = []
+        for idx, _ in enumerate(fnames):
+            fname = fnames[idx]
+            df = pd.read_csv(f"{this_save_path}/{fname}", index_col=0)
+            df["s"] = df["s"] / 10  # scalar values were scaled by 10 during training
+            df["s"] = df["s"] * (renorm[1] - renorm[0]) + renorm[0]  # use model norms
+            df[stratify_key] = names[idx]
+            all_df.append(df)
+        df = pd.concat(all_df, axis=0).reset_index(drop=True)
+        if struct in ["NUP153", "SON", "HIST1H2BJ", "SMC1A"]:
+            df = df.loc[df["z"] < 0.2].reset_index(drop=True)
+        df = normalize_intensities_and_get_colormap_apply(df, use_vmin, use_vmax)
+        cmap = plt.get_cmap("YlGnBu")
+        plot_stratified_pc(
+            df,
+            viz_params["xlim"],
+            viz_params["ylim"],
+            stratify_key,
+            this_save_path,
+            cmap,
+            viz_params["flip"],
+        )
+
+        for pc_bin in df[stratify_key].unique():
+            this_df = df.loc[df[stratify_key] == pc_bin].reset_index(drop=True)
+            print(this_df.shape, struct, pc_bin)
+            np_arr = this_df[["x", "y", "z"]].values
+            colors = cmap(this_df["inorm"].values)[:, :3]
+            np_arr2 = colors
+            np_arr = np.concatenate([np_arr, np_arr2], axis=1)
+            np.save(this_save_path / Path(f"{stratify_key}_{pc_bin}.npy"), np_arr)
+            cmap = plt.get_cmap("YlGnBu")
+
+
+def _latent_walk_save_recons(this_save_path, stratify_key, viz_params, dataset_name):
+    """Visualize saved latent walks from csvs.
+
     this_save_path - folder where csvs are saved
     stratify_key - metadata by which PCs are stratified (e.g. "rule")
     viz_params - parameters associated with visualization (e.g. xlims, ylims)
     """
+    if dataset_name == "other_punctate":
+        return _viz_other_punctate(this_save_path, viz_params, stratify_key)
+
     items = os.listdir(this_save_path)
-    fnames = [i for i in items if i.split(".")[-1] == "csv"] # get csvs
-    fnames = [i for i in fnames if i.split("_")[1] == "0"] # get 1st PC
+    fnames = [i for i in items if i.split(".")[-1] == "csv"]  # get csvs
+    fnames = [i for i in fnames if i.split("_")[1] == "0"]  # get 1st PC
     names = [i.split(".")[0] for i in fnames]
+
     cm_name = "YlGnBu"
     all_df = []
     for idx, _ in enumerate(fnames):
@@ -297,11 +359,24 @@ def _latent_walk_save_recons(this_save_path, stratify_key, viz_params):
         viz_params["flip"],
     )
 
+    df, cmap, vmin, vmax = normalize_intensities_and_get_colormap(
+        df, pcts=[5, 95], cm_name="YlGnBu"
+    )
+
+    for idx, _ in enumerate(fnames):
+        fname = fnames[idx]
+        df = pd.read_csv(f"{this_save_path}/{fname}", index_col=0)
+        this_name = names[idx]
+        df = normalize_intensities_and_get_colormap_apply(df, vmin, vmax)
+        np_arr = df[["x", "y", "z"]].values
+        colors = cmap(df["inorm"].values)[:, :3]
+        np_arr2 = colors
+        np_arr = np.concatenate([np_arr, np_arr2], axis=1)
+        np.save(this_save_path / Path(f"{this_name}.npy"), np_arr)
+
 
 def _archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_save_path):
-    """
-    Visualize saved archetypes from archetype matrix dataframe
-    """
+    """Visualize saved archetypes from archetype matrix dataframe."""
     all_xhat = []
     with torch.no_grad():
         for i in range(len(archetypes_df)):
@@ -349,9 +424,7 @@ def _archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_
 
 
 def _pseudo_time_analysis(model, all_ret, save_path, device, key, viz_params, bins=None):
-    """
-    Psuedotime analysis for PCNA and NPM1 dataset
-    """
+    """Psuedotime analysis for PCNA and NPM1 dataset."""
     if not bins:
         # Pseudotime bins based on npm1 dataset from WTC-11 hIPS single cell image dataset
         bins = [
