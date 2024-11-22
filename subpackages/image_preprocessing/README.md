@@ -2,7 +2,7 @@
 
 Code for preprocessing 3D single cell images
 
-## Installation
+# Installation
 
 Move to this `image_preprocessing` directory.
 ```bash
@@ -17,14 +17,7 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-## Run workflow
-
-```bash
-snakemake -s Snakefile --cores ..
-```
-
-# Usage
-## Steps to download and preprocess data
+# Configure input data
 
 1. Datasets are hosted on quilt. Download raw data at the following links
 
@@ -36,7 +29,7 @@ snakemake -s Snakefile --cores ..
 > [!NOTE]  
 > Ensure to download all the data in the same folder where the repo was cloned!
 
-2. Once data is downloaded, run preprocessing scripts to create the final image/pointcloud/SDF datasets (this step is not necessary for the cellPACK dataset). For image preprocessing used for punctate structures, install [snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) and update the data paths in
+2. For image preprocessing used for punctate structures, update the data paths in:
 
 ```
 └── data
@@ -57,7 +50,7 @@ Then follow the [installation](src/br/data/preprocessing/image_preprocessing/REA
 
 For point cloud preprocessing for punctate structures, update data paths and run the workflow in
 
-```└
+```
 └── data
     └── preprocessing
         └── pc_preprocessing
@@ -75,3 +68,9 @@ For SDF preprocessing for polymorphic structures, update data paths and run the 
 ```
 
 In all cases, create a single cell manifest (e.g. csv, parquet) for each dataset with a column corresponding to final processed paths, and create a split column corresponding to train/test/validation split.
+
+# Usage
+Once data is downloaded and config files are set up, run preprocessing scripts.
+```bash
+snakemake -s Snakefile --cores all
+```

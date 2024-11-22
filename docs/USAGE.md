@@ -57,6 +57,9 @@ export CYTODL_CONFIG_PATH=$PWD/configs/
 ```
 
 # Usage
+## Steps to download pre-processed data
+Coming soon.
+
 ## Steps to train models
 
 Training these models can take weeks. We've published our trained models so you don't have to. Skip to the next section if you'd like to just use our models.
@@ -94,9 +97,6 @@ Override parts of the experiment config via command line or manually in the conf
 ```bash
 python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_earthmovers_sphere ++csv.save_dir=[SAVE_DIR]
 ```
-
-## Steps to download pre-processed data
-Coming soon.
 
 ## Steps to download pre-trained models and pre-computed embeddings
 
