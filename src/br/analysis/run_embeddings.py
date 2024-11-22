@@ -2,8 +2,7 @@
 import argparse
 import os
 import sys
-
-from br.analysis.analysis_utils import _setup_evaluation_params, _setup_gpu
+from br.analysis.analysis_utils import _setup_evaluation_params, _setup_gpu, str2bool
 from br.models.load_models import get_data_and_models
 from br.models.save_embeddings import save_embeddings
 
@@ -63,7 +62,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--sdf",
-        type=bool,
+        type=str2bool,
         required=True,
         help="boolean indicating whether the experiments involve SDFs",
     )

@@ -2,7 +2,6 @@ import gc
 import os
 import subprocess
 from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -11,7 +10,7 @@ import torch
 import yaml
 from sklearn.decomposition import PCA
 from tqdm import tqdm
-
+import argparse
 from br.features.plot import plot_pc_saved, plot_stratified_pc
 from br.features.reconstruction import save_pcloud
 from br.features.utils import (
@@ -19,6 +18,17 @@ from br.features.utils import (
     normalize_intensities_and_get_colormap_apply,
 )
 from br.models.utils import get_all_configs_per_dataset
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 def get_gpu_info():
@@ -500,7 +510,7 @@ def _pseudo_time_analysis(model, all_ret, save_path, device, key, viz_params, bi
     )
 
 
-def _latent_walk_polymorphic(stratify_key, all_ret, x_label, this_save_path, latent_dim):
+def _latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim):
     lw_dict = {stratify_key: [], "PC": [], "bin": [], "CellId": []}
     mesh_folder = all_ret['mesh_folder'].iloc[0] # mesh folder
     for strat in all_ret[stratify_key].unique():

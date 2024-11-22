@@ -2,13 +2,12 @@
 import argparse
 import os
 import sys
-
 import pandas as pd
-
 from br.analysis.analysis_utils import (
     _get_feature_params,
     _setup_evaluation_params,
     _setup_gpu,
+    str2bool,
 )
 from br.features.plot import collect_outputs, plot
 from br.models.compute_features import compute_features
@@ -146,7 +145,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--sdf",
-        type=bool,
+        type=str2bool,
         required=True,
         help="boolean indicating whether the experiments involve SDFs",
     )
