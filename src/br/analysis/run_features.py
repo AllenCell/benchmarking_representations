@@ -2,7 +2,9 @@
 import argparse
 import os
 import sys
+
 import pandas as pd
+
 from br.analysis.analysis_utils import (
     _get_feature_params,
     _setup_evaluation_params,
@@ -150,7 +152,7 @@ if __name__ == "__main__":
         help="boolean indicating whether the experiments involve SDFs",
     )
     parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
-    parser.add_argument("--debug", type=bool, default=False, help="Enable debug mode.")
+    parser.add_argument("--debug", type=str2bool, default=False, help="Enable debug mode.")
 
     args = parser.parse_args()
 

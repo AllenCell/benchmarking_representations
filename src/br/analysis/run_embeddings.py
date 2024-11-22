@@ -2,6 +2,7 @@
 import argparse
 import os
 import sys
+
 from br.analysis.analysis_utils import _setup_evaluation_params, _setup_gpu, str2bool
 from br.models.load_models import get_data_and_models
 from br.models.save_embeddings import save_embeddings
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     parser.add_argument("--batch_size", type=int, default=2, help="Batch size for processing.")
-    parser.add_argument("--debug", type=bool, default=True, help="Enable debug mode.")
+    parser.add_argument("--debug", type=str2bool, default=True, help="Enable debug mode.")
 
     args = parser.parse_args()
 
