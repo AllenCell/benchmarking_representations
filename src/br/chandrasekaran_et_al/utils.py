@@ -1,7 +1,8 @@
 import glob
 import itertools
 import os
-
+from pathlib import Path
+import seaborn as sns
 import copairs.compute_np as backend
 import numpy as np
 import pandas as pd
@@ -16,6 +17,189 @@ from copairs.map import (
 from copairs.matching import dict_to_dframe
 from sklearn.metrics import average_precision_score
 from sklearn.metrics.pairwise import cosine_similarity
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import pycytominer
+from br.chandrasekaran_et_al import utils
+
+
+def perturbation_detection(all_ret, get_featurecols, get_featuredata):
+    cols = get_featurecols(all_ret)
+    replicate_feature = "Metadata_broad_sample"
+    batch_size = 100000
+    null_size = 100000
+
+    all_rep = []
+    for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
+        df_feats = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
+        df_feats["Metadata_ObjectNumber"] = df_feats["CellId"]
+
+        all_normalized_df = []
+        for plate in df_feats["Assay_Plate_Barcode"].unique():
+            test = df_feats.loc[df_feats["Assay_Plate_Barcode"] == plate].reset_index(drop=True)
+
+            normalized_df = pycytominer.normalize(
+                profiles=test,
+                features=cols,
+                meta_features=[
+                    "Assay_Plate_Barcode",
+                    "well_position",
+                    "condition_coarse",
+                    "condition",
+                ],
+                method="standardize",
+                mad_robustize_epsilon=0,
+                samples="all",
+            )
+            normalized_df = pycytominer.normalize(
+                profiles=normalized_df,
+                features=cols,
+                meta_features=[
+                    "Assay_Plate_Barcode",
+                    "well_position",
+                    "condition_coarse",
+                    "condition",
+                ],
+                method="standardize",
+                samples="condition == 'DMSO (control)'",
+            )
+
+            all_normalized_df.append(normalized_df)
+        df_final = pd.concat(all_normalized_df, axis=0).reset_index(drop=True)
+
+        vals = []
+        for ind, row in df_final.iterrows():
+            if row["condition"] == "DMSO (control)":
+                vals.append("negcon")
+            else:
+                vals.append(None)
+
+        # more dummy cols
+        df_final["Metadata_control_type"] = vals
+        df_final["Metadata_broad_sample"] = df_final["condition"]
+        df_final["Cell_type"] = "hIPSc"
+        df_final["Perturbation"] = "compound"
+        df_final["Time"] = "1"
+        df_final["Metadata_target_list"] = "none"
+        df_final["target_list"] = "none"
+        df_final["Metadata_Plate"] = "Plate0"
+
+        experiment_df = df_final
+
+        replicability_map_df = pd.DataFrame()
+        replicability_fr_df = pd.DataFrame()
+
+        replicate_feature = "Metadata_broad_sample"
+        for cell in experiment_df.Cell_type.unique():
+            cell_df = experiment_df.query("Cell_type==@cell")
+            modality_1_perturbation = "compound"
+            modality_1_experiments_df = cell_df.query("Perturbation==@modality_1_perturbation")
+            for modality_1_timepoint in modality_1_experiments_df.Time.unique():
+                modality_1_timepoint_df = modality_1_experiments_df.query(
+                    "Time==@modality_1_timepoint"
+                )
+                modality_1_df = pd.DataFrame()
+                for plate in modality_1_timepoint_df.Assay_Plate_Barcode.unique():
+                    data_df = df_final.loc[df_final["Assay_Plate_Barcode"].isin([plate])]
+                    data_df = data_df.drop(
+                        columns=["Metadata_target_list", "target_list"]
+                    ).reset_index(drop=True)
+                    modality_1_df = utils.concat_profiles(modality_1_df, data_df)
+
+                # Set Metadata_broad_sample value to "DMSO" for DMSO wells
+                modality_1_df[replicate_feature].fillna("DMSO", inplace=True)
+
+                # Remove empty wells
+                modality_1_df = remove_empty_wells(modality_1_df)
+
+                modality_1_df["Metadata_negcon"] = np.where(
+                    modality_1_df["Metadata_control_type"] == "negcon", 1, 0
+                )  # Create dummy column
+
+                pos_sameby = ["Metadata_broad_sample"]
+                pos_diffby = []
+                neg_sameby = ["Metadata_Plate"]
+                neg_diffby = ["Metadata_negcon"]
+
+                metadata_df = get_metadata(modality_1_df)
+                feature_df = get_featuredata(modality_1_df)
+                feature_values = feature_df.values
+
+                result = run_pipeline(
+                    metadata_df,
+                    feature_values,
+                    pos_sameby,
+                    pos_diffby,
+                    neg_sameby,
+                    neg_diffby,
+                    anti_match=False,
+                    batch_size=batch_size,
+                    null_size=null_size,
+                )
+                result = result.query("Metadata_negcon==0").reset_index(drop=True)
+
+                qthreshold = 0.001
+
+                replicability_map_df, replicability_fr_df = create_replicability_df(
+                    replicability_map_df,
+                    replicability_fr_df,
+                    result,
+                    pos_sameby,
+                    qthreshold,
+                    modality_1_perturbation,
+                    cell,
+                    modality_1_timepoint,
+                )
+        replicability_map_df["model"] = model
+        all_rep.append(replicability_map_df)
+
+    all_rep = pd.concat(all_rep, axis=0).reset_index(drop=True)
+    all_rep["metric"] = "Mean average precision"
+    all_rep["value"] = all_rep["mean_average_precision"]
+    return all_rep
+
+
+def _plot(all_rep, save_path):
+    sns.set_context("talk")
+    sns.set(font_scale=1.7)
+    sns.set_style("white")
+
+    test = all_rep.sort_values(by="q_value").reset_index(drop=True)
+    test["Drugs"] = test["Metadata_broad_sample"]
+
+    x_order = (
+        test.loc[test["model"] == "SO3_pointcloud_SDF"]
+        .sort_values(by="q_value")["Metadata_broad_sample"]
+        .values
+    )
+    ordered_drugs = all_rep.groupby(['Metadata_broad_sample']).mean().sort_values(by='q_value').reset_index()['Metadata_broad_sample']
+    x_order = ordered_drugs
+
+    g = sns.catplot(
+        data=test,
+        x="Drugs",
+        y="q_value",
+        hue="model",
+        kind="point",
+        order=x_order,
+        hue_order=[
+            "Classical_image_seg",
+            "Rotation_invariant_image_seg",
+            "Classical_image_SDF",
+            "Rotation_invariant_image_SDF",
+            "Rotation_invariant_pointcloud_SDF",
+        ],
+        palette=["#A6ACE0", "#6277DB", "#D9978E", "#D8553B", "#2ED9FF"],
+        aspect=2,
+        height=5,
+    )
+    g.set_xticklabels(rotation=90)
+    plt.axhline(y=0.05, color="black")
+    this_path = Path(save_path)
+    Path(this_path).mkdir(parents=True, exist_ok=True)
+    g.savefig(this_path / "q_values.png", dpi=300, bbox_inches="tight")
+    g.savefig(this_path / "q_values.pdf", dpi=300, bbox_inches="tight")
+    test.to_csv(this_path / "q_values.csv")
 
 
 def load_data(exp, plate, filetype):
@@ -31,19 +215,9 @@ def get_metacols(df):
     return [c for c in df.columns if c.startswith("Metadata_")]
 
 
-def get_featurecols(df):
-    """returna  list of featuredata columns."""
-    return [c for c in df.columns if not c.startswith("Metadata")]
-
-
 def get_metadata(df):
     """return dataframe of just metadata columns."""
     return df[get_metacols(df)]
-
-
-def get_featuredata(df):
-    """return dataframe of just featuredata columns."""
-    return df[get_featurecols(df)]
 
 
 def remove_negcon_and_empty_wells(df):
