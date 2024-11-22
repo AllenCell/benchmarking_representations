@@ -123,12 +123,13 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 1. Run analysis for each dataset separately via jupyter notebooks
 
 ```
-└── br
-    └── notebooks
-        ├── fig2_cellpack.ipynb          <- Reproduce Fig 2 cellPACK synthetic data results
-        ├── fig3_pcna.ipynb              <- Reproduce Fig 3 PCNA data results
-        ├── fig4_other_punctate.ipynb    <- Reproduce Fig 4 other puntate structure data results
-        ├── fig5_npm1.ipynb              <- Reproduce Fig 5 npm1 data results
-        ├── fig6_other_polymorphic.ipynb <- Reproduce Fig 6 other polymorphic data results
-        └── fig7_drug_data.ipynb         <- Reproduce Fig 7 drug data results
+└── src
+    └── br
+       └── notebooks
+           ├── fig2_cellpack.ipynb          <- Reproduce Fig 2 cellPACK synthetic data results
+           ├── fig3_pcna.ipynb              <- Reproduce Fig 3 PCNA data results
+           ├── fig4_other_punctate.ipynb    <- Reproduce Fig 4 other puntate structure data results
+           ├── fig5_npm1.ipynb              <- Reproduce Fig 5 npm1 data results
+           ├── fig6_other_polymorphic.ipynb <- Reproduce Fig 6 other polymorphic data results
+           └── fig7_drug_data.ipynb         <- Reproduce Fig 7 drug data results
 ```
