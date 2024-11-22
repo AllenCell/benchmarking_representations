@@ -32,24 +32,16 @@ pip install -e .
 2. For image preprocessing used for punctate structures, update the data paths in:
 
 ```
-src
-└── br
-    └── data
-        └── preprocessing
-            └── image_preprocessing
-                └── config
-                    └── config.yaml <- Data config for image processing workflow
+image_preprocessing
+└── config
+    └── config.yaml <- Data config for image processing workflow
 ```
 
 Then follow the [installation](src/br/data/preprocessing/image_preprocessing/README.md) steps to run the snakefile located in
 
 ```
-src
-└── br
-    └── data
-        └── preprocessing
-            └── image_preprocessing
-                └── Snakefile <- Image preprocessing workflow. Combines alignment, masking, registration
+image_preprocessing
+└── Snakefile <- Image preprocessing workflow. Combines alignment, masking, registration
 ```
 
 For point cloud preprocessing for punctate structures, update data paths and run the workflow in
