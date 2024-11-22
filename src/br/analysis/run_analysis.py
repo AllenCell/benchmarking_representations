@@ -6,8 +6,10 @@ from pathlib import Path
 import pandas as pd
 
 from br.analysis.analysis_utils import (
+    _archetypes_polymorphic,
     _archetypes_save_recons,
     _dataset_specific_subsetting,
+    _latent_walk_polymorphic,
     _latent_walk_save_recons,
     _pseudo_time_analysis,
     _setup_gpu,
@@ -40,27 +42,30 @@ def main(args):
     )
 
     # Compute stratified latent walk
-    key = "pcloud"
+    key = "pcloud" # all analysis on pointcloud models
     this_save_path = Path(args.save_path) / Path("latent_walks")
     this_save_path.mkdir(parents=True, exist_ok=True)
 
-    stratified_latent_walk(
-        model,
-        device,
-        all_ret,
-        "pcloud",
-        256,
-        256,
-        2,
-        this_save_path,
-        stratify_key,
-        latent_walk_range=[-2, 0, 2],
-        z_max=viz_params["z_max"],
-        z_ind=viz_params["z_ind"],
-    )
+    if args.sdf:
+        _latent_walk_polymorphic(stratify_key, all_ret, x_label, this_save_path, latent_dim)
+    else:
+        stratified_latent_walk(
+            model,
+            device,
+            all_ret,
+            "pcloud",
+            latent_dim,
+            latent_dim,
+            2,
+            this_save_path,
+            stratify_key,
+            latent_walk_range=[-2, 0, 2],
+            z_max=viz_params["z_max"],
+            z_ind=viz_params["z_ind"],
+        )
 
-    # Save reconstruction plots
-    _latent_walk_save_recons(this_save_path, stratify_key, viz_params, args.dataset_name)
+        # Save reconstruction plots
+        _latent_walk_save_recons(this_save_path, stratify_key, viz_params, args.dataset_name)
 
     # Archetype analysis
     matrix = all_ret[[i for i in all_ret.columns if "mu" in i]].values
@@ -70,7 +75,10 @@ def main(args):
     this_save_path = Path(args.save_path) / Path("archetypes")
     this_save_path.mkdir(parents=True, exist_ok=True)
 
-    _archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_save_path)
+    if args.sdf:
+        _archetypes_polymorphic(this_save_path, archetypes_df, all_ret, matrix)
+    else:
+        _archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_save_path)
 
     # Pseudotime analysis
     if "volume_of_nucleus_um3" in all_ret.columns:
@@ -87,7 +95,12 @@ if __name__ == "__main__":
         "--embeddings_path", type=str, required=True, help="Path to the saved embeddings."
     )
     parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
-
+    parser.add_argument(
+        "--sdf",
+        type=bool,
+        required=True,
+        help="boolean indicating whether the model involves SDFs",
+    )
     args = parser.parse_args()
 
     # Validate that required paths are provided
@@ -108,4 +121,7 @@ if __name__ == "__main__":
 
     Other punctate structures dataset:
     python src/br/analysis/punctate_analysis.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate/" --dataset_name "other_punctate" --run_name "Rotation_invariant_pointcloud_structurenorm"
+
+    npm1 dataset:
+    python src/br/analysis/punctate_analysis.py --save_path "./testing_npm/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1/" --dataset_name "npm1" --run_name "Rotation_invariant_pointcloud_SDF"
     """

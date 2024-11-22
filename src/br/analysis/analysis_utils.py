@@ -6,8 +6,11 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pyvista as pv
 import torch
 import yaml
+from sklearn.decomposition import PCA
+from tqdm import tqdm
 
 from br.features.plot import plot_pc_saved, plot_stratified_pc
 from br.features.reconstruction import save_pcloud
@@ -256,6 +259,16 @@ def _dataset_specific_subsetting(all_ret, dataset_name):
         stratify_key = "structure_name"
         viz_params = {"z_max": None, "z_ind": 2, "flip": False, "structs": structs}
         n_archetypes = 7
+    elif dataset_name == 'npm1':
+        stratify_key = 'STR_connectivity_cc_thresh'
+        n_archetypes = 5
+        viz_params = None
+    elif dataset_name == 'other_polymorphic':
+        stratify_key = 'structure_name'
+        structs = ["NPM1", "FBL", "LAMP1", "ST6GAL1"]
+        all_ret = all_ret.loc[all_ret["structure_name"].isin(structs)]
+        n_archetypes = 4
+        viz_params = None
     else:
         raise ValueError("Dataset not in pre-configured list")
     viz_params["views"] = ["xy"]
@@ -485,3 +498,55 @@ def _pseudo_time_analysis(model, all_ret, save_path, device, key, viz_params, bi
         viz_params["xlim"],
         viz_params["ylim"],
     )
+
+
+def _latent_walk_polymorphic(stratify_key, all_ret, x_label, this_save_path, latent_dim):
+    lw_dict = {stratify_key: [], "PC": [], "bin": [], "CellId": []}
+    for strat in all_ret[stratify_key].unique():
+        this_sub_m = all_ret.loc[all_ret[stratify_key] == strat].reset_index(drop=True)
+        all_features = this_sub_m[[i for i in this_sub_m.columns if "mu" in i]].values
+        dim_size = latent_dim
+        pca = PCA(n_components=dim_size)
+        pca_features = pca.fit_transform(all_features)
+        pca_std_list = pca_features.std(axis=0)
+        for rank in [0, 1]:
+            latent_walk_range = [-2, 0, 2]
+            for value_index, value in enumerate(
+                tqdm(latent_walk_range, total=len(latent_walk_range))
+            ):
+                z_inf = torch.zeros(1, dim_size)
+                z_inf[:, rank] += value * pca_std_list[rank]
+                z_inf = pca.inverse_transform(z_inf).numpy()
+
+                dist = (all_features - z_inf) ** 2
+                dist = np.sum(dist, axis=1)
+                closest_idx = np.argmin(dist)
+                closest_real_id = this_sub_m.iloc[closest_idx]["CellId"]
+                mesh = pv.read(
+                    all_ret.loc[all_ret["CellId"] == closest_real_id]["mesh_path"].iloc[0]
+                )
+                mesh.save(this_save_path / Path(f"{strat}_{rank}_{value_index}.ply"))
+
+                lw_dict[stratify_key].append(strat)
+                lw_dict["PC"].append(rank)
+                lw_dict["bin"].append(value_index)
+                lw_dict["CellId"].append(closest_real_id)
+    lw_dict = pd.DataFrame(lw_dict)
+    lw_dict.to_csv(this_save_path / "latent_walk.csv")
+
+
+def _archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features):
+    arch_dict = {"CellId": [], "archetype": []}
+    for i in range(len(archetypes_df)):
+        this_mu = archetypes_df.iloc[i].values
+        dist = (all_features - this_mu) ** 2
+        dist = np.sum(dist, axis=1)
+        closest_idx = np.argmin(dist)
+        closest_real_id = all_ret.iloc[closest_idx]["CellId"]
+        print(dist, closest_real_id)
+        mesh = pv.read(all_ret.loc[all_ret["CellId"] == closest_real_id]["mesh_path"].iloc[0])
+        mesh.save(this_save_path / Path(f"{i}.ply"))
+        arch_dict["archetype"].append(i)
+        arch_dict["CellId"].append(closest_real_id)
+    arch_dict = pd.DataFrame(arch_dict)
+    arch_dict.to_csv(this_save_path / "archetypes.csv")
