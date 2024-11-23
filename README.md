@@ -17,7 +17,7 @@ Continue below for guidance on using these models on your own data.
 If you'd like to reproduce this analysis on our data, check out the following documentation.
 
 * [Main usage documentation](./docs/USAGE.md) for reproducing the figures in the paper from published pointclouds and SDFs, including model training and inference (steps 3-5).
-* [Preprocessing documentation](./subpackages/image_preprocessing/README.md) for generating pointclouds and SDFs from from our input movies (step 2).
+* [Preprocessing documentation](./docs/PREPROCESSING.md) for generating pointclouds and SDFs from from our input movies (step 2).
 * [Development documentation](./docs/DEVELOPMENT.md) for guidance working on the code in this repository.
 
 # Using the models
