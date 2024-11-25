@@ -19,11 +19,9 @@ names:
   ]
 data_paths:
   [
-    "/data/other_polymorphic/pc.yaml",
-    "/data/other_polymorphic/so3_image_sdf.yaml",
-    "/data/other_polymorphic/so3_image_seg.yaml",
-    "/data/other_polymorphic/classical_image_sdf.yaml",
-    "/data/other_polymorphic/classical_image_seg.yaml",
+    "./configs/data/other_polymorphic/pc.yaml",
+    "./configs/data/other_polymorphic/so3_image_sdf.yaml",
+    "./configs/data/other_polymorphic/so3_image_seg.yaml",
+    "./configs/data/other_polymorphic/classical_image_sdf.yaml",
+    "./configs/data/other_polymorphic/classical_image_seg.yaml",
   ]
-classification_label: ["structure_name"]
-regression_label: ["avg_dists", "mean_volume", "mean_surface_area"]

@@ -3,27 +3,25 @@ image_path: ./morphology_appropriate_representation_learning/preprocessed_data/p
 pc_path: ./morphology_appropriate_representation_learning/preprocessed_data/pcna/manifest.csv
 model_checkpoints:
   [
-    "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Classical_image.ckpt",
-    "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_image.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Classical_pointcloud.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_pointcloud.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Classical_image.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_image.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/pcna/Rotation_invariant_pointcloud_jitter.ckpt",
   ]
 names:
   [
-    "Classical_image",
-    "Rotation_invariant_image",
     "Classical_pointcloud",
     "Rotation_invariant_pointcloud",
+    "Classical_image",
+    "Rotation_invariant_image",
     "Rotation_invariant_pointcloud_jitter",
   ]
 data_paths: [
-    "/data/pcna/image.yaml",
-    "/data/pcna/image.yaml",
-    "/data/pcna/pc.yaml",
-    "/data/pcna/pc_intensity.yaml",
+    "./configs/data/pcna/pc.yaml",
+    "./configs/data/pcna/pc_intensity.yaml",
+    "./configs/data/pcna/image.yaml",
+    "./configs/data/pcna/image.yaml",
     # "./src/br/configs/data/pcna/pc_intensity_jitter.yaml",
-    "/data/pcna/pc_intensity.yaml",
+    "./configs/data/pcna/pc_intensity.yaml",
   ]
-classification_label: ["cell_stage_fine", "flag_comment"]
-regression_label:

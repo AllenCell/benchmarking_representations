@@ -17,13 +17,11 @@ names:
     "Rotation_invariant_pointcloud",
     "Rotation_invariant_pointcloud_jitter",
   ]
-data_paths:
-  [
-    "/data/cellpack/image.yaml",
-    "/data/cellpack/image.yaml",
-    "/data/cellpack/pc.yaml",
-    "/data/cellpack/pc.yaml",
-    "/data/cellpack/pc.yaml",
+data_paths: [
+    "./configs/data/cellpack/image.yaml",
+    "./configs/data/cellpack/image.yaml",
+    "./configs/data/cellpack/pc.yaml",
+    "./configs/data/cellpack/pc.yaml",
+    # "./src/br/configs/data/cellpack/pc_jitter.yaml",
+    "./configs/data/cellpack/pc.yaml",
   ]
-classification_label: ["rule"]
-regression_label:
