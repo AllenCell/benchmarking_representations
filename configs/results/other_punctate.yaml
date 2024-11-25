@@ -6,7 +6,6 @@ model_checkpoints:
     "./morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Classical_image.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_image.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Classical_pointcloud.ckpt",
-    "./morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_pointcloud.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/other_punctate/Rotation_invariant_pointcloud_structurenorm.ckpt",
   ]
 names:
@@ -14,14 +13,14 @@ names:
     "Classical_image",
     "Rotation_invariant_image",
     "Classical_pointcloud",
-    "Rotation_invariant_pointcloud",
     "Rotation_invariant_pointcloud_structurenorm",
   ]
 data_paths:
   [
-    "./configs/data/other_punctate/image.yaml",
-    "./configs/data/other_punctate/image.yaml",
-    "./configs/data/other_punctate/pc.yaml",
-    "./configs/data/other_punctate/pc_intensity.yaml",
-    "./configs/data/other_punctate/pc_intensity_structurenorm.yaml",
+    "/data/other_punctate/image.yaml",
+    "/data/other_punctate/image.yaml",
+    "/data/other_punctate/pc.yaml",
+    "/data/other_punctate/pc_intensity_structurenorm.yaml",
   ]
+classification_label: ["structure_name", "cell_stage"]
+regression_label:
