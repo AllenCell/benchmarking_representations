@@ -185,9 +185,7 @@ class PartialPointCloudField(Field):
             category (int): index of category
         """
         if mode in ["val", "test"]:  # fix the size in evaluation
-            self.partial_type = (
-                "centerz" if "centerz" in self.partial_type else "centery"
-            )
+            self.partial_type = "centerz" if "centerz" in self.partial_type else "centery"
             self.part_ratio = 0.5
 
         if self.multi_files is None:
