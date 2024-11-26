@@ -6,8 +6,9 @@ Our analysis is organized as follows.
 
 1. Single cell images
 2. Preprocessing (result: pointclouds and SDFs)
-    1. Alignment, masking, and registration
-    2. Punctate structures: Generate pointclouds
+    2. Punctate structures
+        1. Alignment, masking, and registration
+        2. Generate pointclouds
     3. Polymorphic structures: Generate SDFs
 3. Model training (result: checkpoint)
 4. Model inference (results: embeddings, model cost statistics)
