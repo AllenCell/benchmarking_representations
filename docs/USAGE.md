@@ -115,9 +115,9 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 
 ## Steps to download pre-trained models
 
-1. To skip model training, download pre-trained models. For each of the six datasets, there are five `.ckpt` files to download.
+To skip model training, download pre-trained models. For each of the six datasets, there are five `.ckpt` files to download.
 
-| Download `.ckpt` from here                                                                                                                                                                               | To this folder                               |
+| Download `.ckpt` files from here                                                                                                                                                                               | To this folder                               |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/cellpack/)                                                | `configs/experiment/cellpack/ckpts`          |
 | [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/pcna/)                                                  | `configs/experiment/pcna/ckpts`              |
