@@ -124,6 +124,14 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 | [WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/) | `configs/experiment/other_polymorphic/ckpts` |
 | [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/)                                   | `configs/experiment/npm1_perturb/ckpts`      |
 
+## Compute embeddings
+
+Use the `run_embeddings` script.
+
+```bash
+python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name "pcna" --batch_size 5 --debug False
+```
+
 # 3. Interpretability analysis
 
 ## Steps to download pre-computed embeddings
@@ -141,16 +149,20 @@ You can download our pre-computed embeddings here.
 
 ## Steps to run benchmarking analysis
 
-1. Run analysis for each dataset separately via jupyter notebooks.
+1. Compute features.
 
+```bash
+python src/br/analysis/run_features.py --save_path "./outputs/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --sdf False --dataset_name "pcna"
 ```
-src
-└── br
-   └── notebooks
-       ├── fig2_cellpack.ipynb          <- Reproduce Fig 2 cellPACK synthetic data results
-       ├── fig3_pcna.ipynb              <- Reproduce Fig 3 PCNA data results
-       ├── fig4_other_punctate.ipynb    <- Reproduce Fig 4 other puntate structure data results
-       ├── fig5_npm1.ipynb              <- Reproduce Fig 5 npm1 data results
-       ├── fig6_other_polymorphic.ipynb <- Reproduce Fig 6 other polymorphic data results
-       └── fig7_drug_data.ipynb         <- Reproduce Fig 7 drug data results
+
+2. Run all analyses.
+
+```bash
+python src/br/analysis/run_analysis.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False
+```
+
+3. Run drug data perturbation detection analysis
+
+```bash
+python src/br/analysis/run_drugdata_analysis.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb"
 ```
