@@ -19,9 +19,9 @@ names:
   ]
 data_paths:
   [
-    "./configs/data/npm1_perturb/pc.yaml",
-    "./configs/data/npm1_perturb/classical_image_sdf.yaml",
-    "./configs/data/npm1_perturb/classical_image_seg.yaml",
-    "./configs/data/npm1_perturb/so3_image_sdf.yaml",
-    "./configs/data/npm1_perturb/so3_image_seg.yaml",
+    "/data/npm1_perturb/pc.yaml",
+    "/data/npm1_perturb/classical_image_sdf.yaml",
+    "/data/npm1_perturb/classical_image_seg.yaml",
+    "/data/npm1_perturb/so3_image_sdf.yaml",
+    "/data/npm1_perturb/so3_image_seg.yaml",
   ]
