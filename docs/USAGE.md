@@ -117,7 +117,7 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 
 To skip model training, download pre-trained models. For each of the six datasets, there are five `.ckpt` files to download.
 
-| Download `.ckpt` files from here                                                                                                                                                                               | To this folder                               |
+| Download `.ckpt` files from here                                                                                                                                                                         | To this folder                               |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/cellpack/)                                                | `configs/experiment/cellpack/ckpts`          |
 | [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/pcna/)                                                  | `configs/experiment/pcna/ckpts`              |
@@ -127,19 +127,21 @@ To skip model training, download pre-trained models. For each of the six dataset
 | [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/)                                   | `configs/experiment/npm1_perturb/ckpts`      |
 
 ## Compute embeddings
+
 To compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) to point to your pre-processed data.
 Then, run the following commands.
 
-Dataset | Embedding command
---------|---
-cellpack | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name cellpack --batch_size 5 --debug False`
-npm1_perturb | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1_perturb --batch_size 5 --debug False`
-npm1 | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1 --batch_size 5 --debug False`
-other_polymorphic | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name other_polymorphic --batch_size 5 --debug False`
-other_punctate | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name other_punctate --batch_size 5 --debug False`
-pcna | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name pcna --batch_size 5 --debug False`
+| Dataset           | Embedding command                                                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| cellpack          | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name cellpack --batch_size 5 --debug False`         |
+| npm1_perturb      | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1_perturb --batch_size 5 --debug False`      |
+| npm1              | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1 --batch_size 5 --debug False`              |
+| other_polymorphic | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name other_polymorphic --batch_size 5 --debug False` |
+| other_punctate    | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name other_punctate --batch_size 5 --debug False`   |
+| pcna              | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name pcna --batch_size 5 --debug False`             |
 
 # 3. Interpretability analysis
+
 ## Steps to download pre-computed embeddings
 
 Many of the results from the paper can be reproduced just from the embeddings produced by the model. However, some results rely on statistics about the costs of running the models, which are not included with the embeddings.
