@@ -126,6 +126,7 @@ def main(args):
     csvs = [i.split(".")[0] for i in csvs]
     # Remove non metric related csvs
     csvs = [i for i in csvs if i not in run_names and i not in keys]
+    csvs = [i for i in csvs if i not in ['image', 'pcloud']]
     # classification and regression metrics are unique to each dataset
     unique_metrics = [i for i in csvs if "classification" in i or "regression" in i]
     # Collect dataframe and make plots

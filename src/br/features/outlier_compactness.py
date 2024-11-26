@@ -108,7 +108,6 @@ def compactness(this_mo, num_PCs, max_embed_dim, method):
     max_embed_dim."""
     cols = [i for i in this_mo.columns if "mu" in i]
     this_feats = this_mo[cols].iloc[:, :max_embed_dim].dropna(axis=1).values
-    print(this_feats.shape)
     if method == "pca":
         _, _, val = compute_PCA_expl_var(this_feats, num_PCs)
         val = [val]
@@ -127,7 +126,6 @@ def outlier_detection(this_mo, outlier_label=0, blobby_outlier_max_cc=None):
         )
     else:
         if "flag_comment" in this_mo.columns:
-            print("Outlier column is flag comment")
             this_mo1 = this_mo.loc[
                 this_mo["flag_comment"].isin(
                     ["cell appears dead or dying", "no EGFP fluorescence"]
@@ -142,21 +140,18 @@ def outlier_detection(this_mo, outlier_label=0, blobby_outlier_max_cc=None):
             this_mo2["outlier"] = "No"
             this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
         elif "Anomaly" in this_mo.columns:
-            print("Outlier column is Anamoly")
             this_mo1 = this_mo.loc[~this_mo["Anomaly"].isin(["none"])]
             this_mo1["outlier"] = "Yes"
             this_mo2 = this_mo.loc[this_mo["Anomaly"].isin(["none"])]
             this_mo2["outlier"] = "No"
             this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
         elif "cell_stage" in this_mo.columns:
-            print("Outlier column is cell stage")
             this_mo1 = this_mo.loc[~this_mo["cell_stage"].isin(["M0"])]
             this_mo1["outlier"] = "Yes"
             this_mo2 = this_mo.loc[this_mo["cell_stage"].isin(["M0"])]
             this_mo2["outlier"] = "No"
             this_mo = pd.concat([this_mo1, this_mo2], axis=0).reset_index(drop=True)
         elif "outlier" not in this_mo.columns:
-            print("Outlier column is outlier")
             return 0
 
     if this_mo["outlier"].isna().any():
