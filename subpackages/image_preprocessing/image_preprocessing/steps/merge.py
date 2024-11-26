@@ -137,9 +137,7 @@ class Merge(Step):
             )
         ).astype("uint16")
 
-        channel_names = (
-            raw_channel_names + [seg_channel_names[ix] for ix in seg_channels_to_use]
-        )
+        channel_names = raw_channel_names + [seg_channel_names[ix] for ix in seg_channels_to_use]
 
         output_path = self.store_image(
             data_new, channel_names, raw_img.physical_pixel_sizes, cell_id

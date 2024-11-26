@@ -2,8 +2,9 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import mitsuba as mi
+
 mi.set_variant("scalar_rgb")
-# Use scalar backend for mitsuba rendering 
+# Use scalar backend for mitsuba rendering
 # For more detailes refer to
 # https://mitsuba.readthedocs.io/en/stable/src/key_topics/variants.html
 import numpy as np
@@ -12,8 +13,8 @@ import plotly.graph_objects as go
 import seaborn as sns
 import trimesh
 from mitsuba import ScalarTransform4f as T
-from .utils import normalize_intensities_and_get_colormap
 
+from .utils import normalize_intensities_and_get_colormap
 
 METRIC_DICT = {
     "reconstruction": {"metric": ["loss"], "min": [True]},
