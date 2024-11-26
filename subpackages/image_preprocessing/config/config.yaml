@@ -8,11 +8,10 @@ n_workers: 10
 verbose: true
 force: false
 raise_errors: true
-samples_per_structure:
 
-output_dir:
+output_dir: your_output_path_here
 
-input_manifest:
+input_manifest: your_path_here
 
 remote_provider:
 
