@@ -106,11 +106,11 @@ def compute_features(
     compute_embeds: bool = False,
     metric_list: list = METRIC_LIST,
     loss_eval_list: list = None,
-    classification_params: dict = {"class_labels": ["cell_stage_fine"]},
+    classification_params: dict = {"class_labels": ["cell_stage_fine"], "df_feat": None},
     regression_params: dict = {
         "feature_df_path": None,
         "target_cols": [],
-        "df_feat": [],
+        "df_feat": None,
     },
     evolve_params: dict = {
         "modality_list_evolve": [],
@@ -166,7 +166,7 @@ def compute_features(
 
         if "Reconstruction" in metric_list:
             print("Getting reconstruction")
-            rec_df = all_ret[["model", "split", "loss"]].groupby(["model", "split"]).mean()
+            rec_df = all_ret.loc[all_ret["split"] == "test"].reset_index(drop=True)
             rec_df.to_csv(path / "reconstruction.csv")
             metric_list.pop(metric_list.index("Reconstruction"))
 
@@ -221,6 +221,7 @@ def compute_features(
                 ret_dict_classification = get_classification_df(
                     all_ret,
                     target_col,
+                    classification_params["df_feat"],
                 )
                 ret_dict_classification.to_csv(path / Path(f"classification_{target_col}.csv"))
 

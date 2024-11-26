@@ -1,6 +1,6 @@
 orig_df: ./morphology_appropriate_representation_learning/preprocessed_data/other_polymorphic/manifest.csv
-image_path:
-pc_path:
+image_path: ./morphology_appropriate_representation_learning/preprocessed_data/other_polymorphic/manifest.csv
+pc_path: ./morphology_appropriate_representation_learning/preprocessed_data/other_polymorphic/manifest.csv
 model_checkpoints:
   [
     "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_pointcloud_SDF.ckpt",
@@ -19,9 +19,11 @@ names:
   ]
 data_paths:
   [
-    "./configs/data/other_polymorphic/pc.yaml",
-    "./configs/data/other_polymorphic/so3_image_sdf.yaml",
-    "./configs/data/other_polymorphic/so3_image_seg.yaml",
-    "./configs/data/other_polymorphic/classical_image_sdf.yaml",
-    "./configs/data/other_polymorphic/classical_image_seg.yaml",
+    "/data/other_polymorphic/pc.yaml",
+    "/data/other_polymorphic/so3_image_sdf.yaml",
+    "/data/other_polymorphic/so3_image_seg.yaml",
+    "/data/other_polymorphic/classical_image_sdf.yaml",
+    "/data/other_polymorphic/classical_image_seg.yaml",
   ]
+classification_label: ["structure_name"]
+regression_label: ["avg_dists", "mean_volume", "mean_surface_area"]

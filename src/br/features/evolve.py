@@ -54,6 +54,8 @@ def update_config(config_path, data, configs, save_path, suffix):
         config = yaml.safe_load(stream)
         if "pointcloudutils.datamodules.ShapenetDataModule" == config["_target_"]:
             config["dataset_folder"] = str(save_path / "iae")
+        elif "pointcloudutils.datamodules.CellPackDataModule" == config["_target_"]:
+            pass
         else:
             config["path"] = str(save_path / f"{suffix}.csv")
         config["batch_size"] = 2
@@ -64,6 +66,9 @@ def update_config(config_path, data, configs, save_path, suffix):
 
 
 def make_csv(pc_path, image_path, num_samples, save_path, key="CellId", pc_is_iae=False):
+    if not pc_path and not image_path:
+        return
+
     if pc_path.split(".")[-1] == "csv":
         pc_df = pd.read_csv(pc_path)
     else:
@@ -117,33 +122,6 @@ def make_csv(pc_path, image_path, num_samples, save_path, key="CellId", pc_is_ia
     else:
         pc_df.to_csv(save_path / "pcloud.csv")
         image_df.to_csv(save_path / "image.csv")
-
-
-# def get_pc_configs(dataset_name):
-#     folder = get_config_folders(dataset_name)
-#     config_list = [
-#         f"../data/configs/{folder}/pointcloud_3.yaml",
-#         f"../data/configs/{folder}/pointcloud_4.yaml",
-#     ]
-#     return config_list
-
-
-# def get_config_folders(dataset_name):
-#     if dataset_name == "cellpainting":
-#         folder = "inference_cellpainting_configs"
-#     elif dataset_name == "variance":
-#         folder = "inference_variance_data_configs"
-#     elif dataset_name == "pcna":
-#         folder = "inference_pcna_data_configs"
-#     return folder
-
-
-# def get_image_configs(dataset_name):
-#     folder = get_config_folders(dataset_name)
-#     config_list = [
-#         f"../data/configs/{folder}/image_full.yaml",
-#     ]
-#     return config_list
 
 
 def get_dataloaders(save_path, config_list_evolve, modality_list):

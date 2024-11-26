@@ -124,11 +124,7 @@ def sample_points(orig, skew_scale):
     pcloud = []
     for i in range(orig.shape[0]):
         raw = orig[i, 0]
-        try:
-            new_cents = _sample(raw, skew_scale)
-        except:
-            print("exception")
-            new_cents = _sample(raw, 100)
+        new_cents = _sample(raw, skew_scale)
         pcloud.append(new_cents)
     pcloud = np.stack(pcloud, axis=0)
     return torch.tensor(pcloud)
