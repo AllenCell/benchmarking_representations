@@ -4,7 +4,7 @@ defaults:
   - report: _base
 
 # n_workers: 120
-n_workers: 10
+n_workers: 1
 verbose: true
 force: false
 raise_errors: true

@@ -6,11 +6,6 @@ from omegaconf import OmegaConf
 
 with initialize(version_base=None, config_path="config"):
     _cfg = compose(config_name="config")
-    # TODO: think about overrides here
-    # config = compose(config_name="config", overrides=...)
-    # print(OmegaConf.to_yaml(config, resolve=True))
-    #
-    #
     cfg = OmegaConf.merge(_cfg, config)
 
 remote_provider = instantiate(cfg.remote_provider)
@@ -54,15 +49,3 @@ rule register:
         os.path.join(cfg.output_dir, "register/manifest.parquet")
     shell:
         "python scripts/run_step.py step=register ++input={input}"
-
-rule delete_temps:
-    shell:
-        """
-        wget https://dl.min.io/client/mc/release/linux-amd64/mc && \
-        chmod +x ./mc && \
-        ./mc alias set local http://minio.a100.int.allencell.org:9002 && \
-        ./mc rm  --force --recursive local/variance-dataset/merge --force --recursive && \
-        ./mc rm  --force --recursive local/variance-dataset/align --force --recursive && \
-        ./mc rm  --force --recursive local/variance-dataset/register --force --recursive && \
-        rm ./mc
-        """

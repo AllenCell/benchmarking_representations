@@ -25,8 +25,14 @@ Edit the data paths in the file `subpackages/image_preprocessing/config/config.y
 
 # Usage
 
-Once data is downloaded and config files are set up, run preprocessing scripts.
+Once data is downloaded and config files are set up, run preprocessing scripts. To run the preprocessing for punctate structures from the WTC-11 hIPS single cell image dataset v1, run the following command
 
 ```bash
-snakemake -s Snakefile --cores all
+snakemake --cores all
+```
+
+To run the preprocessing for the DNA replication foci dataset, run the following command
+
+```bash
+snakemake -s Snakefile_pcna --cores all
 ```
