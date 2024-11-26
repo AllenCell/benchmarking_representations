@@ -196,7 +196,7 @@ def _setup_evolve_params(run_names, data_config_list, keys):
     """Set up dataloader parameters specific to the evolution energy metric."""
     eval_meshed_img = [False] * len(run_names)
     eval_meshed_img_model_type = [None] * len(run_names)
-    compute_evolve_dataloaders = dataset_name != "cellpack"
+    compute_evolve_dataloaders = True
     if "SDF" in "\t".join(run_names):
         eval_meshed_img = [True] * len(run_names)
         eval_meshed_img_model_type = []
