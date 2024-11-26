@@ -2,9 +2,8 @@
 import argparse
 import os
 import sys
-
+from pathlib import Path
 import pandas as pd
-
 from br.analysis.analysis_utils import (
     get_feature_params,
     setup_evaluation_params,
@@ -39,6 +38,9 @@ def main(args):
         latent_dims,
     ) = get_data_and_models(args.dataset_name, batch_size, config_path + "/results/", args.debug)
     max_embed_dim = min(latent_dims)
+
+    # make save path directory 
+    Path(args.save_path).mkdir(parents=True, exist_ok=True)
 
     # Save model sizes to CSV
     sizes_ = pd.DataFrame()
@@ -92,6 +94,7 @@ def main(args):
     ]
     if regression_params["target_cols"]:
         metric_list.append("Regression")
+
 
     # Compute multi-metric benchmarking features
     compute_features(
@@ -166,4 +169,6 @@ if __name__ == "__main__":
     """
     Example run:
     python src/br/analysis/run_features.py --save_path "./outputs/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --sdf False --dataset_name "pcna"
+
+    python src/br/analysis/run_features.py --save_path "/outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --sdf False --dataset_name "cellpack" --debug False
     """

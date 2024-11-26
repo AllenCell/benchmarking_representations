@@ -239,7 +239,7 @@ def get_feature_params(results_path, dataset_name, manifest, keys, run_names):
     data_config_list = [cytodl_config_path + i for i in data_config_list]
     class_label = DATA_LIST[dataset_name]["classification_label"]
     regression_label = DATA_LIST[dataset_name]["regression_label"]
-    evolve_params = _setup_evolve_params(run_names, data_config_list, keys)
+    evolve_params = setup_evolve_params(run_names, data_config_list, keys)
     classification_params = {"class_labels": class_label, "df_feat": manifest}
     rot_inv_params = {"squeeze_2d": False, "id": "cell_id", "max_batches": 4000}
     regression_params = {
