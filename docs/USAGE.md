@@ -127,13 +127,17 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 | [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/)                                   | `configs/experiment/npm1_perturb/ckpts`      |
 
 ## Compute embeddings
-To compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) and run
+To compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) to point to your pre-processed data.
+Then, run the following commands.
 
-```
-python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name "pcna" --batch_size 5 --debug False
-```
-
-where dataset_name corresponds to a [result config](../configs/results/). The sdf argument should be set to True for experiments involving SDFs like the [npm1 dataset](../configs/results/npm1.yaml) and [other polymorphic dataset](../configs/experiment/other_polymorphic/).
+Dataset | Embedding command
+--------|---
+cellpack | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name cellpack --batch_size 5 --debug False`
+npm1_perturb | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1_perturb --batch_size 5 --debug False`
+npm1 | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1 --batch_size 5 --debug False`
+other_polymorphic | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name other_polymorphic --batch_size 5 --debug False`
+other_punctate | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name other_punctate --batch_size 5 --debug False`
+pcna | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name pcna --batch_size 5 --debug False`
 
 # 3. Interpretability analysis
 ## Steps to download pre-computed embeddings
@@ -153,11 +157,11 @@ You can download our pre-computed embeddings here.
 
 1. To compute benchmarking features from the embeddings and trained models, run
 
-```
+```bash
 python src/br/analysis/run_features.py --save_path "/outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --sdf False --dataset_name "cellpack" --debug False
 ```
 
-where dataset_name corresponds to a [result config](../configs/results/). 
+where dataset_name corresponds to a [result config](../configs/results/).
 
 2. To run analysis like latent walks and archetype analysis on the embeddings and trained models, run
 
