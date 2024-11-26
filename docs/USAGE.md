@@ -56,13 +56,13 @@ Check that your current working directory is the `benchmarking_representations` 
 export CYTODL_CONFIG_PATH=$PWD/configs/
 ```
 
-# Usage
+# 1. Model training
 ## Steps to download pre-processed data
 Coming soon.
 
 ## Steps to train models
 
-Training these models can take weeks. We've published our trained models so you don't have to. Skip to the next section if you'd like to just use our models.
+Training these models can take weeks. We've published our trained models so you don't have to. Skip to the [next section](#2-model-inference) if you'd like to just use our models.
 
 1. Create a single cell manifest (e.g. csv, parquet) for each dataset with a column corresponding to final processed paths, and create a split column corresponding to train/test/validation split.
 2. Update the final single cell dataset path (`SINGLE_CELL_DATASET_PATH`) and the column in the manifest for appropriate input modality (`SDF_COLUMN`/`SEG_COLUMN`/`POINTCLOUD_COLUMN`/`IMAGE_COLUMN`) in each datamodule yaml files. e.g. for PCNA data these yaml files are located here -
@@ -77,7 +77,7 @@ configs
         └── pc_intensity_jitter.yaml <- Datamodule for PCNA point clouds with intensity and jitter
 ```
 
-3. Train models using cyto_dl. Ensure to run the training scripts from the folder where the repo was cloned (and where all the data was downloaded). Experiment configs for point cloud and image models are located here -
+3. Train models using cyto_dl. Ensure to run the training scripts from the folder where the repo was cloned (and where all the data was downloaded). Experiment configs for point cloud and image models are located here:
 
 ```
 configs
@@ -87,19 +87,20 @@ configs
         └── pc_equiv.yaml    <- Rotation invariant point cloud model experiment
 ```
 
-Here is an example of training a rotation invariant point cloud model
+Here is an example of training a rotation invariant point cloud model.
 
 ```bash
 python src/br/models/train.py experiment=cellpack/pc_so3
 ```
 
-Override parts of the experiment config via command line or manually in the configs. For example, to train a classical model, run
+Override parts of the experiment config via command line or manually in the configs. For example, to train a classical model, run the following.
 
 ```bash
 python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_earthmovers_sphere ++csv.save_dir=[SAVE_DIR]
 ```
 
-## Steps to download pre-trained models and pre-computed embeddings
+# 2. Model inference
+## Steps to download pre-trained models
 
 1. To skip model training, download pre-trained models
 
@@ -110,7 +111,11 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 * [WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/)
 * [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/)
 
-2. Download pre-computed embeddings
+# 3. Interpretability analysis
+## Steps to download pre-computed embeddings
+Many of the results from the paper can be reproduced just from the embeddings produced by the model. However, some results rely on statistics about the costs of running the models, which are not included with the embeddings.
+
+You can download our pre-computed embeddings here.
 
 * [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/cellpack/)
 * [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/pcna/)
