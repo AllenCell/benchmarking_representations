@@ -37,10 +37,11 @@ def get_gpu_info():
     # Run nvidia-smi command and get the output
     cmd = [
         "nvidia-smi",
-        "--query-gpu=index,uuid,name,utilization.gpu",
+        "--query-gpu=index,uuid,name,memory.used,memory.total",
         "--format=csv,noheader,nounits",
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
+    # print(result)
     return result.stdout.strip()
 
 
@@ -51,16 +52,48 @@ def check_mig():
     return "MIG" in result.stdout
 
 
-def get_mig_ids():
-    # Get the MIG UUIDs
-    cmd = ["nvidia-smi", "-L"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    mig_ids = []
-    for line in result.stdout.splitlines():
-        if "MIG" in line:
-            mig_id = line.split("(UUID: ")[-1].strip(")")
-            mig_ids.append(mig_id)
-    return mig_ids
+def get_mig_ids(gpu_uuid):
+    try:
+        # Get the list of GPUs
+        output = subprocess.check_output(['nvidia-smi','--query-gpu=,index,uuid' ,'--format=csv,noheader']).decode('utf-8').strip().split('\n')
+
+        # Find the index of the specified GPU UUID
+        gpu_index = -1
+        for i, line in enumerate(output):
+            if gpu_uuid in line:
+                gpu_index = i
+                break
+
+        if gpu_index == -1:
+            print(f"GPU UUID {gpu_uuid} not found.")
+            return []
+
+        # Now we need to get the MIG IDs for this GPU
+        mig_ids = []
+        # Run nvidia-smi command to get detailed information including MIG IDs
+        detailed_output = subprocess.check_output(['nvidia-smi', '-L']).decode('utf-8').strip().split('\n')
+
+        # Flag to determine if we are in the right GPU section
+        in_gpu_section = False
+        for line in detailed_output:
+            if f"GPU {gpu_index}:" in line:  # Adjusted to check for the specific GPU section
+                in_gpu_section = True
+            elif "GPU" in line and in_gpu_section:  # Encounter another GPU section
+                break
+
+            # print(line)
+            
+            if in_gpu_section:
+                # Check for MIG devices
+                if "MIG" in line:
+                    mig_id = line.split('(')[1].split(')')[0].split(' ')[-1]  # Assuming format is '.... MIG (UUID) ...'
+                    mig_ids.append(mig_id.strip())
+
+        return mig_ids
+
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred: {e}")
+        return []
 
 
 def config_gpu():
@@ -71,18 +104,15 @@ def config_gpu():
     lines = gpu_info.splitlines()
 
     for line in lines:
-        index, uuid, name, utilization = map(str.strip, line.split(","))
-
-        # If utilization is [N/A], treat it as less than 10
-        if utilization == "[N/A]":
-            utilization = -1  # Assign a value less than 10 to simulate "idle"
-        else:
-            utilization = int(utilization)
-
-        # Check if GPU utilization is under 10% (indicating it's idle)
-        if utilization < 10:
+        index, uuid, name, mem_used, mem_total = map(str.strip, line.split(","))
+        utilization = float(mem_used)*100/float(mem_total)
+      
+        # Check if GPU utilization is under 20% (indicating it's idle)
+        if utilization < 20:
+            # print(uuid, utilization)
             if is_mig:
-                mig_ids = get_mig_ids()
+                mig_ids = get_mig_ids(uuid)
+             
                 if mig_ids:
                     selected_gpu_id_or_uuid = mig_ids[0]  # Select the first MIG ID
                     break  # Exit the loop after finding the first MIG ID
@@ -99,7 +129,7 @@ def _setup_gpu():
     torch.cuda.empty_cache()
 
     # Based on the utilization, set the GPU ID
-    # Setting a GPU ID is crucial for the script to work well!
+    # Setting a GPU ID is crucial for the script to work!
     selected_gpu_id_or_uuid = config_gpu()
 
     # Set the CUDA_VISIBLE_DEVICES environment variable using the selected ID
