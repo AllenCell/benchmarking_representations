@@ -62,10 +62,10 @@ Coming soon.
 
 ## Steps to train models
 
-Training these models can take weeks. We've published our trained models so you don't have to. Skip to the next section if you'd like to just use our models.
+Training these models can take days. We've published our trained models so you don't have to. Skip to the next section if you'd like to just use our models.
 
 1. Create a single cell manifest (e.g. csv, parquet) for each dataset with a column corresponding to final processed paths, and create a split column corresponding to train/test/validation split.
-2. Update the final single cell dataset path (`SINGLE_CELL_DATASET_PATH`) and the column in the manifest for appropriate input modality (`SDF_COLUMN`/`SEG_COLUMN`/`POINTCLOUD_COLUMN`/`IMAGE_COLUMN`) in each datamodule yaml files. e.g. for PCNA data these yaml files are located here -
+2. Update the final single cell dataset path (`SINGLE_CELL_DATASET_PATH`) and the column in the manifest for appropriate input modality (`SDF_COLUMN`/`SEG_COLUMN`/`POINTCLOUD_COLUMN`/`IMAGE_COLUMN`) in each [datamodule file](../configs/data/). e.g. for PCNA data these yaml files are located here -
 
 ```
 └── configs
@@ -77,14 +77,16 @@ Training these models can take weeks. We've published our trained models so you 
             └── pc_intensity_jitter.yaml <- Datamodule for PCNA point clouds with intensity and jitter
 ```
 
-3. Train models using cyto_dl. Ensure to run the training scripts from the folder where the repo was cloned (and where all the data was downloaded). Experiment configs for point cloud and image models are located here -
+3. Train models using cyto_dl. Ensure to run the training scripts from the folder where the repo was cloned (and where all the data was downloaded). [Experiment configs](../configs/experiment/) for point cloud and image models for the cellpack dataset are located here -
 
 ```
 └── configs
     └── experiment
         └── cellpack
-            ├── image_equiv.yaml <- Rotation invariant image model experiment
-            └── pc_equiv.yaml    <- Rotation invariant point cloud model experiment
+            ├── image_classical.yaml <- Classical image model experiment
+            ├── image_so3.yaml <- Rotation invariant image model experiment
+            └── pc_classical.yaml    <- Classical point cloud model experiment
+            └── pc_so3.yaml    <- Rotation invariant point cloud model experiment
 ```
 
 Here is an example of training a rotation invariant point cloud model
@@ -99,6 +101,14 @@ Override parts of the experiment config via command line or manually in the conf
 python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_earthmovers_sphere ++csv.save_dir=[SAVE_DIR]
 ```
 
+4. To compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) and run
+
+```
+python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name "pcna" --batch_size 5 --debug False
+```
+
+where dataset_name corresponds to a [result config](../configs/results/). The sdf argument should be set to True for experiments involving SDFs like the [npm1 dataset](../configs/results/npm1.yaml) and [other polymorphic dataset](../configs/experiment/other_polymorphic/).
+
 ## Steps to download pre-trained models and pre-computed embeddings
 
 1. To skip model training, download pre-trained models
@@ -110,7 +120,7 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 * [WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/)
 * [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/)
 
-2. Download pre-computed embeddings
+2. To skip computing embeddings, download pre-computed embeddings
 
 * [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/cellpack/)
 * [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/pcna/)
@@ -121,16 +131,22 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 
 ## Steps to run benchmarking analysis
 
-1. Run analysis for each dataset separately via jupyter notebooks
+1. To compute benchmarking features from the embeddings and trained models, run
 
 ```
-└── src
-    └── br
-       └── notebooks
-           ├── fig2_cellpack.ipynb          <- Reproduce Fig 2 cellPACK synthetic data results
-           ├── fig3_pcna.ipynb              <- Reproduce Fig 3 PCNA data results
-           ├── fig4_other_punctate.ipynb    <- Reproduce Fig 4 other puntate structure data results
-           ├── fig5_npm1.ipynb              <- Reproduce Fig 5 npm1 data results
-           ├── fig6_other_polymorphic.ipynb <- Reproduce Fig 6 other polymorphic data results
-           └── fig7_drug_data.ipynb         <- Reproduce Fig 7 drug data results
+python src/br/analysis/run_features.py --save_path "/outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --sdf False --dataset_name "cellpack" --debug False
+```
+
+where dataset_name corresponds to a [result config](../configs/results/). 
+
+2. To run analysis like latent walks and archetype analysis on the embeddings and trained models, run
+
+```
+python src/br/analysis/run_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False
+```
+
+3. To run drug perturbation analysis, run
+
+```
+python src/br/analysis/run_drugdata_analysis.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb"
 ```
