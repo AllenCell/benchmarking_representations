@@ -115,16 +115,29 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 
 ## Steps to download pre-trained models
 
-To skip model training, download pre-trained models. For each of the six datasets, there are five `.ckpt` files to download.
+To skip model training, download our pre-trained models. For each of the six datasets, there are five `.ckpt` files. The easiest way to get these 30 models in the expected layout is with the AWS CLI.
 
-| Download `.ckpt` files from here                                                                                                                                                                         | To this folder                               |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/cellpack/)                                                | `configs/experiment/cellpack/ckpts`          |
-| [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/pcna/)                                                  | `configs/experiment/pcna/ckpts`              |
-| [WTC-11 hIPSc single cell image dataset v1 punctate structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/)       | `configs/experiment/other_punctate/ckpts`    |
-| [WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1/)                    | `configs/experiment/npm1/ckpts`              |
-| [WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/) | `configs/experiment/other_polymorphic/ckpts` |
-| [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/)                                   | `configs/experiment/npm1_perturb/ckpts`      |
+### Option 1: AWS CLI
+
+1. Install the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+2. Confirm that you are in the `benchmarking_representations` folder.
+
+```bash
+$ pwd
+/home/myuser/benchmarking_representations/
+```
+
+3. Download the 30 models. This will use almost 4GB.
+
+```bash
+aws s3 cp --no-sign-request --recursive s3://allencell/aics/morphology_appropriate_representation_learning/model_checkpoints/ morphology_appropriate_representation_learning/model_checkpoints/
+```
+
+### Option 2: Download individual checkpoints
+
+Instead of installing the AWS CLI, you can download `.ckpt` files one at a time by [browsing the dataset on Quilt](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/).
+
+By default, the checkpoint files are expected in `benchmarking_representations/morphology_appropriate_representation_learning/model_checkpoints/`, organized in six subfolders (one for each dataset). This folder structure is provided as part of this repo. Move the downloaded checkpoint files into the folder corresponding to their dataset.
 
 ## Compute embeddings
 
