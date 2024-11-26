@@ -90,13 +90,13 @@ configs
 3. Train models using cyto_dl. Ensure to run the training scripts from the folder where the repo was cloned (and where all the data was downloaded). [Experiment configs](../configs/experiment/) for point cloud and image models for the cellpack dataset are located here:
 
 ```
-└── configs
-    └── experiment
-        └── cellpack
-            ├── image_classical.yaml <- Classical image model experiment
-            ├── image_so3.yaml <- Rotation invariant image model experiment
-            └── pc_classical.yaml    <- Classical point cloud model experiment
-            └── pc_so3.yaml    <- Rotation invariant point cloud model experiment
+configs
+└── experiment
+    └── cellpack
+        ├── image_classical.yaml <- Classical image model experiment
+        ├── image_so3.yaml       <- Rotation invariant image model experiment
+        └── pc_classical.yaml    <- Classical point cloud model experiment
+        └── pc_so3.yaml          <- Rotation invariant point cloud model experiment
 ```
 
 Here is an example of training a rotation invariant point cloud model.
