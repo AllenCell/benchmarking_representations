@@ -1,6 +1,6 @@
 orig_df: ./morphology_appropriate_representation_learning/preprocessed_data/other_polymorphic/manifest.csv
-image_path:
-pc_path:
+image_path: ./morphology_appropriate_representation_learning/preprocessed_data/other_polymorphic/manifest.csv
+pc_path: ./morphology_appropriate_representation_learning/preprocessed_data/other_polymorphic/manifest.csv
 model_checkpoints:
   [
     "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_pointcloud_SDF.ckpt",
