@@ -1,11 +1,13 @@
 # Installation
 
 To install and use this software, you need:
-* A GPU running CUDA 11.7 (other CUDA versions may work, but they are not officially supported),
-* [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) (or Python 3.10 and [pdm](https://pdm-project.org/)), and
-* [git](https://github.com/git-guides/install-git).
+
+- A GPU running CUDA 11.7 (other CUDA versions may work, but they are not officially supported),
+- [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) (or Python 3.10 and [pdm](https://pdm-project.org/)), and
+- [git](https://github.com/git-guides/install-git).
 
 First, clone this repository.
+
 ```bash
 git clone https://github.com/AllenCell/benchmarking_representations
 cd benchmarking_representations
@@ -22,11 +24,13 @@ Depending on your GPU set-up, you may need to set the `CUDA_VISIBLE_DEVICES` [en
 To achieve this, you will first need to get the Universally Unique IDs for the GPUs and then set `CUDA_VISIBLE_DEVICES` to some/all of those (a comma-separated list), as in the following examples.
 
 **Example 1**
+
 ```bash
 export CUDA_VISIBLE_DEVICES=0,1
 ```
 
 **Example 2:** Using one partition of a MIG partitioned GPU
+
 ```bash
 export CUDA_VISIBLE_DEVICES=MIG-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
@@ -42,7 +46,9 @@ pip install -e .
 For `pdm` users, follow [these installation steps instead](./ADVANCED_INSTALLATION.md).
 
 ## Troubleshooting
+
 **Q:** When installing dependencies, pytorch fails to install with the following error message.
+
 ```bash
 torch.cuda.DeferredCudaCallError: CUDA call failed lazily at initialization with error: device >= 0 && device < num_gpus
 ```
@@ -50,14 +56,18 @@ torch.cuda.DeferredCudaCallError: CUDA call failed lazily at initialization with
 **A:** You may need to configure the `CUDA_VISIBLE_DEVICES` [environment variable](https://developer.nvidia.com/blog/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/).
 
 ## Set env variables
+
 To run the models, you must set the `CYTODL_CONFIG_PATH` environment variable to point to the `br/configs` folder.
 Check that your current working directory is the `benchmarking_representations` folder, then run the following command (this will last for only the duration of your shell session).
+
 ```bash
 export CYTODL_CONFIG_PATH=$PWD/configs/
 ```
 
 # 1. Model training
+
 ## Steps to download pre-processed data
+
 Coming soon.
 
 ## Steps to train models
@@ -100,31 +110,34 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 ```
 
 # 2. Model inference
+
 ## Steps to download pre-trained models
 
 1. To skip model training, download pre-trained models. For each of the six datasets, there are five `.ckpt` files to download.
 
-Download `.ckpt` from here | To this folder
---------------|---------------
-[cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/cellpack/) | `configs/experiment/cellpack/ckpts`
-[DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/pcna/) | `configs/experiment/pcna/ckpts`
-[WTC-11 hIPSc single cell image dataset v1 punctate structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/) | `configs/experiment/other_punctate/ckpts`
-[WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1/) | `configs/experiment/npm1/ckpts`
-[WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/) | `configs/experiment/other_polymorphic/ckpts`
-[Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/) | `configs/experiment/npm1_perturb/ckpts`
+| Download `.ckpt` from here                                                                                                                                                                               | To this folder                               |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/cellpack/)                                                | `configs/experiment/cellpack/ckpts`          |
+| [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/pcna/)                                                  | `configs/experiment/pcna/ckpts`              |
+| [WTC-11 hIPSc single cell image dataset v1 punctate structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_punctate/)       | `configs/experiment/other_punctate/ckpts`    |
+| [WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1/)                    | `configs/experiment/npm1/ckpts`              |
+| [WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/) | `configs/experiment/other_polymorphic/ckpts` |
+| [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/)                                   | `configs/experiment/npm1_perturb/ckpts`      |
 
 # 3. Interpretability analysis
+
 ## Steps to download pre-computed embeddings
+
 Many of the results from the paper can be reproduced just from the embeddings produced by the model. However, some results rely on statistics about the costs of running the models, which are not included with the embeddings.
 
 You can download our pre-computed embeddings here.
 
-* [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/cellpack/)
-* [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/pcna/)
-* [WTC-11 hIPSc single cell image dataset v1 punctate structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/other_punctate/)
-* [WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/npm1/)
-* [WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/other_polymorphic/)
-* [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/)
+- [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/cellpack/)
+- [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/pcna/)
+- [WTC-11 hIPSc single cell image dataset v1 punctate structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/other_punctate/)
+- [WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/npm1/)
+- [WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/other_polymorphic/)
+- [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/)
 
 ## Steps to run benchmarking analysis
 
