@@ -95,7 +95,7 @@ configs
     └── cellpack
         ├── image_classical.yaml <- Classical image model experiment
         ├── image_so3.yaml       <- Rotation invariant image model experiment
-        └── pc_classical.yaml    <- Classical point cloud model experiment
+        ├── pc_classical.yaml    <- Classical point cloud model experiment
         └── pc_so3.yaml          <- Rotation invariant point cloud model experiment
 ```
 
