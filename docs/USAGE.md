@@ -68,23 +68,23 @@ Training these models can take weeks. We've published our trained models so you 
 2. Update the final single cell dataset path (`SINGLE_CELL_DATASET_PATH`) and the column in the manifest for appropriate input modality (`SDF_COLUMN`/`SEG_COLUMN`/`POINTCLOUD_COLUMN`/`IMAGE_COLUMN`) in each datamodule yaml files. e.g. for PCNA data these yaml files are located here -
 
 ```
-└── configs
-    └── data
-        └── pcna
-            ├── image.yaml               <- Datamodule for PCNA images
-            ├── pc.yaml                  <- Datamodule for PCNA point clouds
-            ├── pc_intensity.yaml        <- Datamodule for PCNA point clouds with intensity
-            └── pc_intensity_jitter.yaml <- Datamodule for PCNA point clouds with intensity and jitter
+configs
+└── data
+    └── pcna
+        ├── image.yaml               <- Datamodule for PCNA images
+        ├── pc.yaml                  <- Datamodule for PCNA point clouds
+        ├── pc_intensity.yaml        <- Datamodule for PCNA point clouds with intensity
+        └── pc_intensity_jitter.yaml <- Datamodule for PCNA point clouds with intensity and jitter
 ```
 
 3. Train models using cyto_dl. Ensure to run the training scripts from the folder where the repo was cloned (and where all the data was downloaded). Experiment configs for point cloud and image models are located here -
 
 ```
-└── configs
-    └── experiment
-        └── cellpack
-            ├── image_equiv.yaml <- Rotation invariant image model experiment
-            └── pc_equiv.yaml    <- Rotation invariant point cloud model experiment
+configs
+└── experiment
+    └── cellpack
+        ├── image_equiv.yaml <- Rotation invariant image model experiment
+        └── pc_equiv.yaml    <- Rotation invariant point cloud model experiment
 ```
 
 Here is an example of training a rotation invariant point cloud model
@@ -121,16 +121,16 @@ python src/br/models/train.py experiment=cellpack/pc_so3 model=pc/classical_eart
 
 ## Steps to run benchmarking analysis
 
-1. Run analysis for each dataset separately via jupyter notebooks
+1. Run analysis for each dataset separately via jupyter notebooks.
 
 ```
-└── src
-    └── br
-       └── notebooks
-           ├── fig2_cellpack.ipynb          <- Reproduce Fig 2 cellPACK synthetic data results
-           ├── fig3_pcna.ipynb              <- Reproduce Fig 3 PCNA data results
-           ├── fig4_other_punctate.ipynb    <- Reproduce Fig 4 other puntate structure data results
-           ├── fig5_npm1.ipynb              <- Reproduce Fig 5 npm1 data results
-           ├── fig6_other_polymorphic.ipynb <- Reproduce Fig 6 other polymorphic data results
-           └── fig7_drug_data.ipynb         <- Reproduce Fig 7 drug data results
+src
+└── br
+   └── notebooks
+       ├── fig2_cellpack.ipynb          <- Reproduce Fig 2 cellPACK synthetic data results
+       ├── fig3_pcna.ipynb              <- Reproduce Fig 3 PCNA data results
+       ├── fig4_other_punctate.ipynb    <- Reproduce Fig 4 other puntate structure data results
+       ├── fig5_npm1.ipynb              <- Reproduce Fig 5 npm1 data results
+       ├── fig6_other_polymorphic.ipynb <- Reproduce Fig 6 other polymorphic data results
+       └── fig7_drug_data.ipynb         <- Reproduce Fig 7 drug data results
 ```
