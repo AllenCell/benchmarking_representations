@@ -6,9 +6,9 @@ import sys
 import pandas as pd
 
 from br.analysis.analysis_utils import (
-    _get_feature_params,
-    _setup_evaluation_params,
-    _setup_gpu,
+    get_feature_params,
+    setup_evaluation_params,
+    setup_gpu,
     str2bool,
 )
 from br.features.plot import collect_outputs, plot
@@ -19,7 +19,7 @@ from br.models.save_embeddings import save_emissions
 
 def main(args):
     # Setup GPUs and set the device
-    _setup_gpu()
+    setup_gpu()
     device = "cuda:0"
 
     # set batch size to 1 for emission stats/features
@@ -53,7 +53,7 @@ def main(args):
         loss_eval_list,
         sample_points_list,
         skew_scale,
-    ) = _setup_evaluation_params(manifest, run_names)
+    ) = setup_evaluation_params(manifest, run_names)
 
     # Save emission stats for each model
     max_batches = 40
@@ -79,7 +79,7 @@ def main(args):
         classification_params,
         evolve_params,
         regression_params,
-    ) = _get_feature_params(
+    ) = get_feature_params(
         config_path + "/results/", args.dataset_name, manifest, keys, run_names
     )
 

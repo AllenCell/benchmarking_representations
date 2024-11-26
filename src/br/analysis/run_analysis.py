@@ -6,13 +6,13 @@ from pathlib import Path
 import pandas as pd
 
 from br.analysis.analysis_utils import (
-    _archetypes_polymorphic,
-    _archetypes_save_recons,
-    _dataset_specific_subsetting,
-    _latent_walk_polymorphic,
-    _latent_walk_save_recons,
-    _pseudo_time_analysis,
-    _setup_gpu,
+    archetypes_polymorphic,
+    archetypes_save_recons,
+    dataset_specific_subsetting,
+    latent_walk_polymorphic,
+    latent_walk_save_recons,
+    pseudo_time_analysis,
+    setup_gpu,
     str2bool,
 )
 from br.features.archetype import AA_Fast
@@ -23,7 +23,7 @@ from br.models.utils import get_all_configs_per_dataset
 
 
 def main(args):
-    _setup_gpu()
+    setup_gpu()
     device = "cuda:0"
 
     config_path = os.environ.get("CYTODL_CONFIG_PATH")
@@ -38,7 +38,7 @@ def main(args):
     all_ret, df = get_embeddings([run_name], args.dataset_name, DATASET_INFO, args.embeddings_path)
     model, x_label, latent_dim, model_size = _load_model_from_path(checkpoints[0], False, device)
 
-    all_ret, stratify_key, n_archetypes, viz_params = _dataset_specific_subsetting(
+    all_ret, stratify_key, n_archetypes, viz_params = dataset_specific_subsetting(
         all_ret, args.dataset_name
     )
 
@@ -48,7 +48,7 @@ def main(args):
     this_save_path.mkdir(parents=True, exist_ok=True)
 
     if args.sdf:
-        _latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim)
+        latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim)
     else:
         stratified_latent_walk(
             model,
@@ -66,7 +66,7 @@ def main(args):
         )
 
         # Save reconstruction plots
-        _latent_walk_save_recons(this_save_path, stratify_key, viz_params, args.dataset_name)
+        latent_walk_save_recons(this_save_path, stratify_key, viz_params, args.dataset_name)
 
     # Archetype analysis
     matrix = all_ret[[i for i in all_ret.columns if "mu" in i]].values
@@ -77,13 +77,13 @@ def main(args):
     this_save_path.mkdir(parents=True, exist_ok=True)
 
     if args.sdf:
-        _archetypes_polymorphic(this_save_path, archetypes_df, all_ret, matrix)
+        archetypes_polymorphic(this_save_path, archetypes_df, all_ret, matrix)
     else:
-        _archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_save_path)
+        archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_save_path)
 
     # Pseudotime analysis
     if "volume_of_nucleus_um3" in all_ret.columns:
-        _pseudo_time_analysis(model, all_ret, args.save_path, device, key, viz_params)
+        pseudo_time_analysis(model, all_ret, args.save_path, device, key, viz_params)
 
 
 if __name__ == "__main__":

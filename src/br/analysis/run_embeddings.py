@@ -3,7 +3,7 @@ import argparse
 import os
 import sys
 
-from br.analysis.analysis_utils import _setup_evaluation_params, _setup_gpu, str2bool
+from br.analysis.analysis_utils import setup_evaluation_params, setup_gpu, str2bool
 from br.models.load_models import get_data_and_models
 from br.models.save_embeddings import save_embeddings
 
@@ -11,7 +11,7 @@ from br.models.save_embeddings import save_embeddings
 def main(args):
 
     # Setup GPUs and set the device
-    _setup_gpu()
+    setup_gpu()
     device = "cuda:0"
 
     # Get config path from CYTODL_CONFIG_PATH
@@ -29,7 +29,7 @@ def main(args):
         loss_eval_list,
         sample_points_list,
         skew_scale,
-    ) = _setup_evaluation_params(manifest, run_names)
+    ) = setup_evaluation_params(manifest, run_names)
 
     # save embeddings for each model
     save_embeddings(

@@ -123,7 +123,7 @@ def config_gpu():
     return selected_gpu_id_or_uuid
 
 
-def _setup_gpu():
+def setup_gpu():
     # Free up cache
     gc.collect()
     torch.cuda.empty_cache()
@@ -141,7 +141,7 @@ def _setup_gpu():
         print("No suitable GPU or MIG ID found. Exiting...")
 
 
-def _setup_evaluation_params(manifest, run_names):
+def setup_evaluation_params(manifest, run_names):
     """Return evaluation params related to.
 
     1. loss_eval_list - which loss to use for each model (Defaults to Chamfer loss)
@@ -192,7 +192,7 @@ def _setup_evaluation_params(manifest, run_names):
     return eval_scaled_img, eval_scaled_img_params, loss_eval_list, sample_points_list, skew_scale
 
 
-def _setup_evolve_params(run_names, data_config_list, keys):
+def setup_evolve_params(run_names, data_config_list, keys):
     """Set up dataloader parameters specific to the evolution energy metric."""
     eval_meshed_img = [False] * len(run_names)
     eval_meshed_img_model_type = [None] * len(run_names)
@@ -224,7 +224,7 @@ def _setup_evolve_params(run_names, data_config_list, keys):
     return evolve_params
 
 
-def _get_feature_params(results_path, dataset_name, manifest, keys, run_names):
+def get_feature_params(results_path, dataset_name, manifest, keys, run_names):
     """
     Get parameters associated with calculation of
     1. Rot invariance
@@ -262,7 +262,7 @@ def _get_feature_params(results_path, dataset_name, manifest, keys, run_names):
     )
 
 
-def _dataset_specific_subsetting(all_ret, dataset_name):
+def dataset_specific_subsetting(all_ret, dataset_name):
     """Subset each dataset for analysis. E.g. For PCNA dataset, only look at interphase. Also
     specify dataset specific visualization params.
 
@@ -318,7 +318,7 @@ def _dataset_specific_subsetting(all_ret, dataset_name):
     return all_ret, stratify_key, n_archetypes, viz_params
 
 
-def _viz_other_punctate(this_save_path, viz_params, stratify_key):
+def viz_other_punctate(this_save_path, viz_params, stratify_key):
     # Norms based on Viana 2023
     # norms used for model training
     model_norms = "./src/br/data/preprocessing/pc_preprocessing/model_structnorms.yaml"
@@ -376,7 +376,7 @@ def _viz_other_punctate(this_save_path, viz_params, stratify_key):
             cmap = plt.get_cmap("YlGnBu")
 
 
-def _latent_walk_save_recons(this_save_path, stratify_key, viz_params, dataset_name):
+def latent_walk_save_recons(this_save_path, stratify_key, viz_params, dataset_name):
     """Visualize saved latent walks from csvs.
 
     this_save_path - folder where csvs are saved
@@ -384,7 +384,7 @@ def _latent_walk_save_recons(this_save_path, stratify_key, viz_params, dataset_n
     viz_params - parameters associated with visualization (e.g. xlims, ylims)
     """
     if dataset_name == "other_punctate":
-        return _viz_other_punctate(this_save_path, viz_params, stratify_key)
+        return viz_other_punctate(this_save_path, viz_params, stratify_key)
 
     items = os.listdir(this_save_path)
     fnames = [i for i in items if i.split(".")[-1] == "csv"]  # get csvs
@@ -432,7 +432,7 @@ def _latent_walk_save_recons(this_save_path, stratify_key, viz_params, dataset_n
         np.save(this_save_path / Path(f"{this_name}.npy"), np_arr)
 
 
-def _archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_save_path):
+def archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_save_path):
     """Visualize saved archetypes from archetype matrix dataframe."""
     all_xhat = []
     with torch.no_grad():
@@ -480,7 +480,7 @@ def _archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_
         np.save(this_save_path / Path(f"{arch}.npy"), np_arr)
 
 
-def _pseudo_time_analysis(model, all_ret, save_path, device, key, viz_params, bins=None):
+def pseudo_time_analysis(model, all_ret, save_path, device, key, viz_params, bins=None):
     """Psuedotime analysis for PCNA and NPM1 dataset."""
     if not bins:
         # Pseudotime bins based on npm1 dataset from WTC-11 hIPS single cell image dataset
@@ -544,7 +544,7 @@ def _pseudo_time_analysis(model, all_ret, save_path, device, key, viz_params, bi
     )
 
 
-def _latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim):
+def latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim):
     lw_dict = {stratify_key: [], "PC": [], "bin": [], "CellId": []}
     mesh_folder = all_ret["mesh_folder"].iloc[0]  # mesh folder
     for strat in all_ret[stratify_key].unique():
@@ -578,7 +578,7 @@ def _latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim):
     lw_dict.to_csv(this_save_path / "latent_walk.csv")
 
 
-def _archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features):
+def archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features):
     arch_dict = {"CellId": [], "archetype": []}
     mesh_folder = all_ret["mesh_folder"].iloc[0]  # mesh folder
     for i in range(len(archetypes_df)):
