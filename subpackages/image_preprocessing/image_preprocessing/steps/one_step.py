@@ -46,37 +46,23 @@ class OneStep(Step):
         self,
         raw_col,
         seg_col,
-        fov_col,
         channel_map_col,
-        roi_col,
         alignment_channel,
-        mask_map,
         dilation_shape,
-        quantile,
         make_unique=False,
         membrane_seg_channel="membrane_segmentation",
-        padding=0,
-        structure_clip_values=dict(),
-        clip_quantile=0.975,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.raw_col = raw_col
         self.seg_col = seg_col
-        self.fov_col = fov_col
         self.channel_map_col = channel_map_col
-        self.roi_col = roi_col
         self.alignment_channel = alignment_channel
         self.make_unique = make_unique
-        self.mask_map = mask_map
         self.binary_structure = (
             np.ones(dilation_shape) if dilation_shape is not None else None
         )
         self.membrane_seg_channel = membrane_seg_channel
-        self.padding = padding
-        self.structure_clip_values = structure_clip_values
-        self.clip_quantile = clip_quantile
-        self.quantile = quantile
 
     def run_step(self, row):
         cell_id = row[self.cell_id_col]
