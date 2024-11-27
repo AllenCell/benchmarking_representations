@@ -104,10 +104,7 @@ class Merge(Step):
         if not self.seg_channel_subset:
             self.seg_channel_subset = seg_channels_names
 
-        seg_channels_to_use = [
-            seg_channels_names.index(name)
-            for name in self.seg_channel_subset
-        ]
+        seg_channels_to_use = [seg_channels_names.index(name) for name in self.seg_channel_subset]
 
         # stack channels
         data_new = np.vstack(

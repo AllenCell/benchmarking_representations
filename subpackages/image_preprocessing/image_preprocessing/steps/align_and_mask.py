@@ -62,11 +62,7 @@ class AlignMaskNormalize(Step):
         if self.contrast_adjust:
             for key, val in self.contrast_adjust.items():
                 index_ = img.channel_names.index(key)
-                img_data[index_] = np.where(
-                    img_data[index_] < val,
-                    img_data[index_],
-                    0
-                )
+                img_data[index_] = np.where(img_data[index_] < val, img_data[index_], 0)
         alignment_channel = img.channel_names.index(self.alignment_channel)
 
         center_of_mass = _get_center_of_mass(img_data, alignment_channel)
