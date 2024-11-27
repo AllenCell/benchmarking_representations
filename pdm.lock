@@ -5,7 +5,7 @@
 groups = ["default", "build-requires", "dev", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:98810061b17f4aafcf5418bcb4eced76c4ceadc79c2d483333a73a3c56c70ff0"
+content_hash = "sha256:6ba56bb2c1510baa278c9f30f38cdd613c095077a02766eb77c6da483864962a"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -416,7 +416,7 @@ summary = "Collection of methods for performing morphology appropriate represent
 groups = ["dev"]
 dependencies = [
     "PyMCubes>=0.1.4",
-    "codecarbon>=2.4.2",
+    "codecarbon==2.6.0",
     "copairs @ git+https://github.com/cytomining/copairs.git@880f22a551bd897896d148a0b07baa99d981c6a9",
     "cyto-dl[equiv,pcloud,s3,spharm,torchserve] @ git+https://github.com/AllenCellModeling/cyto-dl.git@a4a061d1808e0f94f906933642920142b581ba38",
     "ipykernel>=6.29.5",
@@ -689,7 +689,7 @@ files = [
 
 [[package]]
 name = "codecarbon"
-version = "2.7.1"
+version = "2.6.0"
 requires_python = ">=3.7"
 summary = ""
 groups = ["default", "dev"]
@@ -708,8 +708,8 @@ dependencies = [
     "typer",
 ]
 files = [
-    {file = "codecarbon-2.7.1-py3-none-any.whl", hash = "sha256:d056e3a422b956f7902bb1b7c910487134d6079cdd42f0f6b99abaa9b7302d09"},
-    {file = "codecarbon-2.7.1.tar.gz", hash = "sha256:b1e15cb6746a1b3760719f3534c458f59f22ee0f644a6d0070011093b1c84ee1"},
+    {file = "codecarbon-2.6.0-py3-none-any.whl", hash = "sha256:4e11467f7f844894512dd4cd623da27598c5e803941b45eed8438b06e9410c55"},
+    {file = "codecarbon-2.6.0.tar.gz", hash = "sha256:05b0d39c60650ffa2e4b3eb72fdcbfe29c7853aa2e4c8ab37abea264a749057b"},
 ]
 
 [[package]]
