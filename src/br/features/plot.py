@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import mitsuba as mi
 
@@ -159,8 +160,8 @@ def plot(
     title,
     norm="std",
     unique_expressivity_metrics=None,
+    df_non_agg=None,
 ):
-    import matplotlib as mpl
 
     mpl.rcParams["pdf.fonttype"] = 42
     df = df.dropna()
@@ -248,8 +249,50 @@ def plot(
 
     fig.write_image(path / f"{title}.png", scale=3)
     fig.write_image(path / f"{title}.pdf", scale=3)
-    # fig.write_image(path / f"{title}.eps", scale=2)
-    # fig.write_image(path / f"{title}.pdf")
+
+    if df_non_agg is not None:
+        sns.set(font_scale=1.1)
+        sns.set_theme(style="white")
+        for var in df_non_agg["variable"].unique():
+            this_df = df_non_agg.loc[df_non_agg["variable"] == var].reset_index(drop=True)
+            g = sns.catplot(
+                data=this_df,
+                y="model",
+                x="value",
+                kind="bar",
+                aspect=1.1,
+                height=2.6,
+                log=False,
+                errorbar="sd",
+                hue="model",
+                legend=False,
+                dodge=False,
+                palette=colors,
+            )
+
+            g.map(
+                sns.stripplot,
+                "value",
+                "model",
+                color="k",
+                dodge=True,
+                alpha=0.6,
+                ec="k",
+                linewidth=1,
+                s=1,
+            )
+
+            g.set(
+                xlim=[
+                    np.quantile(this_df["value"].values, 0.05),
+                    np.quantile(this_df["value"].values, 0.95),
+                ]
+            )
+
+            g.set(yticklabels=[])
+
+            g.savefig(path / f"{var}.png", bbox_inches="tight", dpi=300)
+            g.savefig(path / f"{var}.pdf", bbox_inches="tight", dpi=300)
 
 
 def plot_pc_saved(

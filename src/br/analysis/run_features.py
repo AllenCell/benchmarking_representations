@@ -3,7 +3,9 @@ import argparse
 import os
 import sys
 from pathlib import Path
+
 import pandas as pd
+
 from br.analysis.analysis_utils import (
     get_feature_params,
     setup_evaluation_params,
@@ -39,7 +41,7 @@ def main(args):
     ) = get_data_and_models(args.dataset_name, batch_size, config_path + "/results/", args.debug)
     max_embed_dim = min(latent_dims)
 
-    # make save path directory 
+    # make save path directory
     Path(args.save_path).mkdir(parents=True, exist_ok=True)
 
     # Save model sizes to CSV
@@ -81,9 +83,7 @@ def main(args):
         classification_params,
         evolve_params,
         regression_params,
-    ) = get_feature_params(
-        config_path + "/results/", args.dataset_name, manifest, keys, run_names
-    )
+    ) = get_feature_params(config_path + "/results/", args.dataset_name, manifest, keys, run_names)
 
     metric_list = [
         "Rotation Invariance Error",
@@ -94,7 +94,6 @@ def main(args):
     ]
     if regression_params["target_cols"]:
         metric_list.append("Regression")
-
 
     # Compute multi-metric benchmarking features
     compute_features(
@@ -126,12 +125,12 @@ def main(args):
     csvs = [i.split(".")[0] for i in csvs]
     # Remove non metric related csvs
     csvs = [i for i in csvs if i not in run_names and i not in keys]
-    csvs = [i for i in csvs if i not in ['image', 'pcloud']]
+    csvs = [i for i in csvs if i not in ["image", "pcloud"]]
     # classification and regression metrics are unique to each dataset
     unique_metrics = [i for i in csvs if "classification" in i or "regression" in i]
     # Collect dataframe and make plots
     df, df_non_agg = collect_outputs(args.save_path, "std", run_names, csvs)
-    plot(args.save_path, df, run_names, args.dataset_name, "std", unique_metrics)
+    plot(args.save_path, df, run_names, args.dataset_name, "std", unique_metrics, df_non_agg)
 
 
 if __name__ == "__main__":
