@@ -10,7 +10,7 @@ requires-python = "==3.10.*"
 license = {file = "LICENSE"}
 dependencies = [
     "torch-scatter>=2.1.2",
-    "codecarbon>=2.4.2",
+    "codecarbon==2.6.0",
     "PyMCubes>=0.1.4",
     "copairs @ git+https://github.com/cytomining/copairs.git@880f22a551bd897896d148a0b07baa99d981c6a9",
     "pycytominer==1.2.0",

@@ -9,9 +9,9 @@ force: false
 raise_errors: true
 samples_per_structure:
 
-output_dir: /allen/aics/modeling/ritvik/projects/latest_clones/benchmarking_representations/subpackages/image_preprocessing/tmp_pcna/
+output_dir: your_output_path_here
 
-input_manifest: /allen/aics/modeling/ritvik/projects/pcna_test.csv
+input_manifest: your_path_here
 
 remote_provider:
 

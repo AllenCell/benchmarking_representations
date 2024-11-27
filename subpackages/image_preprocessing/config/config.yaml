@@ -7,11 +7,10 @@ n_workers: 10
 verbose: true
 force: false
 raise_errors: true
-samples_per_structure:
 
-output_dir: ./tmp_variance/
+output_dir: your_output_path_here
 
-input_manifest: /allen/aics/assay-dev/users/Fatwir/mod_variance_manifest.csv
+input_manifest: your_path_here
 
 remote_provider:
 

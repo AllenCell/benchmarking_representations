@@ -40,7 +40,7 @@ cloudpickle==3.0.0
 cmaes==0.10.0
 cmake==3.28.3; platform_system == "Linux" and platform_machine == "x86_64"
 cmd2==2.4.3
-codecarbon==2.7.1
+codecarbon==2.6.0
 colorama==0.4.6
 colorlog==6.8.2
 comm==0.2.2
