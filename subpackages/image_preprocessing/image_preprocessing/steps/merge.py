@@ -89,14 +89,6 @@ class Merge(Step):
         raw_img = read_image(path_raw)
         raw_channel_names = channel_map[self.raw_col]
 
-        # if self.contrast_adjust:
-        #     for key, val in self.contrast_adjust.items():
-        #         raw_img[raw_channel_names.index(key)] = np.where(
-        #             raw_img[raw_channel_names.index(key)]  < val,
-        #             raw_img[raw_channel_names.index(key)],
-        #             0
-        #         )
-
         # Read in seg image and define (hardcode) channel names
         seg_img = read_image(path_seg)
         seg_channels_names = channel_map[self.seg_col]
