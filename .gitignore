@@ -93,3 +93,5 @@ target/
 /configs/logs/*
 /logs/*
 /notebooks/*
+
+.pdm-python
