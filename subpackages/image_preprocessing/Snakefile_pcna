@@ -1,0 +1,51 @@
+import os
+from snakemake.remote.S3 import RemoteProvider as S3RemoteProvider
+from hydra import compose, initialize
+from hydra.utils import instantiate
+from omegaconf import OmegaConf
+
+with initialize(version_base=None, config_path="config_pcna"):
+    _cfg = compose(config_name="config")
+    cfg = OmegaConf.merge(_cfg, config)
+
+remote_provider = instantiate(cfg.remote_provider)
+
+input_manifest = cfg.input_manifest
+if input_manifest.startswith("s3://"):
+    input_manifest = remote_provider.remote(cfg.input_manifest)
+
+rule all:
+    input:
+        input_manifest,
+        os.path.join(cfg.output_dir, "merge/manifest.parquet"),
+        os.path.join(cfg.output_dir, "align/manifest.parquet"),
+        os.path.join(cfg.output_dir, "register/manifest.parquet")
+    output:
+        os.path.join(cfg.output_dir, "processed/manifest.parquet")
+    shell:
+        "python scripts/run_step.py step=combine_dfs ++step.input.0={input[0]} --config-path '../config_pcna/' --config-name 'config'"
+
+
+rule merge_channels:
+    input:
+        input_manifest
+    output:
+        os.path.join(cfg.output_dir, "merge/manifest.parquet")
+    shell:
+        "python scripts/run_step.py step=merge ++input_manifest={input} --config-path '../config_pcna/' --config-name 'config'"
+
+rule align_and_mask:
+    input:
+        os.path.join(cfg.output_dir, "merge/manifest.parquet")
+    output:
+        os.path.join(cfg.output_dir, "align/manifest.parquet")
+    shell:
+        "python scripts/run_step.py step=align_and_mask ++input={input} --config-path '../config_pcna/' --config-name 'config'"
+
+rule register:
+    input:
+        os.path.join(cfg.output_dir, "align/manifest.parquet")
+    output:
+        os.path.join(cfg.output_dir, "register/manifest.parquet")
+    shell:
+        "python scripts/run_step.py step=register ++input={input} --config-path '../config_pcna/' --config-name 'config'"

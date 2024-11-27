@@ -3,15 +3,15 @@ defaults:
   - step: _base
 
 # n_workers: 120
-n_workers: 10
+n_workers: 1
 verbose: true
 force: false
 raise_errors: true
 samples_per_structure:
 
-output_dir: ./tmp_variance/
+output_dir: /allen/aics/modeling/ritvik/projects/latest_clones/benchmarking_representations/subpackages/image_preprocessing/tmp_pcna/
 
-input_manifest: /allen/aics/assay-dev/users/Fatwir/mod_variance_manifest.csv
+input_manifest: /allen/aics/modeling/ritvik/projects/pcna_test.csv
 
 remote_provider:
 

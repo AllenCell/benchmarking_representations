@@ -6,11 +6,6 @@ step:
   input_col: merged_channels
   alignment_channel: membrane_segmentation
   membrane_seg_channel: membrane_segmentation
-  mask_map:
-    bf: membrane_segmentation
-    dna: membrane_segmentation
-    membrane: membrane_segmentation
-    structure: membrane_segmentation
 
   dilation_shape: null
   make_unique: false

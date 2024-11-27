@@ -1,8 +1,8 @@
-host: 0.0.0.0
-port: 9999
-
-report:
+step:
+  n_workers: ${n_workers}
   verbose: ${verbose}
+  force: ${force}
+  raise_errors: ${raise_errors}
   cell_id_col: CellId
   fov_id_col: FOVId
   structure_name_col: structure_name

@@ -1,0 +1,15 @@
+defaults:
+  - _base
+
+step:
+  _target_: image_preprocessing.steps.OneStep
+  raw_col: crop_raw
+  seg_col: crop_seg
+  channel_map_col: name_dict
+  alignment_channel: dna_segmentation
+  membrane_seg_channel: dna_segmentation
+  dilation_shape: null
+  make_unique: false
+  output_dir: ${output_dir}/one_step
+
+input: ${input_manifest}
