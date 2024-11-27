@@ -5,7 +5,7 @@
 
 defaults:
   - override /data: pcna/pc.yaml
-  - override /model: pc/earthmovers_classical.yaml
+  - override /model: pc/classical_earthmovers.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
   - override /logger: csv.yaml
