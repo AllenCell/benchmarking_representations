@@ -55,7 +55,14 @@ def check_mig():
 def get_mig_ids(gpu_uuid):
     try:
         # Get the list of GPUs
-        output = subprocess.check_output(['nvidia-smi','--query-gpu=,index,uuid' ,'--format=csv,noheader']).decode('utf-8').strip().split('\n')
+        output = (
+            subprocess.check_output(
+                ["nvidia-smi", "--query-gpu=,index,uuid", "--format=csv,noheader"]
+            )
+            .decode("utf-8")
+            .strip()
+            .split("\n")
+        )
 
         # Find the index of the specified GPU UUID
         gpu_index = -1
@@ -71,7 +78,9 @@ def get_mig_ids(gpu_uuid):
         # Now we need to get the MIG IDs for this GPU
         mig_ids = []
         # Run nvidia-smi command to get detailed information including MIG IDs
-        detailed_output = subprocess.check_output(['nvidia-smi', '-L']).decode('utf-8').strip().split('\n')
+        detailed_output = (
+            subprocess.check_output(["nvidia-smi", "-L"]).decode("utf-8").strip().split("\n")
+        )
 
         # Flag to determine if we are in the right GPU section
         in_gpu_section = False
@@ -82,11 +91,13 @@ def get_mig_ids(gpu_uuid):
                 break
 
             # print(line)
-            
+
             if in_gpu_section:
                 # Check for MIG devices
                 if "MIG" in line:
-                    mig_id = line.split('(')[1].split(')')[0].split(' ')[-1]  # Assuming format is '.... MIG (UUID) ...'
+                    mig_id = (
+                        line.split("(")[1].split(")")[0].split(" ")[-1]
+                    )  # Assuming format is '.... MIG (UUID) ...'
                     mig_ids.append(mig_id.strip())
 
         return mig_ids
@@ -105,14 +116,14 @@ def config_gpu():
 
     for line in lines:
         index, uuid, name, mem_used, mem_total = map(str.strip, line.split(","))
-        utilization = float(mem_used)*100/float(mem_total)
-      
+        utilization = float(mem_used) * 100 / float(mem_total)
+
         # Check if GPU utilization is under 20% (indicating it's idle)
         if utilization < 20:
             # print(uuid, utilization)
             if is_mig:
                 mig_ids = get_mig_ids(uuid)
-             
+
                 if mig_ids:
                     selected_gpu_id_or_uuid = mig_ids[0]  # Select the first MIG ID
                     break  # Exit the loop after finding the first MIG ID

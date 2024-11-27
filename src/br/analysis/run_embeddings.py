@@ -3,6 +3,7 @@ import argparse
 import os
 import sys
 from pathlib import Path
+
 from br.analysis.analysis_utils import setup_evaluation_params, setup_gpu, str2bool
 from br.models.load_models import get_data_and_models
 from br.models.save_embeddings import save_embeddings
@@ -31,7 +32,7 @@ def main(args):
         skew_scale,
     ) = setup_evaluation_params(manifest, run_names)
 
-    # make save path directory 
+    # make save path directory
     Path(args.save_path).mkdir(parents=True, exist_ok=True)
 
     # save embeddings for each model
