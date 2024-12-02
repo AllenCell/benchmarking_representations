@@ -130,7 +130,7 @@ def main(args):
     unique_metrics = [i for i in csvs if "classification" in i or "regression" in i]
     # Collect dataframe and make plots
     df, df_non_agg = collect_outputs(args.save_path, "std", run_names, csvs)
-    plot(args.save_path, df, run_names, args.dataset_name, "std", unique_metrics)
+    plot(args.save_path, df, run_names, args.dataset_name, "std", unique_metrics, df_non_agg)
 
 
 if __name__ == "__main__":
