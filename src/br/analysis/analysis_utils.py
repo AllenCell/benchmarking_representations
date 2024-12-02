@@ -3,7 +3,6 @@ import gc
 import os
 import subprocess
 from pathlib import Path
-
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import mesh_to_sdf
@@ -681,7 +680,7 @@ def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, d
 
 
 def save_supplemental_figure_punctate_reconstructions(
-    df, test_ids, run_names, reconstructions_path
+    df, test_ids, run_names, reconstructions_path, normalize_across_recons
 ):
     def slice_(img, slices=None, z_ind=0):
         if not slices:
@@ -692,6 +691,14 @@ def save_supplemental_figure_punctate_reconstructions(
         if z_ind == 2:
             img = img[:, :, mid_z - slices : mid_z + slices].max(2)
         return img
+
+
+    def slice_points_(points, z_max, z_loc=0):
+        inds = np.where(points[:,z_loc] < z_max)[0]
+        points = points[inds, :]
+        inds = np.where(points[:,z_loc] > -z_max)[0]
+        points = points[inds, :]
+        return points
 
     def _plot_image(input, recon, recon_canonical):
         num_slice = 8
@@ -751,15 +758,22 @@ def save_supplemental_figure_punctate_reconstructions(
         fig.subplots_adjust(wspace=0, hspace=0)
         return fig
 
-    def _plot_pc(input, recon, recon_canonical):
-        max_z = 200
-        max_size = 10
-        z_ind = 1
+    def _plot_pc(input, recon, recon_canonical, struct, cmap):
+        z_max = 0.3
+        max_size = 15
+        z_ind = 2
         fig, axes = plt.subplots(1, 3, figsize=(10, 5))
-        for this_p in [input, recon, recon_canonical]:
-            this_p = this_p[np.where(this_p[:, z_ind] < max_z)[0]]
-            this_p = this_p[np.where(this_p[:, z_ind] > -max_z)[0]]
-            axes[i].scatter(this_p[:, 2], this_p[:, 1], c="gray", s=1)
+        for j, this_p in enumerate([input, recon, recon_canonical]):
+            import ipdb
+            ipdb.set_trace()
+            print(this_p.max(axis=0), 'pre', j)
+            if struct in ['NUP153', 'HIST1H2BJ', 'SMC1A', 'SON']:
+                this_p = slice_points_(this_p, z_max, z_ind)
+            print(this_p.max(axis=0), 'post', j)
+            if this_p.shape[-1] == 3:
+                axes[i].scatter(this_p[:, 1], this_p[:, 0], c="black", s=2, alpha=0.5)
+            else:
+                axes[i].scatter(this_p[:, 1], this_p[:, 0], c=cmap(this_p[:, 3]), s=2, alpha=0.5)
             axes[i].spines["top"].set_visible(False)
             axes[i].spines["right"].set_visible(False)
             axes[i].spines["bottom"].set_visible(False)
@@ -771,10 +785,27 @@ def save_supplemental_figure_punctate_reconstructions(
             axes[i].set_xticks([])
         return fig
 
-    for i, c in enumerate(test_ids):
-        row_index = i
-        recons = []
-        for m in run_names:
+    for m in run_names:
+        cmap = None
+        if normalize_across_recons:
+            all_df_input = []
+            for c in test_ids:
+                input_path = reconstructions_path + f"{m}/input/{c}.npy"
+                input = np.load(input_path).squeeze()
+                if input.shape[-1] == 4:
+                    this_df = pd.DataFrame(input, columns=['x', 'y', 'z', 's'])
+                    all_df_input.append(this_df)
+            
+            all_df_input = pd.concat(all_df_input, axis=0).reset_index(drop=True)
+            if len(all_df_input) > 0:
+                all_df_input, cmap = normalize_intensities_and_get_colormap(df=all_df_input, pcts=[5, 95])
+
+        for i, c in enumerate(test_ids):
+            struct = 'pcna'
+            if "structure_name" in df.columns:
+                struct = df.loc[df['CellId'] == c]['structure_name'].iloc[0]
+            row_index = i
+
             input_path = reconstructions_path + f"{m}/input/{c}.npy"
             input = np.load(input_path).squeeze()
 
@@ -787,10 +818,17 @@ def save_supplemental_figure_punctate_reconstructions(
             if "image" in m:
                 fig = _plot_image(input, recon, recon_canonical)
             else:
-                fig = _plot_pc(input, recon, recon_canonical)
+                fig = _plot_pc(input, recon, recon_canonical, struct, cmap)
 
+            this_save_path_ = (
+                Path(reconstructions_path) / Path(m)
+            )
+            print(this_save_path_)
             fig.savefig(
-                reconstructions_path + f"sample_recons_{c}_{m}.pdf", bbox_inches="tight", dpi=300
+                this_save_path_ / Path(f"sample_recons_{c}.pdf"), bbox_inches="tight", dpi=300
+            )
+            fig.savefig(
+                this_save_path_ / Path(f"sample_recons_{c}.png"), bbox_inches="tight", dpi=300
             )
 
 

@@ -33,7 +33,7 @@ test_ids_per_dataset_ = {
 
 def main(args):
     # Setup GPUs and set the device
-    setup_gpu()
+    # setup_gpu()
     device = "cuda:0"
 
     # set batch size to 1 for emission stats/features
