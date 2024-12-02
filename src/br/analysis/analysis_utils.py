@@ -4,22 +4,27 @@ import os
 import subprocess
 from pathlib import Path
 
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
+import mesh_to_sdf
 import numpy as np
 import pandas as pd
 import pyvista as pv
 import torch
+import trimesh
 import yaml
+from aicsimageio import AICSImage
 from sklearn.decomposition import PCA
 from tqdm import tqdm
 
+from br.data.utils import get_iae_reconstruction_3d_grid
 from br.features.plot import plot_pc_saved, plot_stratified_pc
 from br.features.reconstruction import save_pcloud
 from br.features.utils import (
     normalize_intensities_and_get_colormap,
     normalize_intensities_and_get_colormap_apply,
 )
-from br.models.utils import get_all_configs_per_dataset
+from br.models.utils import get_all_configs_per_dataset, move
 
 
 def str2bool(v):
@@ -55,7 +60,14 @@ def check_mig():
 def get_mig_ids(gpu_uuid):
     try:
         # Get the list of GPUs
-        output = subprocess.check_output(['nvidia-smi','--query-gpu=,index,uuid' ,'--format=csv,noheader']).decode('utf-8').strip().split('\n')
+        output = (
+            subprocess.check_output(
+                ["nvidia-smi", "--query-gpu=,index,uuid", "--format=csv,noheader"]
+            )
+            .decode("utf-8")
+            .strip()
+            .split("\n")
+        )
 
         # Find the index of the specified GPU UUID
         gpu_index = -1
@@ -71,7 +83,9 @@ def get_mig_ids(gpu_uuid):
         # Now we need to get the MIG IDs for this GPU
         mig_ids = []
         # Run nvidia-smi command to get detailed information including MIG IDs
-        detailed_output = subprocess.check_output(['nvidia-smi', '-L']).decode('utf-8').strip().split('\n')
+        detailed_output = (
+            subprocess.check_output(["nvidia-smi", "-L"]).decode("utf-8").strip().split("\n")
+        )
 
         # Flag to determine if we are in the right GPU section
         in_gpu_section = False
@@ -82,11 +96,13 @@ def get_mig_ids(gpu_uuid):
                 break
 
             # print(line)
-            
+
             if in_gpu_section:
                 # Check for MIG devices
                 if "MIG" in line:
-                    mig_id = line.split('(')[1].split(')')[0].split(' ')[-1]  # Assuming format is '.... MIG (UUID) ...'
+                    mig_id = (
+                        line.split("(")[1].split(")")[0].split(" ")[-1]
+                    )  # Assuming format is '.... MIG (UUID) ...'
                     mig_ids.append(mig_id.strip())
 
         return mig_ids
@@ -105,14 +121,14 @@ def config_gpu():
 
     for line in lines:
         index, uuid, name, mem_used, mem_total = map(str.strip, line.split(","))
-        utilization = float(mem_used)*100/float(mem_total)
-      
+        utilization = float(mem_used) * 100 / float(mem_total)
+
         # Check if GPU utilization is under 20% (indicating it's idle)
         if utilization < 20:
             # print(uuid, utilization)
             if is_mig:
                 mig_ids = get_mig_ids(uuid)
-             
+
                 if mig_ids:
                     selected_gpu_id_or_uuid = mig_ids[0]  # Select the first MIG ID
                     break  # Exit the loop after finding the first MIG ID
@@ -594,3 +610,284 @@ def archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features)
         arch_dict["CellId"].append(closest_real_id)
     arch_dict = pd.DataFrame(arch_dict)
     arch_dict.to_csv(this_save_path / "archetypes.csv")
+
+
+def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, device, save_path):
+    with torch.no_grad():
+        for j, model in enumerate(all_models):
+            this_data = data_list[j]
+            this_run_name = run_names[j]
+            this_key = keys[j]
+            for batch in this_data.test_dataloader():
+                if not isinstance(batch["cell_id"], list):
+                    if isinstance(batch["cell_id"], torch.Tensor):
+                        cell_id = str(batch["cell_id"].item())
+                    else:
+                        cell_id = str(batch["cell_id"])
+                else:
+                    cell_id = str(batch["cell_id"][0])
+                if cell_id in test_ids:
+                    input = batch[this_key].detach().cpu().numpy().squeeze()
+                    if "pointcloud_SDF" in this_run_name:
+                        eval_scaled_img_resolution = 32
+                        uni_sample_points = get_iae_reconstruction_3d_grid(
+                            bb_min=-0.5,
+                            bb_max=0.5,
+                            resolution=eval_scaled_img_resolution,
+                            padding=0.1,
+                        )
+                        uni_sample_points = uni_sample_points.unsqueeze(0).repeat(
+                            batch[this_key].shape[0], 1, 1
+                        )
+                        batch["points"] = uni_sample_points
+                        xhat, z, z_params = model(
+                            move(batch, device), decode=True, inference=True, return_params=True
+                        )
+                        recon = xhat[this_key].detach().cpu().numpy().squeeze()
+                        recon = recon.reshape(
+                            eval_scaled_img_resolution,
+                            eval_scaled_img_resolution,
+                            eval_scaled_img_resolution,
+                        )
+                    else:
+                        z = model.encode(move(batch, device))
+                        xhat = model.decode(z, return_canonical=True)
+                        recon = xhat[this_key].detach().cpu().numpy().squeeze()
+                        canonical = xhat["canonical"].detach().cpu().numpy().squeeze()
+
+                    this_save_path = Path(save_path) / Path(this_run_name)
+                    this_save_path.mkdir(parents=True, exist_ok=True)
+                    np.save(this_save_path / Path(f"{cell_id}.npy"), recon)
+
+                    this_save_path_input = Path(save_path) / Path(this_run_name) / Path("input")
+                    this_save_path_input.mkdir(parents=True, exist_ok=True)
+                    np.save(this_save_path_input / Path(f"{cell_id}.npy"), input)
+
+                    this_save_path_canon = (
+                        Path(save_path) / Path(this_run_name) / Path("canonical")
+                    )
+                    this_save_path_canon.mkdir(parents=True, exist_ok=True)
+                    np.save(this_save_path_canon / Path(f"{cell_id}.npy"), canonical)
+
+
+def save_supplemental_figure_punctate_reconstructions(
+    df, test_ids, run_names, reconstructions_path
+):
+    def slice_(img, slices=None, z_ind=0):
+        if not slices:
+            return img.max(z_ind)
+        mid_z = int(img.shape[0] / 2)
+        if z_ind == 0:
+            img = img[mid_z - slices : mid_z + slices].max(0)
+        if z_ind == 2:
+            img = img[:, :, mid_z - slices : mid_z + slices].max(2)
+        return img
+
+    for i, c in enumerate(test_ids):
+        row_index = i
+        recons = []
+        for m in run_names:
+            input_path = reconstructions_path + f"{m}/input/{c}.npy"
+            input = np.load(input_path).squeeze()
+
+            recon_path = reconstructions_path + f"{m}/{c}.npy"
+            recon = np.load(recon_path).squeeze()
+
+            recon_path = reconstructions_path + f"{m}/canonical/{c}.npy"
+            recon_canonical = np.load(recon_path).squeeze()
+
+            num_slice = 8
+            z_ind = 0
+
+            input = slice_(input, num_slice, z_ind)
+            recon = slice_(recon, num_slice, z_ind)
+            recon_canonical = slice_(recon_canonical, num_slice, 2)
+
+            i = 2
+            fig, (ax, ax1, ax2) = plt.subplots(1, 3, figsize=(8, 4))
+            # ax.imshow(this[:, :, :].max(i).T, origin='lower', cmap='gray_r')
+            # ax1.imshow(this2[:, :, :].max(i).T, origin='lower', cmap='gray_r')
+            # ax2.imshow(this3[:, :, :].max(i).T, origin='lower', cmap='gray_r')
+            ax.imshow(input, cmap="gray_r")
+            ax1.imshow(recon, cmap="gray_r")
+            ax2.imshow(recon_canonical, cmap="gray_r")
+
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax2.set_xticks([])
+            ax2.set_yticks([])
+            ax1.set_xticks([])
+            ax1.set_yticks([])
+            # max_size = 192
+            max_size = recon_canonical.shape[1]
+            ax.set_aspect("equal", adjustable="box")
+            ax1.set_aspect("equal", adjustable="box")
+            ax2.set_aspect("equal", adjustable="box")
+
+            # max_size = 6
+            ax.set_ylim([0, max_size])
+            ax1.set_ylim([0, max_size])
+            ax2.set_ylim([0, max_size])
+            ax.set_xlim([0, max_size])
+            ax1.set_xlim([0, max_size])
+            ax2.set_xlim([0, max_size])
+
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
+            ax.spines["bottom"].set_visible(False)
+            ax.spines["left"].set_visible(False)
+
+            ax1.spines["top"].set_visible(False)
+            ax1.spines["right"].set_visible(False)
+            ax1.spines["bottom"].set_visible(False)
+            ax1.spines["left"].set_visible(False)
+
+            ax2.spines["top"].set_visible(False)
+            ax2.spines["right"].set_visible(False)
+            ax2.spines["bottom"].set_visible(False)
+            ax2.spines["left"].set_visible(False)
+
+            ax.set_title("Input")
+            ax1.set_title("Reconstruction")
+            ax2.set_title("Canonical Reconstruction")
+            fig.subplots_adjust(wspace=0, hspace=0)
+            fig.savefig(
+                reconstructions_path + f"sample_recons_{c}_{m}.pdf", bbox_inches="tight", dpi=300
+            )
+
+
+def save_supplemental_figure_sdf_reconstructions(df, test_ids, reconstructions_path):
+    import pyvista as pv
+
+    pv.start_xvfb()
+    gt_test_sdfs = []
+    gt_test_segs = []
+    for tid in test_ids:
+        path = df[df["CellId"] == int(tid)]["sdf_path"].values[0]
+        sdf = np.load(path)
+        path = df[df["CellId"] == int(tid)]["seg_path"].values[0]
+        seg = np.load(path)
+        gt_test_sdfs.append(sdf)
+        gt_test_segs.append(seg)
+
+    gt_orig_struc = []
+    gt_orig_cell = []
+    gt_orig_nuc = []
+    for tid in test_ids:
+        path = df[df["CellId"] == int(tid)]["crop_seg_masked"].values[0]
+        seg = AICSImage(path).data.squeeze()
+        path = df[df["CellId"] == int(tid)]["crop_seg"].values[0]
+        img = AICSImage(path).data.squeeze()
+        gt_orig_struc.append(seg)
+        gt_orig_nuc.append(img[0])
+        gt_orig_cell.append(img[1])
+
+    eval_scaled_img_resolution = 32
+    mid_slice_ = int(eval_scaled_img_resolution / 2)
+    uni_sample_points_grid = get_iae_reconstruction_3d_grid(
+        bb_min=-0.5, bb_max=0.5, resolution=eval_scaled_img_resolution, padding=0.1
+    )
+    gt_test_sdfs_iae = []
+    mesh_folder = df["mesh_folder"].iloc[0]
+    for tid in test_ids:
+        path = mesh_folder + str(tid) + ".stl"
+        mesh = trimesh.load(path)
+        bbox = mesh.bounding_box.bounds
+        loc = (bbox[0] + bbox[1]) / 2
+        scale_factor = (bbox[1] - bbox[0]).max()
+        mesh = mesh.apply_translation(-loc)
+        mesh = mesh.apply_scale(1 / scale_factor)
+        sdf_vals = mesh_to_sdf.mesh_to_sdf(mesh, query_points=uni_sample_points_grid.numpy())
+        gt_test_sdfs_iae.append(sdf_vals)
+
+    cmap_inverted = mcolors.ListedColormap(np.flipud(plt.cm.gray(np.arange(256))))
+
+    model_order = [
+        "Classical_image_seg",
+        "Rotation_invariant_image_seg",
+        "Classical_image_SDF",
+        "Rotation_invariant_image_SDF",
+        "Rotation_invariant_pointcloud_SDF",
+    ]
+
+    for split, split_ids, gt_segs, gt_sdfs, gt_test_i_sdfs in [
+        ("test", test_ids, gt_test_segs, gt_test_sdfs, gt_test_sdfs_iae)
+    ]:
+
+        num_rows = len(split_ids)
+        num_columns = len(model_order) + 4
+        fig, axs = plt.subplots(num_rows, num_columns, figsize=(num_columns * 5, num_rows * 5))
+
+        for i, c in enumerate(split_ids):
+            gt_seg = gt_segs[i]
+            gt_sdf = np.clip(gt_sdfs[i], -2, 2)
+            gt_sdf_i = gt_test_i_sdfs[i].reshape(
+                eval_scaled_img_resolution, eval_scaled_img_resolution, eval_scaled_img_resolution
+            )
+            row_index = i
+            recons = []
+            for m in model_order:
+                recon_path = reconstructions_path + f"{m}/{c}.npy"
+                recon = np.load(recon_path).squeeze()
+
+                if "SDF" in m or "vn" in m:
+                    mid_z = recon.shape[0] // 2
+                    if ("Rotation" in m) and (m != "Rotation_invariant_pointcloud_SDF"):
+                        z_slice = recon[mid_z, :, :].T
+                        from scipy.ndimage import rotate
+
+                        z_slice = rotate(z_slice, angle=-135, cval=2)
+                        z_slice = z_slice[14:-14, 14:-14]
+                    else:
+                        z_slice = recon[:, :, mid_z].T
+                else:
+                    z_slice = recon.max(0)
+                recons.append(z_slice)
+
+            struc_seg = gt_orig_struc[i]
+            cell_seg = gt_orig_cell[i]
+            nuc_seg = gt_orig_nuc[i]
+
+            axs[row_index, 0].imshow(
+                cell_seg.max(0), cmap=cmap_inverted, origin="lower", alpha=0.5
+            )
+            axs[row_index, 0].imshow(nuc_seg.max(0), cmap=cmap_inverted, origin="lower", alpha=0.5)
+            axs[row_index, 0].imshow(
+                struc_seg.max(0), cmap=cmap_inverted, origin="lower", alpha=0.5
+            )
+            axs[row_index, 0].axis("off")
+            axs[row_index, 0].set_title("")  # (f'GT Seg CellId {c}')
+
+            axs[row_index, 1].imshow(gt_seg.max(0), cmap=cmap_inverted, origin="lower")
+            axs[row_index, 1].axis("off")
+            axs[row_index, 1].set_title("")  # (f'GT Seg CellId {c}')
+
+            for i, img in enumerate(recons[:2]):
+                axs[row_index, i + 2].imshow(img, cmap=cmap_inverted, origin="lower")
+                axs[row_index, i + 2].axis("off")
+                axs[row_index, i + 2].set_title("")  # run_to_displ_name[model_order[i]])
+
+            axs[row_index, 4].imshow(
+                gt_sdf[:, :, mid_slice_].T, cmap="seismic", origin="lower", vmin=-2, vmax=2
+            )
+            axs[row_index, 4].axis("off")
+            axs[row_index, 4].set_title("")  # (f'GT SDF CellId {c}')
+
+            for i, img in enumerate(recons[2:4]):
+                axs[row_index, i + 5].imshow(img, cmap="seismic", origin="lower", vmin=-2, vmax=2)
+                axs[row_index, i + 5].axis("off")
+                axs[row_index, i + 5].set_title("")  # run_to_displ_name[model_order[i]])
+
+            axs[row_index, 7].imshow(
+                gt_sdf_i[:, :, mid_slice_].T.clip(-0.5, 0.5), cmap="seismic", origin="lower"
+            )
+            axs[row_index, 7].axis("off")
+            axs[row_index, 7].set_title("")  # (f'GT SDF CellId {c}')
+
+            axs[row_index, 8].imshow(recons[-1].clip(-0.5, 0.5), cmap="seismic", origin="lower")
+            axs[row_index, 8].axis("off")
+            axs[row_index, 8].set_title("")  # (f'GT SDF CellId {c}')
+
+        plt.tight_layout()
+        plt.savefig(reconstructions_path + "sample_recons.png", dpi=300, bbox_inches="tight")
+        plt.savefig(reconstructions_path + "sample_recons.pdf", dpi=300, bbox_inches="tight")
