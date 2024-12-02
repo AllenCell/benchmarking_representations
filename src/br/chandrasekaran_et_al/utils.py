@@ -2,10 +2,13 @@ import glob
 import itertools
 import os
 from pathlib import Path
-import seaborn as sns
+
 import copairs.compute_np as backend
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pycytominer
+import seaborn as sns
 from copairs.compute import cosine_indexed
 from copairs.map import (
     aggregate,
@@ -18,8 +21,7 @@ from copairs.matching import dict_to_dframe
 from sklearn.metrics import average_precision_score
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
-import matplotlib.pyplot as plt
-import pycytominer
+
 from br.chandrasekaran_et_al import utils
 
 
@@ -172,7 +174,12 @@ def _plot(all_rep, save_path):
         .sort_values(by="q_value")["Metadata_broad_sample"]
         .values
     )
-    ordered_drugs = all_rep.groupby(['Metadata_broad_sample']).mean().sort_values(by='q_value').reset_index()['Metadata_broad_sample']
+    ordered_drugs = (
+        all_rep.groupby(["Metadata_broad_sample"])
+        .mean()
+        .sort_values(by="q_value")
+        .reset_index()["Metadata_broad_sample"]
+    )
     x_order = ordered_drugs
 
     g = sns.catplot(

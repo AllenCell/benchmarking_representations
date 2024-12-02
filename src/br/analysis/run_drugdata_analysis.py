@@ -1,19 +1,20 @@
+import argparse
 import os
+import sys
 from pathlib import Path
+
+from br.chandrasekaran_et_al.utils import _plot, perturbation_detection
 from br.models.compute_features import get_embeddings
 from br.models.utils import get_all_configs_per_dataset
-from br.chandrasekaran_et_al.utils import perturbation_detection, _plot
-import sys
-import argparse
 
 
 def _get_featurecols(df):
-    """returna  list of featuredata columns"""
+    """returna  list of featuredata columns."""
     return [c for c in df.columns if "mu" in c]
 
 
 def _get_featuredata(df):
-    """return dataframe of just featuredata columns"""
+    """return dataframe of just featuredata columns."""
     return df[_get_featurecols(df)]
 
 
@@ -25,11 +26,9 @@ def main(args):
     dataset_name = args.dataset_name
     DATASET_INFO = get_all_configs_per_dataset(results_path)
     dataset = DATASET_INFO[dataset_name]
-    run_names = dataset['names']
+    run_names = dataset["names"]
 
-    all_ret, df = get_embeddings(
-        run_names, args.dataset_name, DATASET_INFO, args.embeddings_path
-    )
+    all_ret, df = get_embeddings(run_names, args.dataset_name, DATASET_INFO, args.embeddings_path)
     all_ret["well_position"] = "A0"  # dummy
     all_ret["Assay_Plate_Barcode"] = "Plate0"  # dummy
 
@@ -41,10 +40,10 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Script for computing perturbation detection metrics")
-    parser.add_argument(
-        "--save_path", type=str, required=True, help="Path to save the results."
+    parser = argparse.ArgumentParser(
+        description="Script for computing perturbation detection metrics"
     )
+    parser.add_argument("--save_path", type=str, required=True, help="Path to save the results.")
     parser.add_argument(
         "--embeddings_path", type=str, required=True, help="Path to the saved embeddings."
     )
