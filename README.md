@@ -1,6 +1,7 @@
 # Benchmarking Representations
+Code for training and benchmarking morphology appropriate representation learning methods, associated with the following manuscript.
 
-Code for training and benchmarking morphology appropriate representation learning methods.
+> "Interpretable representation learning for 3D multi-piece intracellular structures using point clouds" (Vasan et al. 2024, bioRxiv coming soon).
 
 Our analysis is organized as follows.
 
@@ -24,3 +25,6 @@ If you'd like to reproduce this analysis on our data, check out the following do
 # Using the models
 
 Coming soon
+
+# Contact
+Allen Institute for Cell Science (cells@alleninstitute.org)
