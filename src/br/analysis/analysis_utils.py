@@ -649,6 +649,16 @@ def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, d
                             eval_scaled_img_resolution,
                             eval_scaled_img_resolution,
                         )
+                    elif ("pointcloud" in this_run_name) and ("SDF" not in this_run_name):
+                        batch = move(batch, device)
+                        z, z_params = model.get_embeddings(batch, inference=True)
+                        xhat = model.decode_embeddings(
+                            z_params, batch, decode=True, return_canonical=True
+                        )
+                        recon = xhat[this_key].detach().cpu().numpy().squeeze()
+                        canonical = recon
+                        if "canonical" in xhat.keys():
+                            canonical = xhat["canonical"].detach().cpu().numpy().squeeze()
                     else:
                         z = model.encode(move(batch, device))
                         xhat = model.decode(z, return_canonical=True)
@@ -683,6 +693,84 @@ def save_supplemental_figure_punctate_reconstructions(
             img = img[:, :, mid_z - slices : mid_z + slices].max(2)
         return img
 
+    def _plot_image(input, recon, recon_canonical):
+        num_slice = 8
+        z_ind = 0
+
+        input = slice_(input, num_slice, z_ind)
+        recon = slice_(recon, num_slice, z_ind)
+        recon_canonical = slice_(recon_canonical, num_slice, 2)
+
+        i = 2
+        fig, (ax, ax1, ax2) = plt.subplots(1, 3, figsize=(8, 4))
+        # ax.imshow(this[:, :, :].max(i).T, origin='lower', cmap='gray_r')
+        # ax1.imshow(this2[:, :, :].max(i).T, origin='lower', cmap='gray_r')
+        # ax2.imshow(this3[:, :, :].max(i).T, origin='lower', cmap='gray_r')
+        ax.imshow(input, cmap="gray_r")
+        ax1.imshow(recon, cmap="gray_r")
+        ax2.imshow(recon_canonical, cmap="gray_r")
+
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax2.set_xticks([])
+        ax2.set_yticks([])
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        # max_size = 192
+        max_size = recon_canonical.shape[1]
+        ax.set_aspect("equal", adjustable="box")
+        ax1.set_aspect("equal", adjustable="box")
+        ax2.set_aspect("equal", adjustable="box")
+
+        # max_size = 6
+        ax.set_ylim([0, max_size])
+        ax1.set_ylim([0, max_size])
+        ax2.set_ylim([0, max_size])
+        ax.set_xlim([0, max_size])
+        ax1.set_xlim([0, max_size])
+        ax2.set_xlim([0, max_size])
+
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.spines["bottom"].set_visible(False)
+        ax.spines["left"].set_visible(False)
+
+        ax1.spines["top"].set_visible(False)
+        ax1.spines["right"].set_visible(False)
+        ax1.spines["bottom"].set_visible(False)
+        ax1.spines["left"].set_visible(False)
+
+        ax2.spines["top"].set_visible(False)
+        ax2.spines["right"].set_visible(False)
+        ax2.spines["bottom"].set_visible(False)
+        ax2.spines["left"].set_visible(False)
+
+        ax.set_title("Input")
+        ax1.set_title("Reconstruction")
+        ax2.set_title("Canonical Reconstruction")
+        fig.subplots_adjust(wspace=0, hspace=0)
+        return fig
+
+    def _plot_pc(input, recon, recon_canonical):
+        max_z = 200
+        max_size = 10
+        z_ind = 1
+        fig, axes = plt.subplots(1, 3, figsize=(10, 5))
+        for this_p in [input, recon, recon_canonical]:
+            this_p = this_p[np.where(this_p[:, z_ind] < max_z)[0]]
+            this_p = this_p[np.where(this_p[:, z_ind] > -max_z)[0]]
+            axes[i].scatter(this_p[:, 2], this_p[:, 1], c="gray", s=1)
+            axes[i].spines["top"].set_visible(False)
+            axes[i].spines["right"].set_visible(False)
+            axes[i].spines["bottom"].set_visible(False)
+            axes[i].spines["left"].set_visible(False)
+            axes[i].set_aspect("equal", adjustable="box")
+            axes[i].set_ylim([-max_size, max_size])
+            axes[i].set_xlim([-max_size, max_size])
+            axes[i].set_yticks([])
+            axes[i].set_xticks([])
+        return fig
+
     for i, c in enumerate(test_ids):
         row_index = i
         recons = []
@@ -696,61 +784,11 @@ def save_supplemental_figure_punctate_reconstructions(
             recon_path = reconstructions_path + f"{m}/canonical/{c}.npy"
             recon_canonical = np.load(recon_path).squeeze()
 
-            num_slice = 8
-            z_ind = 0
+            if "image" in m:
+                fig = _plot_image(input, recon, recon_canonical)
+            else:
+                fig = _plot_pc(input, recon, recon_canonical)
 
-            input = slice_(input, num_slice, z_ind)
-            recon = slice_(recon, num_slice, z_ind)
-            recon_canonical = slice_(recon_canonical, num_slice, 2)
-
-            i = 2
-            fig, (ax, ax1, ax2) = plt.subplots(1, 3, figsize=(8, 4))
-            # ax.imshow(this[:, :, :].max(i).T, origin='lower', cmap='gray_r')
-            # ax1.imshow(this2[:, :, :].max(i).T, origin='lower', cmap='gray_r')
-            # ax2.imshow(this3[:, :, :].max(i).T, origin='lower', cmap='gray_r')
-            ax.imshow(input, cmap="gray_r")
-            ax1.imshow(recon, cmap="gray_r")
-            ax2.imshow(recon_canonical, cmap="gray_r")
-
-            ax.set_xticks([])
-            ax.set_yticks([])
-            ax2.set_xticks([])
-            ax2.set_yticks([])
-            ax1.set_xticks([])
-            ax1.set_yticks([])
-            # max_size = 192
-            max_size = recon_canonical.shape[1]
-            ax.set_aspect("equal", adjustable="box")
-            ax1.set_aspect("equal", adjustable="box")
-            ax2.set_aspect("equal", adjustable="box")
-
-            # max_size = 6
-            ax.set_ylim([0, max_size])
-            ax1.set_ylim([0, max_size])
-            ax2.set_ylim([0, max_size])
-            ax.set_xlim([0, max_size])
-            ax1.set_xlim([0, max_size])
-            ax2.set_xlim([0, max_size])
-
-            ax.spines["top"].set_visible(False)
-            ax.spines["right"].set_visible(False)
-            ax.spines["bottom"].set_visible(False)
-            ax.spines["left"].set_visible(False)
-
-            ax1.spines["top"].set_visible(False)
-            ax1.spines["right"].set_visible(False)
-            ax1.spines["bottom"].set_visible(False)
-            ax1.spines["left"].set_visible(False)
-
-            ax2.spines["top"].set_visible(False)
-            ax2.spines["right"].set_visible(False)
-            ax2.spines["bottom"].set_visible(False)
-            ax2.spines["left"].set_visible(False)
-
-            ax.set_title("Input")
-            ax1.set_title("Reconstruction")
-            ax2.set_title("Canonical Reconstruction")
-            fig.subplots_adjust(wspace=0, hspace=0)
             fig.savefig(
                 reconstructions_path + f"sample_recons_{c}_{m}.pdf", bbox_inches="tight", dpi=300
             )

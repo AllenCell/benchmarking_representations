@@ -3,28 +3,32 @@ import argparse
 import os
 import sys
 from pathlib import Path
+
 from br.analysis.analysis_utils import (
+    generate_reconstructions,
+    save_supplemental_figure_punctate_reconstructions,
+    save_supplemental_figure_sdf_reconstructions,
     setup_gpu,
     str2bool,
-    generate_reconstructions,
-    save_supplemental_figure_sdf_reconstructions,
-    save_supplemental_figure_punctate_reconstructions
 )
 from br.models.load_models import get_data_and_models
 
-test_ids_per_dataset_ = {'cellpack': ['9c1ff213-4e9e-4b73-a942-3baf9d37a50f'],
-        'pcna': ['7624cd5b-715a-478e-9648-3bac4a73abe8',
-       '80d40c5e-65bf-43b0-8dea-b697c421ea78',
-       '6a3ab51f-fa68-4fe1-a13b-2b2461ed71b4',
-       'aabbbca4-6c35-4f3d-9467-7d573482f236',
-       'd23de56e-bacf-4ec8-8e18-39822fea777b',
-       'c382794f-5baf-4b17-8574-62dccbbbaefc',
-       '50b52c3e-4756-4684-a281-0141525ded9f',
-       '8713eea5-da72-4644-96fe-ba8340edb67d'],
-       'other_punctate': ['721646', '873680', '994027', '490385', '451974', '811336', '835431'],
-       'npm1': ['964798', '661110', '644401', '967887', '703621'],
-       'other_polymorphic': ['691110', '723687', '816468', '800894'],
-       }
+test_ids_per_dataset_ = {
+    "cellpack": ["9c1ff213-4e9e-4b73-a942-3baf9d37a50f"],
+    "pcna": [
+        "7624cd5b-715a-478e-9648-3bac4a73abe8",
+        "80d40c5e-65bf-43b0-8dea-b697c421ea78",
+        "6a3ab51f-fa68-4fe1-a13b-2b2461ed71b4",
+        "aabbbca4-6c35-4f3d-9467-7d573482f236",
+        "d23de56e-bacf-4ec8-8e18-39822fea777b",
+        "c382794f-5baf-4b17-8574-62dccbbbaefc",
+        "50b52c3e-4756-4684-a281-0141525ded9f",
+        "8713eea5-da72-4644-96fe-ba8340edb67d",
+    ],
+    "other_punctate": ["721646", "873680", "994027", "490385", "451974", "811336", "835431"],
+    "npm1": ["964798", "661110", "644401", "967887", "703621"],
+    "other_polymorphic": ["691110", "723687", "816468", "800894"],
+}
 
 
 def main(args):
@@ -53,16 +57,20 @@ def main(args):
         latent_dims,
     ) = get_data_and_models(args.dataset_name, batch_size, config_path + "/results/", args.debug)
 
-    # make save path directory 
+    # make save path directory
     Path(args.save_path).mkdir(parents=True, exist_ok=True)
 
     if args.generate_reconstructions:
-        generate_reconstructions(all_models, data_list, run_names, keys, test_ids, device, args.save_path)
+        generate_reconstructions(
+            all_models, data_list, run_names, keys, test_ids, device, args.save_path
+        )
 
     if args.sdf:
         save_supplemental_figure_sdf_reconstructions(manifest, test_ids, args.save_path)
     else:
-        save_supplemental_figure_punctate_reconstructions(manifest, test_ids, run_names, args.save_path)
+        save_supplemental_figure_punctate_reconstructions(
+            manifest, test_ids, run_names, args.save_path
+        )
 
 
 if __name__ == "__main__":
@@ -72,12 +80,18 @@ if __name__ == "__main__":
     )
     parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     parser.add_argument("--debug", type=str2bool, default=False, help="Enable debug mode.")
-    parser.add_argument("--sdf", type=str2bool, default=True, help="Whether the experiments involve SDFs")
-    parser.add_argument("--test_ids", default=False, nargs='+', help="List of test set cellids to reconstruct")
     parser.add_argument(
-        "--generate_reconstructions", type=str2bool, default=False, help="Whether to skip generating reconstructions"
+        "--sdf", type=str2bool, default=True, help="Whether the experiments involve SDFs"
     )
-
+    parser.add_argument(
+        "--test_ids", default=False, nargs="+", help="List of test set cellids to reconstruct"
+    )
+    parser.add_argument(
+        "--generate_reconstructions",
+        type=str2bool,
+        default=False,
+        help="Whether to skip generating reconstructions",
+    )
 
     args = parser.parse_args()
 
