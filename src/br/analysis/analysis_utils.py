@@ -669,7 +669,7 @@ def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, d
                     this_save_path_input.mkdir(parents=True, exist_ok=True)
                     np.save(this_save_path_input / Path(f"{cell_id}.npy"), input)
                     
-                    if canonical:
+                    if canonical is not None:
                         this_save_path_canon = (
                             Path(save_path) / Path(this_run_name) / Path("canonical")
                         )
