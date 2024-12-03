@@ -3,6 +3,7 @@ import gc
 import os
 import subprocess
 from pathlib import Path
+
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import mesh_to_sdf
@@ -692,11 +693,10 @@ def save_supplemental_figure_punctate_reconstructions(
             img = img[:, :, mid_z - slices : mid_z + slices].max(2)
         return img
 
-
     def slice_points_(points, z_max, z_loc=0):
-        inds = np.where(points[:,z_loc] < z_max)[0]
+        inds = np.where(points[:, z_loc] < z_max)[0]
         points = points[inds, :]
-        inds = np.where(points[:,z_loc] > -z_max)[0]
+        inds = np.where(points[:, z_loc] > -z_max)[0]
         points = points[inds, :]
         return points
 
@@ -758,77 +758,93 @@ def save_supplemental_figure_punctate_reconstructions(
         fig.subplots_adjust(wspace=0, hspace=0)
         return fig
 
-    def _plot_pc(input, recon, recon_canonical, struct, cmap):
+    def _plot_pc(input, recon, recon_canonical, struct, cmap, vmin, vmax):
         z_max = 0.3
         max_size = 15
         z_ind = 2
         fig, axes = plt.subplots(1, 3, figsize=(10, 5))
-        for j, this_p in enumerate([input, recon, recon_canonical]):
-            import ipdb
-            ipdb.set_trace()
-            print(this_p.max(axis=0), 'pre', j)
-            if struct in ['NUP153', 'HIST1H2BJ', 'SMC1A', 'SON']:
+        for index_, this_p in enumerate([input, recon, recon_canonical]):
+            print(this_p.max(axis=0), "pre", index_)
+            if struct in ["NUP153", "HIST1H2BJ", "SMC1A", "SON"]:
                 this_p = slice_points_(this_p, z_max, z_ind)
-            print(this_p.max(axis=0), 'post', j)
+            print(this_p.max(axis=0), "post", index_)
             if this_p.shape[-1] == 3:
-                axes[i].scatter(this_p[:, 1], this_p[:, 0], c="black", s=2, alpha=0.5)
+                axes[index_].scatter(this_p[:, 1], this_p[:, 0], c="black", s=2, alpha=0.5)
             else:
-                axes[i].scatter(this_p[:, 1], this_p[:, 0], c=cmap(this_p[:, 3]), s=2, alpha=0.5)
-            axes[i].spines["top"].set_visible(False)
-            axes[i].spines["right"].set_visible(False)
-            axes[i].spines["bottom"].set_visible(False)
-            axes[i].spines["left"].set_visible(False)
-            axes[i].set_aspect("equal", adjustable="box")
-            axes[i].set_ylim([-max_size, max_size])
-            axes[i].set_xlim([-max_size, max_size])
-            axes[i].set_yticks([])
-            axes[i].set_xticks([])
+                if not cmap:
+                    this_df = pd.DataFrame(input, columns=["x", "y", "z", "s"])
+                    all_df_input, cmap, vmin, vmax = normalize_intensities_and_get_colormap(
+                        df=this_df, pcts=[5, 95]
+                    )
+                this_p = pd.DataFrame(this_p, columns=["x", "y", "z", "s"])
+                this_p = normalize_intensities_and_get_colormap_apply(this_p, vmin, vmax)
+                axes[index_].scatter(
+                    this_p["y"].values,
+                    this_p["x"].values,
+                    c=cmap(this_p["inorm"].values),
+                    s=2,
+                    alpha=0.5,
+                )
+            axes[index_].spines["top"].set_visible(False)
+            axes[index_].spines["right"].set_visible(False)
+            axes[index_].spines["bottom"].set_visible(False)
+            axes[index_].spines["left"].set_visible(False)
+            axes[index_].set_aspect("equal", adjustable="box")
+            axes[index_].set_ylim([-max_size, max_size])
+            axes[index_].set_xlim([-max_size, max_size])
+            axes[index_].set_yticks([])
+            axes[index_].set_xticks([])
         return fig
 
     for m in run_names:
-        cmap = None
-        if normalize_across_recons:
-            all_df_input = []
-            for c in test_ids:
-                input_path = reconstructions_path + f"{m}/input/{c}.npy"
-                input = np.load(input_path).squeeze()
-                if input.shape[-1] == 4:
-                    this_df = pd.DataFrame(input, columns=['x', 'y', 'z', 's'])
-                    all_df_input.append(this_df)
-            
-            all_df_input = pd.concat(all_df_input, axis=0).reset_index(drop=True)
-            if len(all_df_input) > 0:
-                all_df_input, cmap = normalize_intensities_and_get_colormap(df=all_df_input, pcts=[5, 95])
-
-        for i, c in enumerate(test_ids):
-            struct = 'pcna'
+        for i, this_id in enumerate(test_ids):
+            struct = "pcna"
             if "structure_name" in df.columns:
-                struct = df.loc[df['CellId'] == c]['structure_name'].iloc[0]
+                df["CellId"] = df["CellId"].astype(str)
+                struct = df.loc[df["CellId"] == this_id]["structure_name"].iloc[0]
             row_index = i
 
-            input_path = reconstructions_path + f"{m}/input/{c}.npy"
+            input_path = reconstructions_path + f"{m}/input/{this_id}.npy"
             input = np.load(input_path).squeeze()
 
-            recon_path = reconstructions_path + f"{m}/{c}.npy"
+            recon_path = reconstructions_path + f"{m}/{this_id}.npy"
             recon = np.load(recon_path).squeeze()
 
-            recon_path = reconstructions_path + f"{m}/canonical/{c}.npy"
+            recon_path = reconstructions_path + f"{m}/canonical/{this_id}.npy"
             recon_canonical = np.load(recon_path).squeeze()
 
             if "image" in m:
                 fig = _plot_image(input, recon, recon_canonical)
             else:
-                fig = _plot_pc(input, recon, recon_canonical, struct, cmap)
+                cmap = None
+                vmin = None
+                vmax = None
+                if normalize_across_recons:
+                    all_df_input = []
+                    for c in test_ids:
+                        input_path_ = reconstructions_path + f"{m}/input/{this_id}.npy"
+                        input_tmp = np.load(input_path_).squeeze()
+                        if input.shape[-1] == 4:
+                            this_df = pd.DataFrame(input_tmp, columns=["x", "y", "z", "s"])
+                            all_df_input.append(this_df)
+                    if len(all_df_input) > 0:
+                        all_df_input = pd.concat(all_df_input, axis=0).reset_index(drop=True)
+                        _, cmap, vmin, vmax = normalize_intensities_and_get_colormap(
+                            df=all_df_input, pcts=[5, 95]
+                        )
+                fig = _plot_pc(input, recon, recon_canonical, struct, cmap, vmin, vmax)
 
-            this_save_path_ = (
-                Path(reconstructions_path) / Path(m)
-            )
-            print(this_save_path_)
+            this_save_path_ = Path(reconstructions_path) / Path(m)
+            print(this_save_path_, this_id)
             fig.savefig(
-                this_save_path_ / Path(f"sample_recons_{c}.pdf"), bbox_inches="tight", dpi=300
+                this_save_path_ / Path(f"sample_recons_{this_id}.pdf"),
+                bbox_inches="tight",
+                dpi=300,
             )
             fig.savefig(
-                this_save_path_ / Path(f"sample_recons_{c}.png"), bbox_inches="tight", dpi=300
+                this_save_path_ / Path(f"sample_recons_{this_id}.png"),
+                bbox_inches="tight",
+                dpi=300,
             )
 
 

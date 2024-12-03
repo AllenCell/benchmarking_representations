@@ -30,6 +30,8 @@ test_ids_per_dataset_ = {
     "other_polymorphic": ["691110", "723687", "816468", "800894"],
 }
 
+projection_ = {}
+
 
 def main(args):
     # Setup GPUs and set the device
@@ -69,7 +71,7 @@ def main(args):
         save_supplemental_figure_sdf_reconstructions(manifest, test_ids, args.save_path)
     else:
         save_supplemental_figure_punctate_reconstructions(
-            manifest, test_ids, run_names, args.save_path
+            manifest, test_ids, run_names, args.save_path, args.normalize_across_recons
         )
 
 
@@ -91,6 +93,12 @@ if __name__ == "__main__":
         type=str2bool,
         default=False,
         help="Whether to skip generating reconstructions",
+    )
+    parser.add_argument(
+        "--normalize_across_recons",
+        type=str2bool,
+        default=False,
+        help="Whether to normalize across all inputs",
     )
 
     args = parser.parse_args()
