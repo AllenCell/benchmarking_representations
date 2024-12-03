@@ -3,10 +3,11 @@ defaults:
   - step: _base
 
 # n_workers: 120
-n_workers: 10
+n_workers: 1
 verbose: true
 force: false
 raise_errors: true
+samples_per_structure:
 
 output_dir: your_output_path_here
 

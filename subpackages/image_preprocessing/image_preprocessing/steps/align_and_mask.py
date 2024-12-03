@@ -31,13 +31,14 @@ class AlignMaskNormalize(Step):
         self,
         input_col,
         alignment_channel,
-        mask_map,
         dilation_shape,
         make_unique=False,
         membrane_seg_channel="membrane_segmentation",
         padding=0,
         structure_clip_values=dict(),
         clip_quantile=0.975,
+        normalize=True,
+        contrast_adjust=False,
         **kwargs,
     ):
 
@@ -45,17 +46,23 @@ class AlignMaskNormalize(Step):
         self.input_col = input_col
         self.alignment_channel = alignment_channel
         self.make_unique = make_unique
-        self.mask_map = mask_map
         self.binary_structure = np.ones(dilation_shape) if dilation_shape is not None else None
         self.membrane_seg_channel = membrane_seg_channel
         self.padding = padding
         self.structure_clip_values = structure_clip_values
         self.clip_quantile = clip_quantile
+        self.normalize = normalize
+        self.contrast_adjust = contrast_adjust
 
     def run_step(self, row):
         cell_id = row[self.cell_id_col]
         img = read_image(row[self.input_col])
         img_data = img.data.squeeze()
+
+        if self.contrast_adjust:
+            for key, val in self.contrast_adjust.items():
+                index_ = img.channel_names.index(key)
+                img_data[index_] = np.where(img_data[index_] < val, img_data[index_], 0)
         alignment_channel = img.channel_names.index(self.alignment_channel)
 
         center_of_mass = _get_center_of_mass(img_data, alignment_channel)
@@ -111,42 +118,43 @@ class AlignMaskNormalize(Step):
                 cropped[idx] = np.where(dilated_mem_seg > 0, cropped[idx], -1)
                 channel_data = channel_data.astype(float)
 
-                if "struct" in channel:
-                    m, M = self.structure_clip_values[row[self.structure_name_col]]
-                else:
-                    hi, lo = (self.clip_quantile, 1 - self.clip_quantile)
-                    m, M = np.quantile(channel_data[channel_data > 0], [lo, hi])
+                if self.normalize:
+                    if "struct" in channel:
+                        m, M = self.structure_clip_values[row[self.structure_name_col]]
+                    else:
+                        hi, lo = (self.clip_quantile, 1 - self.clip_quantile)
+                        m, M = np.quantile(channel_data[channel_data > 0], [lo, hi])
 
-                clip_values[f"{channel}_clip_lo"] = m
-                clip_values[f"{channel}_clip_hi"] = M
+                    clip_values[f"{channel}_clip_lo"] = m
+                    clip_values[f"{channel}_clip_hi"] = M
 
-                mask = channel_data >= 0
+                    mask = channel_data >= 0
 
-                channel_data = (
-                    np.where(
-                        mask,
-                        # clip values to be between m and M, then min-max normalize,
-                        # then make the positive values lie between 0 and (_MAX_UINT16 - 1),
-                        # and set the background to -1.
-                        # finally, sum 1, such that the background voxels become 0
-                        # and everything else has the remaining range. this is because
-                        # the viewer expects uint16
-                        ((np.clip(channel_data, m, M) - m) / (M - m)) * (_MAX_UINT16 - 1),
-                        -1,
-                    )
-                    + 1
-                )
-
-                if np.any(channel_data > _MAX_UINT16):
-                    raise ValueError(
-                        f"Something is up with the normalized {channel} intensity channel"
-                    )
-                if np.any(channel_data[channel_data > -1] < 0):
-                    raise ValueError(
-                        f"Something is up with the normalized {channel} intensity channel"
+                    channel_data = (
+                        np.where(
+                            mask,
+                            # clip values to be between m and M, then min-max normalize,
+                            # then make the positive values lie between 0 and (_MAX_UINT16 - 1),
+                            # and set the background to -1.
+                            # finally, sum 1, such that the background voxels become 0
+                            # and everything else has the remaining range. this is because
+                            # the viewer expects uint16
+                            ((np.clip(channel_data, m, M) - m) / (M - m)) * (_MAX_UINT16 - 1),
+                            -1,
+                        )
+                        + 1
                     )
 
-                cropped[idx] = channel_data
+                    if np.any(channel_data > _MAX_UINT16):
+                        raise ValueError(
+                            f"Something is up with the normalized {channel} intensity channel"
+                        )
+                    if np.any(channel_data[channel_data > -1] < 0):
+                        raise ValueError(
+                            f"Something is up with the normalized {channel} intensity channel"
+                        )
+
+                    cropped[idx] = channel_data
 
         output_path = self.store_image(
             cropped.astype(np.uint16),

@@ -63,55 +63,27 @@ class Merge(Step):
         self,
         raw_col,
         seg_col,
-        fov_col,
         channel_map_col,
-        roi_col,
         manifest_path,
         _mode="",
+        seg_channel_subset=None,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.raw_col = raw_col
         self.seg_col = seg_col
-        self.fov_col = fov_col
         self.channel_map_col = channel_map_col
-        self.roi_col = roi_col
         self.fov_img = None
         self.manifest_path = manifest_path
         self._mode = _mode
-
-    def parse_channelnames(self, fov_channel_names):
-        subs = ["EGFP", "CMDRP", "H3342", "mtagRFPT"]
-        bf_channel = None
-
-        # loop to find bright-field, i.e. the one that does not contain
-        # any of the substrings (subs)
-        for ix, channel_name in enumerate(fov_channel_names):
-            contains = [sub in channel_name for sub in subs]
-            if not any(contains):
-                bf_channel = ix
-
-        dna_channel = fov_channel_names.index("H3342") if "H3342" in fov_channel_names else None
-
-        if bf_channel is None:
-            raise ValueError("Not finding a single bright-field channel")
-
-        if len(fov_channel_names) == 4 and dna_channel is None:
-            raise ValueError("Not finding a single dna channel")
-
-        if len(fov_channel_names) not in [4, 7]:
-            raise ValueError("Number of channels is not 4 or 7")
-
-        return bf_channel, dna_channel
+        self.seg_channel_subset = seg_channel_subset
 
     def run_step(self, row):
         cell_id = row[self.cell_id_col]
 
         path_raw = row[self.raw_col]
         path_seg = row[self.seg_col]
-        path_fov = row[self.fov_col]
         channel_map = np.safe_eval(row[self.channel_map_col])
-        roi = np.safe_eval(row[self.roi_col])
 
         # Read in raw image and define (hardcode) channel names
         raw_img = read_image(path_raw)
@@ -119,15 +91,12 @@ class Merge(Step):
 
         # Read in seg image and define (hardcode) channel names
         seg_img = read_image(path_seg)
-        seg_channel_names = channel_map[self.seg_col]
-        seg_channels_to_use = [
-            seg_channel_names.index(name)
-            for name in [
-                "dna_segmentation",
-                "membrane_segmentation",
-                "struct_segmentation_roof",
-            ]
-        ]
+        seg_channels_names = channel_map[self.seg_col]
+
+        if not self.seg_channel_subset:
+            self.seg_channel_subset = seg_channels_names
+
+        seg_channels_to_use = [seg_channels_names.index(name) for name in self.seg_channel_subset]
 
         # stack channels
         data_new = np.vstack(
@@ -137,7 +106,7 @@ class Merge(Step):
             )
         ).astype("uint16")
 
-        channel_names = raw_channel_names + [seg_channel_names[ix] for ix in seg_channels_to_use]
+        channel_names = raw_channel_names + [seg_channels_names[ix] for ix in seg_channels_to_use]
 
         output_path = self.store_image(
             data_new, channel_names, raw_img.physical_pixel_sizes, cell_id
@@ -150,42 +119,5 @@ class Merge(Step):
             "success": True,
         }
 
-    def _process_fov(self, fov_id):
-        global _FOV_IMG
-        fov_df = read_and_filter(
-            self.manifest_path,
-            fov_id,
-            self.fov_id_col,
-            [
-                self.fov_id_col,
-                self.raw_col,
-                self.seg_col,
-                self.fov_col,
-                self.channel_map_col,
-                self.roi_col,
-                self.cell_id_col,
-                self.structure_name_col,
-            ],
-        )
-
-        fov_path = fov_df[self.fov_col].iloc[0]
-        _FOV_IMG = read_image(fov_path)
-        _FOV_IMG.data
-        n_workers = 10 if self.n_workers >= 10 else 1
-        return super().run(fov_df, n_workers)
-
     def run(self, manifest):
-        if self._mode == "download_fov_once":
-            fov_ids = manifest[self.fov_id_col].unique()
-            with OuterPool(self.n_workers // 10) as pool:
-                jobs = pool.imap_unordered(self._process_fov, fov_ids)
-                if self.verbose:
-                    self.verbose = False
-                    total = len(manifest[self.fov_id_col].unique())
-                    jobs = tqdm(jobs, total=total, desc="processing FOVs", leave=True)
-                result = pd.concat([_ for _ in jobs])
-
-            _FOV_IMG = None
-            return result
-
         return super().run(manifest)
