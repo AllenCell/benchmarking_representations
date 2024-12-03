@@ -36,3 +36,16 @@ To run the preprocessing for the DNA replication foci dataset, run the following
 ```bash
 snakemake -s Snakefile_pcna --cores all
 ```
+
+# Troubleshooting
+
+Before running the script, please ensure the following:
+
+1. **Set the `TMPDIR`:**
+   You need to set the `TMPDIR` environment variable, as the Snakefile requires a temporary directory. You can do this by executing:
+   ```bash
+   export TMPDIR=/path/to/your/tmpdir
+   ```
+
+2. **Set the `output_dir`:**
+   Additionally, you must specify the `output_dir` required by [this](https://github.com/AllenCell/benchmarking_representations/blob/pcna_preprocessing/subpackages/image_preprocessing/config_pcna/config.yaml) config file.
