@@ -179,6 +179,8 @@ class CellPackDataset(Dataset):
         if self.max_ids:
             self._all_ids = self._all_ids[: self.max_ids]
 
+        assert "7abfecf1-44db-468a-b799-4959a23cfb0d" in self._all_ids
+
         _splits = {
             "train": self._all_ids[: int(0.7 * len(self._all_ids))],
             "valid": self._all_ids[int(0.7 * len(self._all_ids)) : int(0.85 * len(self._all_ids))],
