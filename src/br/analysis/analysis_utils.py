@@ -614,6 +614,7 @@ def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, d
             this_run_name = run_names[j]
             this_key = keys[j]
             for batch in this_data.test_dataloader():
+                canonical = None
                 if not isinstance(batch["cell_id"], list):
                     if isinstance(batch["cell_id"], torch.Tensor):
                         cell_id = str(batch["cell_id"].item())
@@ -667,12 +668,13 @@ def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, d
                     this_save_path_input = Path(save_path) / Path(this_run_name) / Path("input")
                     this_save_path_input.mkdir(parents=True, exist_ok=True)
                     np.save(this_save_path_input / Path(f"{cell_id}.npy"), input)
-
-                    this_save_path_canon = (
-                        Path(save_path) / Path(this_run_name) / Path("canonical")
-                    )
-                    this_save_path_canon.mkdir(parents=True, exist_ok=True)
-                    np.save(this_save_path_canon / Path(f"{cell_id}.npy"), canonical)
+                    
+                    if canonical:
+                        this_save_path_canon = (
+                            Path(save_path) / Path(this_run_name) / Path("canonical")
+                        )
+                        this_save_path_canon.mkdir(parents=True, exist_ok=True)
+                        np.save(this_save_path_canon / Path(f"{cell_id}.npy"), canonical)
 
 
 def save_supplemental_figure_punctate_reconstructions(
