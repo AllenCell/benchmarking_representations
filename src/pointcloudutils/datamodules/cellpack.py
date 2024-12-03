@@ -45,6 +45,7 @@ class CellPackDataModule(LightningDataModule):
         num_rotations: Optional[int] = 3,
         upsample: Optional[bool] = False,
         image: Optional[bool] = False,
+        subset_test: Optional[bool] = False,
     ):
         """"""
         super().__init__()
@@ -68,6 +69,7 @@ class CellPackDataModule(LightningDataModule):
         self.norm_feats = norm_feats
         self.num_rotations = num_rotations
         self.image = image
+        self.subset_test = subset_test
 
     def _get_dataset(self, split):
         return CellPackDataset(
@@ -89,6 +91,7 @@ class CellPackDataModule(LightningDataModule):
             self.num_rotations,
             self.upsample,
             self.image,
+            self.subset_test,
         )
 
     def train_dataloader(self):
@@ -150,6 +153,7 @@ class CellPackDataset(Dataset):
         num_rotations: Optional[int] = 3,
         upsample: Optional[bool] = False,
         image: Optional[bool] = False,
+        subset_test: Optional[bool] = False,
     ):
         self.x_label = x_label
         self.scale = scale
@@ -167,6 +171,7 @@ class CellPackDataset(Dataset):
         self.num_rules = len(self.packing_rules)
         self.num_rotations = num_rotations
         self.image = image
+        self.subset_test = subset_test
 
         self.ref_csv = pd.read_csv(ref_path + "manifest.csv")
 
@@ -189,8 +194,9 @@ class CellPackDataset(Dataset):
 
         self.ids = _splits[split]
 
-        # if split == "test":
-        #     self.ids = ["9c1ff213-4e9e-4b73-a942-3baf9d37a50f"]
+        if self.subset_test:
+            if split == "test":
+                self.ids = ["9c1ff213-4e9e-4b73-a942-3baf9d37a50f"]
 
         if norm_feats:
             x = self.ref_csv[

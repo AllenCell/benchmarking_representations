@@ -43,6 +43,7 @@ Before running the script, please ensure the following:
 
 1. **Set the `TMPDIR`:**
    You need to set the `TMPDIR` environment variable, as the Snakefile requires a temporary directory. You can do this by executing:
+
    ```bash
    export TMPDIR=/path/to/your/tmpdir
    ```
