@@ -767,7 +767,6 @@ def save_supplemental_figure_punctate_reconstructions(
             print(this_p.max(axis=0), "pre", index_)
             if struct in ["NUP153", "HIST1H2BJ", "SMC1A", "SON"]:
                 this_p = slice_points_(this_p, z_max, z_ind)
-            print(this_p.max(axis=0), "post", index_)
             if this_p.shape[-1] == 3:
                 axes[index_].scatter(this_p[:, 1], this_p[:, 0], c="black", s=2, alpha=0.5)
             else:
