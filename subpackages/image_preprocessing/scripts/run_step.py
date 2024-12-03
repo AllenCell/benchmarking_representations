@@ -33,6 +33,7 @@ def main(cfg):
         input_df = read_df(cfg.step.input, nrows=nrows)
 
     Path(cfg.step.step.output_dir).mkdir(parents=True, exist_ok=True)
+
     step = instantiate(cfg.step.step)
     result = step.run(input_df)
 

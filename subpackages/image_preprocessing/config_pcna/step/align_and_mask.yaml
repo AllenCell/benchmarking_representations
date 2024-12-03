@@ -1,0 +1,17 @@
+defaults:
+  - _base
+
+step:
+  _target_: image_preprocessing.steps.AlignMaskNormalize
+  input_col: merged_channels
+  alignment_channel: dna_segmentation
+  membrane_seg_channel: dna_segmentation
+  dilation_shape: [8, 8, 8]
+  make_unique: false
+  clip_quantile: 1
+  normalize: False
+  contrast_adjust:
+    PCNA: 4000
+  output_dir: ${output_dir}/align
+
+input: ${output_dir}/merge/manifest.parquet

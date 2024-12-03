@@ -9,7 +9,6 @@ step:
   output_dir: ${output_dir}/merge
   n_workers: ${n_workers}
   manifest_path: ${input_manifest}
-  seg_channel_subset:
-    ["dna_segmentation", "membrane_segmentation", "struct_segmentation_roof"]
+  seg_channel_subset: ["dna_segmentation"]
 
 input: ${input_manifest}
