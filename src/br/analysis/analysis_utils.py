@@ -95,8 +95,6 @@ def get_mig_ids(gpu_uuid):
             elif "GPU" in line and in_gpu_section:  # Encounter another GPU section
                 break
 
-            # print(line)
-
             if in_gpu_section:
                 # Check for MIG devices
                 if "MIG" in line:
@@ -125,7 +123,6 @@ def config_gpu():
 
         # Check if GPU utilization is under 20% (indicating it's idle)
         if utilization < 20:
-            # print(uuid, utilization)
             if is_mig:
                 mig_ids = get_mig_ids(uuid)
 
@@ -383,7 +380,6 @@ def viz_other_punctate(this_save_path, viz_params, stratify_key):
 
         for pc_bin in df[stratify_key].unique():
             this_df = df.loc[df[stratify_key] == pc_bin].reset_index(drop=True)
-            print(this_df.shape, struct, pc_bin)
             np_arr = this_df[["x", "y", "z"]].values
             colors = cmap(this_df["inorm"].values)[:, :3]
             np_arr2 = colors
@@ -603,7 +599,6 @@ def archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features)
         dist = np.sum(dist, axis=1)
         closest_idx = np.argmin(dist)
         closest_real_id = all_ret.iloc[closest_idx]["CellId"]
-        print(dist, closest_real_id)
         mesh = pv.read(mesh_folder + str(closest_real_id) + ".stl")
         mesh.save(this_save_path / Path(f"{i}.ply"))
         arch_dict["archetype"].append(i)
@@ -681,7 +676,7 @@ def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, d
 
 
 def save_supplemental_figure_punctate_reconstructions(
-    df, test_ids, run_names, reconstructions_path, normalize_across_recons
+    df, test_ids, run_names, reconstructions_path, normalize_across_recons, dataset_name
 ):
     def slice_(img, slices=None, z_ind=0):
         if not slices:
@@ -700,19 +695,24 @@ def save_supplemental_figure_punctate_reconstructions(
         points = points[inds, :]
         return points
 
-    def _plot_image(input, recon, recon_canonical):
+    def _plot_image(input, recon, recon_canonical, dataset_name):
         num_slice = 8
-        z_ind = 0
+
+        if dataset_name != "cellpack":
+            z_ind = 0
+        else:
+            z_ind = 2
 
         input = slice_(input, num_slice, z_ind)
         recon = slice_(recon, num_slice, z_ind)
         recon_canonical = slice_(recon_canonical, num_slice, 2)
 
+        if dataset_name == "cellpack":
+            recon = recon.T
+            recon_canonical = recon_canonical.T
+
         i = 2
         fig, (ax, ax1, ax2) = plt.subplots(1, 3, figsize=(8, 4))
-        # ax.imshow(this[:, :, :].max(i).T, origin='lower', cmap='gray_r')
-        # ax1.imshow(this2[:, :, :].max(i).T, origin='lower', cmap='gray_r')
-        # ax2.imshow(this3[:, :, :].max(i).T, origin='lower', cmap='gray_r')
         ax.imshow(input, cmap="gray_r")
         ax1.imshow(recon, cmap="gray_r")
         ax2.imshow(recon_canonical, cmap="gray_r")
@@ -758,17 +758,32 @@ def save_supplemental_figure_punctate_reconstructions(
         fig.subplots_adjust(wspace=0, hspace=0)
         return fig
 
-    def _plot_pc(input, recon, recon_canonical, struct, cmap, vmin, vmax):
+    def _plot_pc(input, recon, recon_canonical, struct, cmap, vmin, vmax, dataset_name):
         z_max = 0.3
         max_size = 15
-        z_ind = 2
+
+        if dataset_name != "cellpack":
+            z_ind = 2
+            canon_z_ind = 2
+            if (struct == "pcna") and ((recon == recon_canonical).all() == False):
+                canon_z_ind = 1
+        else:
+            z_ind = 0
+            canon_z_ind = 1
+        xy_inds = [i for i in [0, 1, 2] if i != z_ind]
         fig, axes = plt.subplots(1, 3, figsize=(10, 5))
         for index_, this_p in enumerate([input, recon, recon_canonical]):
-            print(this_p.max(axis=0), "pre", index_)
-            if struct in ["NUP153", "HIST1H2BJ", "SMC1A", "SON"]:
-                this_p = slice_points_(this_p, z_max, z_ind)
+            if struct in ["NUP153", "HIST1H2BJ", "SMC1A", "SON", "pcna"]:
+                if index_ == 2:
+                    this_p = slice_points_(this_p, z_max, canon_z_ind)
+                else:
+                    this_p = slice_points_(this_p, z_max, z_ind)
             if this_p.shape[-1] == 3:
-                axes[index_].scatter(this_p[:, 1], this_p[:, 0], c="black", s=2, alpha=0.5)
+                if (index_ == 2) and (canon_z_ind != z_ind):
+                    xy_inds = [i for i in [0, 1, 2] if i != canon_z_ind]
+                axes[index_].scatter(
+                    this_p[:, xy_inds[0]], this_p[:, xy_inds[1]], c="black", s=2, alpha=0.5
+                )
             else:
                 if not cmap:
                     this_df = pd.DataFrame(input, columns=["x", "y", "z", "s"])
@@ -777,9 +792,16 @@ def save_supplemental_figure_punctate_reconstructions(
                     )
                 this_p = pd.DataFrame(this_p, columns=["x", "y", "z", "s"])
                 this_p = normalize_intensities_and_get_colormap_apply(this_p, vmin, vmax)
+
+                if (index_ == 2) and (canon_z_ind != z_ind):
+                    xy_inds = [i for i in [0, 1, 2] if i != canon_z_ind]
+
+                x_vals = this_p.iloc[:, xy_inds[0]].values
+                y_vals = this_p.iloc[:, xy_inds[1]].values
+
                 axes[index_].scatter(
-                    this_p["y"].values,
-                    this_p["x"].values,
+                    x_vals,
+                    y_vals,
                     c=cmap(this_p["inorm"].values),
                     s=2,
                     alpha=0.5,
@@ -793,6 +815,10 @@ def save_supplemental_figure_punctate_reconstructions(
             axes[index_].set_xlim([-max_size, max_size])
             axes[index_].set_yticks([])
             axes[index_].set_xticks([])
+
+        axes[0].set_title("Input")
+        axes[1].set_title("Reconstruction")
+        axes[2].set_title("Canonical Reconstruction")
         return fig
 
     for m in run_names:
@@ -813,7 +839,7 @@ def save_supplemental_figure_punctate_reconstructions(
             recon_canonical = np.load(recon_path).squeeze()
 
             if "image" in m:
-                fig = _plot_image(input, recon, recon_canonical)
+                fig = _plot_image(input, recon, recon_canonical, dataset_name)
             else:
                 cmap = None
                 vmin = None
@@ -831,7 +857,9 @@ def save_supplemental_figure_punctate_reconstructions(
                         _, cmap, vmin, vmax = normalize_intensities_and_get_colormap(
                             df=all_df_input, pcts=[5, 95]
                         )
-                fig = _plot_pc(input, recon, recon_canonical, struct, cmap, vmin, vmax)
+                fig = _plot_pc(
+                    input, recon, recon_canonical, struct, cmap, vmin, vmax, dataset_name
+                )
 
             this_save_path_ = Path(reconstructions_path) / Path(m)
             print(this_save_path_, this_id)

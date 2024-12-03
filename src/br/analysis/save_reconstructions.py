@@ -14,7 +14,14 @@ from br.analysis.analysis_utils import (
 from br.models.load_models import get_data_and_models
 
 test_ids_per_dataset_ = {
-    "cellpack": ["9c1ff213-4e9e-4b73-a942-3baf9d37a50f"],
+    "cellpack": [
+        "9c1ff213-4e9e-4b73-a942-3baf9d37a50f_0",
+        "9c1ff213-4e9e-4b73-a942-3baf9d37a50f_1",
+        "9c1ff213-4e9e-4b73-a942-3baf9d37a50f_2",
+        "9c1ff213-4e9e-4b73-a942-3baf9d37a50f_3",
+        "9c1ff213-4e9e-4b73-a942-3baf9d37a50f_4",
+        "9c1ff213-4e9e-4b73-a942-3baf9d37a50f_5",
+    ],
     "pcna": [
         "7624cd5b-715a-478e-9648-3bac4a73abe8",
         "80d40c5e-65bf-43b0-8dea-b697c421ea78",
@@ -30,12 +37,10 @@ test_ids_per_dataset_ = {
     "other_polymorphic": ["691110", "723687", "816468", "800894"],
 }
 
-projection_ = {}
-
 
 def main(args):
     # Setup GPUs and set the device
-    # setup_gpu()
+    setup_gpu()
     device = "cuda:0"
 
     # set batch size to 1 for emission stats/features
@@ -47,6 +52,9 @@ def main(args):
     test_ids = args.test_ids
     if not test_ids:
         test_ids = test_ids_per_dataset_[args.dataset_name]
+
+    if args.dataset_name == "cellpack":
+        args.debug = True
 
     # Load data and models
     (
@@ -71,7 +79,12 @@ def main(args):
         save_supplemental_figure_sdf_reconstructions(manifest, test_ids, args.save_path)
     else:
         save_supplemental_figure_punctate_reconstructions(
-            manifest, test_ids, run_names, args.save_path, args.normalize_across_recons
+            manifest,
+            test_ids,
+            run_names,
+            args.save_path,
+            args.normalize_across_recons,
+            args.dataset_name,
         )
 
 
@@ -113,9 +126,12 @@ if __name__ == "__main__":
     """
     Example run:
 
+    cellPACK dataset
+    python src/br/analysis/save_reconstructions.py --save_path "./outputs_cellpack/reconstructions/" --dataset_name "cellpack" --generate_reconstructions True --sdf False
+
     PCNA dataset
     python src/br/analysis/save_reconstructions.py --save_path "./outputs_pcna/reconstructions/" --dataset_name "pcna" --generate_reconstructions True --sdf False --normalize_across_recons True
-    
+
     NPM1 dataset
     python src/br/analysis/save_reconstructions.py --save_path "./outputs_npm1/reconstructions/" --dataset_name "npm1" --test_ids 964798 661110 644401 967887 703621 --generate_reconstructions True --sdf True
 
