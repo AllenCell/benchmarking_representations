@@ -114,12 +114,14 @@ if __name__ == "__main__":
     Example run:
 
     PCNA dataset
-    python src/br/analysis/save_reconstructions.py --save_path "./outputs_pcna/reconstructions/" --dataset_name "pcna" --generate_reconstructions True --sdf False
+    python src/br/analysis/save_reconstructions.py --save_path "./outputs_pcna/reconstructions/" --dataset_name "pcna" --generate_reconstructions True --sdf False --normalize_across_recons True
+    
     NPM1 dataset
-    python src/br/analysis/save_reconstructions.py --save_path "./outputs_npm1/reconstructions/" --dataset_name "npm1" --test_ids 964798 661110 644401 967887 703621 --generate_reconstructions True
+    python src/br/analysis/save_reconstructions.py --save_path "./outputs_npm1/reconstructions/" --dataset_name "npm1" --test_ids 964798 661110 644401 967887 703621 --generate_reconstructions True --sdf True
 
     Other polymorphic dataset
-    python src/br/analysis/save_reconstructions.py --save_path "./outputs_other_polymorphic/reconstructions/" --dataset_name "other_polymorphic" --test_ids 691110 723687 816468 800894 --generate_reconstructions True
+    python src/br/analysis/save_reconstructions.py --save_path "./outputs_other_polymorphic/reconstructions/" --dataset_name "other_polymorphic" --test_ids 691110 723687 816468 800894 --generate_reconstructions True --sdf True
 
-    python src/br/analysis/save_reconstructions.py --save_path "./outputs_npm1/reconstructions/" --dataset_name "npm1" --test_ids 964798 661110 644401 967887 703621 --generate_reconstructions False
+    Other punctate dataset
+    python src/br/analysis/save_reconstructions.py --save_path "./outputs_other_punctate/reconstructions/" --dataset_name "other_punctate" --generate_reconstructions True --normalize_across_recons False --sdf False
     """
