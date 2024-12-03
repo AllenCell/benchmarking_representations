@@ -56,11 +56,14 @@ def rotation_image_batch_z(batch, z_angle, squeeze_2d=False):
 
     disp = torch.tensor(0).expand(len(in_x), 3, 1).type_as(in_x)
     mat = torch.tensor(mat).unsqueeze(dim=0).repeat(disp.shape[0], 1, 1)
+    mat = mat.type_as(disp)
     A = torch.cat((mat, disp), dim=2)
     grid = F.affine_grid(A, in_x.size(), align_corners=False).type_as(in_x)
     y = F.grid_sample(in_x - 0, grid, align_corners=False)
     if squeeze_2d:
         y = torch.squeeze(y, dim=1)
+    if isinstance(y, torch.Tensor):
+        return y.detach().cpu().numpy()
     return y.numpy()
 
 
