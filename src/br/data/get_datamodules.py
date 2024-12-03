@@ -28,5 +28,8 @@ def get_data(dataset_name, batch_size, results_path, debug=False):
                         config["subsample"]["train"] = 4
                         config["subsample"]["valid"] = 4
                         config["subsample"]["test"] = 4
+
+                    if config["_target_"] == "pointcloudutils.datamodules.CellPackDataModule":
+                        config["subset_test"] = True
             data.append(instantiate(config))
     return data
