@@ -6,6 +6,13 @@ Preprocessing is divided into three steps that use two different virtual environ
 2. Punctate structures: Generate pointclouds (main virtual environment)
 3. Polymorphic structures: Generate SDFs (main virtual environment)
 
+# System requirements
+
+- A GPU running CUDA 11.7 (other CUDA versions may work, but they are not officially supported),
+- OpenGL,
+- [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) (or Python 3.10 and [pdm](https://pdm-project.org/)), and
+- [git](https://github.com/git-guides/install-git).
+
 # Configure input data
 
 1. Datasets are hosted on quilt. Download raw data at the following links
