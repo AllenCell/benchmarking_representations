@@ -8,8 +8,8 @@ Preprocessing is divided into three steps that use two different virtual environ
 
 # System requirements
 
-- A GPU running CUDA 11.7 (other CUDA versions may work, but they are not officially supported),
-- OpenGL,
+- A GPU running CUDA (tested against 11.7),
+- OpenGL (tested against core profile version 4.5 (Core Profile) Mesa 21.0.3),
 - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) (or Python 3.10 and [pdm](https://pdm-project.org/)), and
 - [git](https://github.com/git-guides/install-git).
 
