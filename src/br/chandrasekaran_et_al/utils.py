@@ -25,12 +25,11 @@ from tqdm import tqdm
 from br.chandrasekaran_et_al import utils
 
 
-def perturbation_detection(all_ret, get_featurecols, get_featuredata):
+def perturbation_detection(all_ret, get_featurecols, get_featuredata, fit_pca=False):
     cols = get_featurecols(all_ret)
     replicate_feature = "Metadata_broad_sample"
     batch_size = 100000
     null_size = 100000
-
     all_rep = []
     for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
         df_feats = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
@@ -124,7 +123,7 @@ def perturbation_detection(all_ret, get_featurecols, get_featuredata):
                 neg_diffby = ["Metadata_negcon"]
 
                 metadata_df = get_metadata(modality_1_df)
-                feature_df = get_featuredata(modality_1_df)
+                feature_df = get_featuredata(modality_1_df, get_featurecols)
                 feature_values = feature_df.values
 
                 result = run_pipeline(
@@ -152,6 +151,7 @@ def perturbation_detection(all_ret, get_featurecols, get_featuredata):
                     cell,
                     modality_1_timepoint,
                 )
+
         replicability_map_df["model"] = model
         all_rep.append(replicability_map_df)
 
@@ -161,7 +161,7 @@ def perturbation_detection(all_ret, get_featurecols, get_featuredata):
     return all_rep
 
 
-def _plot(all_rep, save_path):
+def _plot(all_rep, save_path, run_names):
     sns.set_context("talk")
     sns.set(font_scale=1.7)
     sns.set_style("white")
@@ -186,19 +186,14 @@ def _plot(all_rep, save_path):
         data=test,
         x="Drugs",
         y="q_value",
+        kind="bar",
         hue="model",
-        kind="point",
         order=x_order,
-        hue_order=[
-            "Classical_image_seg",
-            "Rotation_invariant_image_seg",
-            "Classical_image_SDF",
-            "Rotation_invariant_image_SDF",
-            "Rotation_invariant_pointcloud_SDF",
-        ],
-        palette=["#A6ACE0", "#6277DB", "#D9978E", "#D8553B", "#2ED9FF"],
+        hue_order=run_names,
+        palette=["#A6ACE0", "#6277DB", "#D9978E", "#D8553B", "#2ED9FF", "#91db57", "#db57d3"],
         aspect=2,
         height=5,
+        dodge=True,
     )
     g.set_xticklabels(rotation=90)
     plt.axhline(y=0.05, color="black")
