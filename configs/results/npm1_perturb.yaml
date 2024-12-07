@@ -3,25 +3,28 @@ image_path:
 pc_path:
 model_checkpoints:
   [
-    "./morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Rotation_invariant_pointcloud_SDF.ckpt",
-    "./morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Classical_image_SDF.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Classical_image_seg.ckpt",
-    "./morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Rotation_invariant_image_SDF.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Rotation_invariant_image_seg.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Classical_image_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Rotation_invariant_image_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1_perturb/Rotation_invariant_pointcloud_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_pointcloud_SDF.ckpt",
   ]
 names:
   [
-    "Rotation_invariant_pointcloud_SDF",
-    "Classical_image_SDF",
     "Classical_image_seg",
-    "Rotation_invariant_image_SDF",
     "Rotation_invariant_image_seg",
+    "Classical_image_SDF",
+    "Rotation_invariant_image_SDF",
+    "Rotation_invariant_pointcloud_SDF",
+    "Rotation_invariant_pointcloud_SDF_no_finetuning",
   ]
 data_paths:
   [
-    "/data/npm1_perturb/pc.yaml",
-    "/data/npm1_perturb/classical_image_sdf.yaml",
     "/data/npm1_perturb/classical_image_seg.yaml",
-    "/data/npm1_perturb/so3_image_sdf.yaml",
     "/data/npm1_perturb/so3_image_seg.yaml",
+    "/data/npm1_perturb/classical_image_sdf.yaml",
+    "/data/npm1_perturb/so3_image_sdf.yaml",
+    "/data/npm1_perturb/pc.yaml",
+    "/data/npm1_perturb/pc.yaml",
   ]
