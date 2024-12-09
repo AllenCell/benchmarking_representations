@@ -30,7 +30,6 @@ def perturbation_detection(all_ret, get_featurecols, get_featuredata):
     replicate_feature = "Metadata_broad_sample"
     batch_size = 100000
     null_size = 100000
-
     all_rep = []
     for model in tqdm(all_ret["model"].unique(), total=len(all_ret["model"].unique())):
         df_feats = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
@@ -124,7 +123,7 @@ def perturbation_detection(all_ret, get_featurecols, get_featuredata):
                 neg_diffby = ["Metadata_negcon"]
 
                 metadata_df = get_metadata(modality_1_df)
-                feature_df = get_featuredata(modality_1_df)
+                feature_df = get_featuredata(modality_1_df, get_featurecols)
                 feature_values = feature_df.values
 
                 result = run_pipeline(
@@ -152,6 +151,7 @@ def perturbation_detection(all_ret, get_featurecols, get_featuredata):
                     cell,
                     modality_1_timepoint,
                 )
+
         replicability_map_df["model"] = model
         all_rep.append(replicability_map_df)
 
@@ -161,47 +161,64 @@ def perturbation_detection(all_ret, get_featurecols, get_featuredata):
     return all_rep
 
 
-def _plot(all_rep, save_path):
+def _plot(all_rep, save_path, run_names):
     sns.set_context("talk")
     sns.set(font_scale=1.7)
     sns.set_style("white")
 
-    test = all_rep.sort_values(by="q_value").reset_index(drop=True)
-    test["Drugs"] = test["Metadata_broad_sample"]
+    all_rep["Drugs"] = all_rep["Metadata_broad_sample"]
+    map_ = {
+        "Actinomyocin D 0.5ug per mL": "Actinomyocin D",
+        "Jasplakinolide 50 nM (E5)": "Jasplakinolide",
+        "Paclitaxel 5uM (E2)": "Paclitaxel",
+        "Staurosporine 1uM (E8)": "Staurosporine",
+        "Nocodazole 0.1uM (E4)": "Nocodazole",
+        "Roscovitine 10uM (E9)": "Roscovitine 10uM",
+        "Torin 1uM": "Torin",
+        "Rapamycin 1uM (E7)": "Rapamycin",
+        "H89 10uM (E3)": "H89",
+        "Monensin 1.1uM": "Monensin",
+        "Rotenone 0.5uM (E6)": "Rotenone",
+        "Roscovitine 5uM (E10)": "Roscovitine 5uM",
+        "BIX 1uM": "BIX",
+        "Bafilomycin A1 0.1uM": "Bafilomycin A1",
+        "Latrunculin A1 0.1uM": "Latrunculin A1",
+        "Chloroquin 40uM": "Chloroquin",
+        "Brefeldin 5uM": "Brefeldin",
+    }
+    all_rep["Drugs"] = all_rep["Drugs"].replace(map_)
 
-    x_order = (
-        test.loc[test["model"] == "SO3_pointcloud_SDF"]
-        .sort_values(by="q_value")["Metadata_broad_sample"]
-        .values
-    )
-    ordered_drugs = (
-        all_rep.groupby(["Metadata_broad_sample"])
-        .mean()
-        .sort_values(by="q_value")
-        .reset_index()["Metadata_broad_sample"]
-    )
+    tmp_ = all_rep.loc[
+        all_rep["model"].isin(
+            [
+                "Classical_image_SDF",
+                "Rotation_invariant_image_SDF",
+                "Rotation_invariant_pointcloud_SDF",
+            ]
+        )
+    ]
+    ordered_drugs = tmp_.groupby(["Drugs"]).mean().sort_values(by="q_value").reset_index()["Drugs"]
     x_order = ordered_drugs
+
+    test = all_rep.sort_values(by="q_value").reset_index(drop=True)
 
     g = sns.catplot(
         data=test,
         x="Drugs",
         y="q_value",
+        kind="bar",
         hue="model",
-        kind="point",
         order=x_order,
-        hue_order=[
-            "Classical_image_seg",
-            "Rotation_invariant_image_seg",
-            "Classical_image_SDF",
-            "Rotation_invariant_image_SDF",
-            "Rotation_invariant_pointcloud_SDF",
-        ],
-        palette=["#A6ACE0", "#6277DB", "#D9978E", "#D8553B", "#2ED9FF"],
+        hue_order=run_names,
+        palette=["#A6ACE0", "#6277DB", "#D9978E", "#D8553B", "#2ED9FF", "#91db57", "#db57d3"],
         aspect=2,
         height=5,
+        dodge=True,
     )
     g.set_xticklabels(rotation=90)
+    g.set(ylim=(0, 0.1))
     plt.axhline(y=0.05, color="black")
+    g.set(ylabel='q value')
     this_path = Path(save_path)
     Path(this_path).mkdir(parents=True, exist_ok=True)
     g.savefig(this_path / "q_values.png", dpi=300, bbox_inches="tight")

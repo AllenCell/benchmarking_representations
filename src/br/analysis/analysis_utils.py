@@ -170,6 +170,19 @@ def setup_evaluation_params(manifest, run_names):
     eval_scaled_img_params = [{}] * len(run_names)
 
     if "SDF" in "\t".join(run_names):
+        loss_eval_list = [torch.nn.MSELoss(reduction="none")] * len(run_names)
+        sample_points_list = [False] * len(run_names)
+        skew_scale = None
+
+        if "mesh_folder" not in manifest.columns:
+            return (
+                eval_scaled_img,
+                eval_scaled_img_params,
+                loss_eval_list,
+                sample_points_list,
+                skew_scale,
+            )
+
         eval_scaled_img_resolution = 32
         gt_mesh_dir = manifest["mesh_folder"].iloc[0]
         gt_sampled_pts_dir = manifest["pointcloud_folder"].iloc[0]
@@ -192,9 +205,6 @@ def setup_evaluation_params(manifest, run_names):
                     "mesh_ext": "stl",
                 }
             )
-        loss_eval_list = [torch.nn.MSELoss(reduction="none")] * len(run_names)
-        sample_points_list = [False] * len(run_names)
-        skew_scale = None
     else:
         loss_eval_list = None
         skew_scale = 100
@@ -670,7 +680,7 @@ def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, d
                     this_save_path_input = Path(save_path) / Path(this_run_name) / Path("input")
                     this_save_path_input.mkdir(parents=True, exist_ok=True)
                     np.save(this_save_path_input / Path(f"{cell_id}.npy"), input)
-                    
+
                     if canonical is not None:
                         this_save_path_canon = (
                             Path(save_path) / Path(this_run_name) / Path("canonical")
@@ -715,7 +725,6 @@ def save_supplemental_figure_punctate_reconstructions(
             recon = recon.T
             recon_canonical = recon_canonical.T
 
-        i = 2
         fig, (ax, ax1, ax2) = plt.subplots(1, 3, figsize=(8, 4))
         ax.imshow(input, cmap="gray_r")
         ax1.imshow(recon, cmap="gray_r")
