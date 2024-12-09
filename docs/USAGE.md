@@ -170,19 +170,25 @@ You can download our pre-computed embeddings here.
 
 ## Steps to run benchmarking analysis
 
-1. To compute benchmarking features from the embeddings and trained models, run
+1. To compute benchmarking features from the embeddings and trained models, run the following commands.
 
-```bash
-python src/br/analysis/run_features.py --save_path "/outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --sdf False --dataset_name "cellpack" --debug False
-```
+| Dataset           | Benchmarking features                                                                                                                                                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| cellpack          | `python src/br/analysis/run_features.py --save_path "/outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --sdf False --dataset_name "cellpack" --debug False`                           |
+| npm1              | `python src/br/analysis/run_features.py --save_path "/outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1" --sdf True --dataset_name "npm1" --debug False`                                        |
+| other_polymorphic | `python src/br/analysis/run_features.py --save_path "/outputs_other_polymorphic/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_polymorphic" --sdf True --dataset_name "other_polymorphic" --debug False` |
+| other_punctate    | `python src/br/analysis/run_features.py --save_path "/outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate" --sdf False --dataset_name "other_punctate" --debug False`         |
+| pcna              | `python src/br/analysis/run_features.py --save_path "/outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --sdf False --dataset_name "pcna" --debug False`                                       |
 
-where dataset_name corresponds to a [result config](../configs/results/).
+2. To run analysis like latent walks and archetype analysis on the embeddings and trained models, run the following commands.
 
-2. To run analysis like latent walks and archetype analysis on the embeddings and trained models, run
-
-```
-python src/br/analysis/run_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False
-```
+| Dataset           | Benchmarking features                                                                                                                                                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| cellpack          | `python src/br/analysis/run_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False`                                    |
+| npm1              | `python src/br/analysis/run_analysis.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1" --dataset_name "npm1" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True`                                                     |
+| other_polymorphic | `python src/br/analysis/run_analysis.py --save_path "./outputs_other_polymorphic/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_polymorphic" --dataset_name "other_polymorphic" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True` |
+| other_punctate    | `python src/br/analysis/run_analysis.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate" --dataset_name "other_punctate" --run_name "Rotation_invariant_pointcloud_structurenorm" --sdf False`            |
+| pcna              | `python src/br/analysis/run_analysis.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False`                                                    |
 
 3. To run drug perturbation analysis, run
 

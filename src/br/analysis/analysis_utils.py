@@ -16,6 +16,7 @@ import yaml
 from aicsimageio import AICSImage
 from sklearn.decomposition import PCA
 from tqdm import tqdm
+import random
 
 from br.data.utils import get_iae_reconstruction_3d_grid
 from br.features.plot import plot_pc_saved, plot_stratified_pc
@@ -127,8 +128,9 @@ def config_gpu():
                 mig_ids = get_mig_ids(uuid)
 
                 if mig_ids:
-                    selected_gpu_id_or_uuid = mig_ids[0]  # Select the first MIG ID
-                    break  # Exit the loop after finding the first MIG ID
+                    mid_id_rand = random.randint(0, len(mig_ids) - 1)
+                    selected_gpu_id_or_uuid = mig_ids[mid_id_rand]  # Select the MIG ID
+                    break  # Exit the loop after finding the MIG ID
             else:
                 selected_gpu_id_or_uuid = uuid
                 print(f"Selected UUID is {selected_gpu_id_or_uuid}")
