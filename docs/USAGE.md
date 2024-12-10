@@ -196,6 +196,6 @@ You can download our pre-computed embeddings here.
 python src/br/analysis/run_drugdata_analysis.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb"
 ```
 
-To compute cellprofiler features, open the [project file](../src/br/analysis/cellprofiler/npm1_perturb_cellprofiler.cpproj) using cellprofiler, and point to the single cell images of nucleoli in the [npm1 perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/NPM1_single_cell_drug_perturbations/)
+To compute cellprofiler features, open the [project file](../src/br/analysis/cellprofiler/npm1_perturb_cellprofiler.cpproj) using cellprofiler, and point to the single cell images of nucleoli in the [npm1 perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/NPM1_single_cell_drug_perturbations/). This will generate a csv named `MyExpt_Image.csv` that contains mean, median, and stdev statistics per image across the different computed features.
 
 
