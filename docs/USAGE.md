@@ -182,13 +182,13 @@ You can download our pre-computed embeddings here.
 
 2. To run analysis like latent walks and archetype analysis on the embeddings and trained models, run the following commands.
 
-| Dataset           | Benchmarking features                                                                                                                                                                                                                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| cellpack          | `python src/br/analysis/run_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False`                                    |
-| npm1              | `python src/br/analysis/run_analysis.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1" --dataset_name "npm1" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True`                                                     |
-| other_polymorphic | `python src/br/analysis/run_analysis.py --save_path "./outputs_other_polymorphic/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_polymorphic" --dataset_name "other_polymorphic" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True` |
-| other_punctate    | `python src/br/analysis/run_analysis.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate" --dataset_name "other_punctate" --run_name "Rotation_invariant_pointcloud_structurenorm" --sdf False`            |
-| pcna              | `python src/br/analysis/run_analysis.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False`                                                    |
+| Dataset           | Benchmarking features                                                                                                                                                                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| cellpack          | `python src/br/analysis/run_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False`                          |
+| npm1              | `python src/br/analysis/run_analysis.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1" --dataset_name "npm1" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True`                                          |
+| other_polymorphic | `python src/br/analysis/run_analysis.py --save_path "./outputs_other_polymorphic/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_polymorphic" --dataset_name "other_polymorphic" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True`   |
+| other_punctate    | `python src/br/analysis/run_analysis.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate" --dataset_name "other_punctate" --run_name "Rotation_invariant_pointcloud_structurenorm" --sdf False` |
+| pcna              | `python src/br/analysis/run_analysis.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False`                                      |
 
 3. To run drug perturbation analysis using the pre-computed features, run
 
@@ -197,5 +197,3 @@ python src/br/analysis/run_drugdata_analysis.py --save_path "./outputs_npm1_pert
 ```
 
 To compute cellprofiler features, open the [project file](../src/br/analysis/cellprofiler/npm1_perturb_cellprofiler.cpproj) using cellprofiler, and point to the single cell images of nucleoli in the [npm1 perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/NPM1_single_cell_drug_perturbations/). This will generate a csv named `MyExpt_Image.csv` that contains mean, median, and stdev statistics per image across the different computed features.
-
-
