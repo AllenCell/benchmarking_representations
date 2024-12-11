@@ -1,6 +1,7 @@
 import argparse
 import gc
 import os
+import random
 import subprocess
 from pathlib import Path
 
@@ -16,7 +17,6 @@ import yaml
 from aicsimageio import AICSImage
 from sklearn.decomposition import PCA
 from tqdm import tqdm
-import random
 
 from br.data.utils import get_iae_reconstruction_3d_grid
 from br.features.plot import plot_pc_saved, plot_stratified_pc

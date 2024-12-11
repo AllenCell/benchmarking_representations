@@ -3,28 +3,35 @@ image_path: ./morphology_appropriate_representation_learning/preprocessed_data/n
 pc_path: ./morphology_appropriate_representation_learning/preprocessed_data/npm1/manifest.csv
 model_checkpoints:
   [
-    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_pointcloud_SDF.ckpt",
-    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_image_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Classical_image_seg.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_image_seg.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Classical_image_SDF.ckpt",
-    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Classical_image_seg.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_image_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/npm1/Rotation_invariant_pointcloud_SDF.ckpt",
   ]
 names:
   [
-    "Rotation_invariant_pointcloud_SDF",
-    "Rotation_invariant_image_SDF",
+    "Classical_image_seg",
     "Rotation_invariant_image_seg",
     "Classical_image_SDF",
-    "Classical_image_seg",
+    "Rotation_invariant_image_SDF",
+    "Rotation_invariant_pointcloud_SDF",
   ]
 data_paths:
   [
-    "/data/npm1/pc.yaml",
-    "/data/npm1/so3_image_sdf.yaml",
+    "/data/npm1/classical_image_seg.yaml",
     "/data/npm1/so3_image_seg.yaml",
     "/data/npm1/classical_image_sdf.yaml",
-    "/data/npm1/classical_image_seg.yaml",
+    "/data/npm1/so3_image_sdf.yaml",
+    "/data/npm1/pc.yaml",
   ]
 classification_label: ["STR_connectivity_cc_thresh"]
 regression_label:
-  ["mean_centroid_distances", "mean_nucleolus_volume", "mean_nucleolus_area"]
+  [
+    "mean_surface_area",
+    "std_surface_area",
+    "mean_volume",
+    "std_volume",
+    "avg_dists",
+    "std_dists",
+  ]

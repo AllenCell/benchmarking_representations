@@ -104,7 +104,7 @@ def make_csv(pc_path, image_path, num_samples, save_path, key="CellId", pc_is_ia
         test_lst = []
         orig_src_dirs = []
         for ind, row in pc_df.iterrows():
-            orig_src_dirs.append(row['pointcloud_folder'] + '0/' + str(row['CellId']))
+            orig_src_dirs.append(row["pointcloud_folder"] + "0/" + str(row["CellId"]))
 
         for i, cell_id in enumerate(rand_ids):
             dst_dir = iae_path / f"{cell_id}"
@@ -162,6 +162,7 @@ def model_pass_reconstruct(
         if len(z.shape) < 2:
             z = z.unsqueeze(dim=0)
         import pointcloudutils
+
         if isinstance(model.decoder[key], pointcloudutils.networks.DecoderInner):
             uni_sample_points = get_iae_reconstruction_3d_grid().unsqueeze(0).to(device)
             init_z, final_z = eval_meshed_img_embeds
