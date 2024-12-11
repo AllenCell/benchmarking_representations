@@ -26,4 +26,12 @@ data_paths:
     "/data/other_polymorphic/classical_image_seg.yaml",
   ]
 classification_label: ["structure_name"]
-regression_label: ["avg_dists", "mean_volume", "mean_surface_area"]
+regression_label:
+  [
+    "mean_surface_area",
+    "std_surface_area",
+    "mean_volume",
+    "std_volume",
+    "avg_dists",
+    "std_dists",
+  ]

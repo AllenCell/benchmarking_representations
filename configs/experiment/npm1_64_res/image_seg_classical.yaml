@@ -4,8 +4,8 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: npm1/classical_image_sdf.yaml
-  - override /model: image/classical_sdf_35.yaml
+  - override /data: npm1_64_res/classical_image_seg.yaml
+  - override /model: image/classical_seg_64.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
   - override /logger: csv.yaml
@@ -43,8 +43,8 @@ callbacks:
 
 logger:
   csv:
-    save_dir: ./npm1_variance
-    name: "classical_sdf"
+    save_dir: ./npm1_variance_64_res
+    name: "classical_seg"
     prefix:
 
 ##### ONLY USE WITH A100s

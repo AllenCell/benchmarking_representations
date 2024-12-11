@@ -4,8 +4,8 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: npm1/classical_image_sdf.yaml
-  - override /model: image/classical_sdf_35.yaml
+  - override /data: npm1_64_res/pc.yaml
+  - override /model: pc/implicit.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
   - override /logger: csv.yaml
@@ -22,7 +22,7 @@ data:
   batch_size: 4
 
 model:
-  x_label: image
+  x_label: pcloud
 
 trainer:
   check_val_every_n_epoch: 1
@@ -43,8 +43,8 @@ callbacks:
 
 logger:
   csv:
-    save_dir: ./npm1_variance
-    name: "classical_sdf"
+    save_dir: ./npm1_variance_64_res
+    name: "pc_implicit"
     prefix:
 
 ##### ONLY USE WITH A100s

@@ -102,7 +102,9 @@ def make_csv(pc_path, image_path, num_samples, save_path, key="CellId", pc_is_ia
         iae_path.mkdir(parents=True, exist_ok=True)
 
         test_lst = []
-        orig_src_dirs = pc_df["points_sdf_noalign_path"].values
+        orig_src_dirs = []
+        for ind, row in pc_df.iterrows():
+            orig_src_dirs.append(row["pointcloud_folder"] + "0/" + str(row["CellId"]))
 
         for i, cell_id in enumerate(rand_ids):
             dst_dir = iae_path / f"{cell_id}"
@@ -154,22 +156,19 @@ def model_pass_reconstruct(
     z = torch.tensor(z).float().to(device)
     fraction = round(fraction, 1)
 
-    if key == "pcloud" and not use_sample_points:
-        init_x = init_x[:, :, :3]
-        final_x = final_x[:, :, :3]
-
     if eval_meshed_img:
         decoder = model.decoder[key]
 
         if len(z.shape) < 2:
             z = z.unsqueeze(dim=0)
+        import pointcloudutils
 
-        if isinstance(model.decoder[key], LatentLocalDecoder):
+        if isinstance(model.decoder[key], pointcloudutils.networks.DecoderInner):
             uni_sample_points = get_iae_reconstruction_3d_grid().unsqueeze(0).to(device)
             init_z, final_z = eval_meshed_img_embeds
-            init_x, _ = decoder(uni_sample_points, torch.tensor(init_z).to(device))
-            final_x, _ = decoder(uni_sample_points, torch.tensor(final_z).to(device))
-            xhat, _ = decoder(uni_sample_points, z)
+            init_x = decoder(uni_sample_points, torch.tensor(init_z).to(device))
+            final_x = decoder(uni_sample_points, torch.tensor(final_z).to(device))
+            xhat = decoder(uni_sample_points, z)
 
             # TODO another way to make this work??
             # to get recons, need uniform GT SDFs at 32**3
@@ -228,6 +227,9 @@ def model_pass_reconstruct(
         energy = (mse_intial + mse_final) / mse_total
         return energy.item()
     else:
+        if (key == "pcloud") and (not use_sample_points) and (init_x.shape[-1] <= 4):
+            init_x = init_x[:, :, :3]
+            final_x = final_x[:, :, :3]
         if hasattr(model, "network"):
             init_x = torch.tensor(init_x).to(device)
             final_x = torch.tensor(final_x).to(device)
@@ -474,10 +476,10 @@ def get_evolution_dict(
                         if len(intermediate_embed.shape) > 2:
                             if fit_pca:
                                 intermediate_embed = pca.transform(
-                                    intermediate_embed[:, 1:, :].mean(axis=1)
+                                    np.linalg.norm(intermediate_embed, axis=-1)
                                 )
                             else:
-                                intermediate_embed = intermediate_embed[:, 1:, :].mean(axis=1)
+                                intermediate_embed = np.linalg.norm(intermediate_embed, axis=-1)
                         else:
                             if fit_pca:
                                 intermediate_embed = pca.transform(intermediate_embed)
