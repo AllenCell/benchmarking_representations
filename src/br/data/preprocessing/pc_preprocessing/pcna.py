@@ -1,6 +1,7 @@
-from multiprocessing import Pool
 import argparse
+from multiprocessing import Pool
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from pyntcloud import PyntCloud
@@ -77,6 +78,7 @@ def get_center_of_mass(img):
     center_of_mass = np.mean(np.stack(np.where(img > 0)), axis=1)
     return np.floor(center_of_mass + 0.5).astype(int)
 
+
 def main(args):
 
     # make save path directory
@@ -85,9 +87,7 @@ def main(args):
     df = pd.read_parquet(args.preprocessed_manifest)
 
     if args.global_path:
-        df["registered_path"] = df["registered_path"].apply(
-            lambda x: args.global_path + x
-        )
+        df["registered_path"] = df["registered_path"].apply(lambda x: args.global_path + x)
 
     global path_prefix
     path_prefix = args.save_path
@@ -110,7 +110,9 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Script for computing point clouds for PCNA dataset")
+    parser = argparse.ArgumentParser(
+        description="Script for computing point clouds for PCNA dataset"
+    )
     parser.add_argument("--save_path", type=str, required=True, help="Path to save results.")
     parser.add_argument(
         "--global_path",

@@ -1,14 +1,16 @@
+import argparse
+from multiprocessing import Pool
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from pyntcloud import PyntCloud
 from scipy.ndimage import binary_dilation
 from skimage.io import imread
 from tqdm import tqdm
-import argparse
-from pathlib import Path
-from multiprocessing import Pool
 
-STRUCTS = ['HIST1H2BJ', 'NUP153', 'SMC1A', 'SON']
+STRUCTS = ["HIST1H2BJ", "NUP153", "SMC1A", "SON"]
+
 
 def compute_labels(row, save=True):
     path = row["registered_path"]
@@ -86,12 +88,10 @@ def main(args):
     Path(args.save_path).mkdir(parents=True, exist_ok=True)
 
     df = pd.read_parquet(args.preprocessed_manifest)
-    df = df.loc[df['structure_name'].isin(STRUCTS)]
+    df = df.loc[df["structure_name"].isin(STRUCTS)]
 
     if args.global_path:
-        df["registered_path"] = df["registered_path"].apply(
-            lambda x: args.global_path + x
-        )
+        df["registered_path"] = df["registered_path"].apply(lambda x: args.global_path + x)
 
     global path_prefix
     path_prefix = args.save_path
@@ -114,7 +114,9 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Script for computing point clouds for nuclear structures from WTC-11 hIPS single cell image dataset")
+    parser = argparse.ArgumentParser(
+        description="Script for computing point clouds for nuclear structures from WTC-11 hIPS single cell image dataset"
+    )
     parser.add_argument("--save_path", type=str, required=True, help="Path to save results.")
     parser.add_argument(
         "--global_path",
