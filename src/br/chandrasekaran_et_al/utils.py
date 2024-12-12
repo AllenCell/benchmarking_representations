@@ -218,7 +218,7 @@ def _plot(all_rep, save_path, run_names):
     g.set_xticklabels(rotation=90)
     g.set(ylim=(0, 0.1))
     plt.axhline(y=0.05, color="black")
-    g.set(ylabel='q value')
+    g.set(ylabel="q value")
     this_path = Path(save_path)
     Path(this_path).mkdir(parents=True, exist_ok=True)
     g.savefig(this_path / "q_values.png", dpi=300, bbox_inches="tight")

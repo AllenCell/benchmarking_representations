@@ -15,18 +15,24 @@ SKEW_EXP_DICT = {
     "endosomes": 500,
     "peroxisomes": 500,
     "centrioles": 500,
+    "RAB5A": 500,
+    "SLC25A17": 500,
+    "CETN2": 500,
 }
 REP_DICT = {
     "endosomes": True,
     "peroxisomes": True,
     "centrioles": True,
+    "RAB5A": True,
+    "SLC25A17": True,
+    "CETN2": True,
 }
 
 
 def compute_labels(row, save=True):
     num_points = 20480
     path = row["crop_raw"]
-    structure_name = row["Structure"]
+    structure_name = row["structure_name"]
     img_full = AICSImage(path).data[0]
     raw = img_full[2]  # raw struct
 
