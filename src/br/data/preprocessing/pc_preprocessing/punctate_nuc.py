@@ -133,3 +133,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     main(args)
+
+    """
+    Example run: 
+    
+    python src/br/data/preprocessing/pc_preprocessing/punctate_nuc.py --save_path "./make_pcs_test" --preprocessed_manifest "./subpackages/image_preprocessing/tmp_output_variance/processed/manifest.parquet" --global_path "./subpackages/image_preprocessing/"
+    """
