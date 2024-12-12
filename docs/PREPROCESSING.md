@@ -37,7 +37,7 @@ Preprocessing is divided into three steps that use two different virtual environ
 
 # Punctate structures: Generate pointclouds
 
-Edit the data paths in the following file to match the location of the outputs of the alignment, masking, and registration step, then run it.
+Use the preprocessed data manifest generated via the alignment, masking, and registration steps from image as input to the pointcloud generation step
 
 ```
 src
@@ -45,7 +45,9 @@ src
     └── data
         └── preprocessing
             └── pc_preprocessing
-                └── punctate_cyto.py <- Point cloud sampling from raw images for punctate structures here
+                └── pcna.py <- Point cloud sampling from raw images for DNA replication foci dataset here
+                └── punctate_nuc.py <- Point cloud sampling from raw images of nuclear structures from the WTC-11 hIPS single cell image dataset here
+                └── punctate_cyto.py <- Point cloud sampling from raw images of cytoplasmic structures from the WTC-11 hIPS single cell image dataset here
 ```
 
 # Polymorphic structures: Generate SDFs
