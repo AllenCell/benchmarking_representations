@@ -80,7 +80,7 @@ def main(args):
     for _, this_image in orig_image_df.iterrows():
         cell_id = this_image["CellId"]
         if not strat:
-            strat_val = this_image['structure_name']
+            strat_val = this_image["structure_name"]
 
         if args.dataset_name == "pcna":
             points_all, _, img, center = compute_labels_pcna(this_image, False)
@@ -108,10 +108,12 @@ def main(args):
         if mem_ind is not None:
             img_mem = img[mem_ind]
 
-        if (args.dataset_name == 'other_punctate') and (strat_val in ["CETN2", "RAB5A", "SLC25A17"]):
-            img_raw = np.where(img_mem, img_raw, 0) # mask by mem/nuc seg
+        if (args.dataset_name == "other_punctate") and (
+            strat_val in ["CETN2", "RAB5A", "SLC25A17"]
+        ):
+            img_raw = np.where(img_mem, img_raw, 0)  # mask by mem/nuc seg
         else:
-            img_raw = np.where(img_nuc, img_raw, 0) # mask by mem/nuc seg
+            img_raw = np.where(img_nuc, img_raw, 0)  # mask by mem/nuc seg
 
         # Sample sparse point cloud and get images
         probs2 = points_all["s"].values
@@ -168,7 +170,7 @@ def main(args):
             center_slice=center_slice,
         )
         ax_array[2].set_title("Sampling sparse PC")
-        print(f'Saving {name}.png')
+        print(f"Saving {name}.png")
         fig.savefig(Path(args.save_path) / Path(f"{name}.png"), bbox_inches="tight", dpi=300)
 
 

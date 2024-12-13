@@ -1,5 +1,7 @@
+import argparse
 import warnings
 from multiprocessing import Pool
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -96,11 +98,11 @@ def compute_labels(row, save=True):
 
     cell_id = str(row["CellId"])
 
-    save_path = path_prefix + cell_id + ".ply"
+    save_path = Path(path_prefix) / Path(cell_id + ".ply")
 
     new_cents = new_cents.astype(float)
     cloud = PyntCloud(new_cents)
-    cloud.to_file(save_path)
+    cloud.to_file(str(save_path))
 
 
 def get_center_of_mass(img):
@@ -108,13 +110,22 @@ def get_center_of_mass(img):
     return np.floor(center_of_mass + 0.5).astype(int)
 
 
-if __name__ == "__main__":
-    df = pd.read_parquet(SINGLE_CELL_IMAGE_PATH)
+def main(args):
 
-    path_prefix = SAVE_LOCATION
+    # make save path directory
+    Path(args.save_path).mkdir(parents=True, exist_ok=True)
+
+    df = pd.read_parquet(args.preprocessed_manifest)
+    df = df.loc[df["structure_name"].isin(SKEW_EXP_DICT.keys())]
+
+    if args.global_path:
+        df["registered_path"] = df["registered_path"].apply(lambda x: args.global_path + x)
+
+    global path_prefix
+    path_prefix = args.save_path
 
     all_rows = []
-    for ind, row in tqdm(df.iterrows(), total=len(df)):
+    for _, row in tqdm(df.iterrows(), total=len(df)):
         all_rows.append(row)
 
     with Pool(40) as p:
@@ -128,3 +139,31 @@ if __name__ == "__main__":
                 desc="compute_everything",
             )
         )
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Script for computing point clouds for cytoplasmic structures from WTC-11 hIPS single cell image dataset"
+    )
+    parser.add_argument("--save_path", type=str, required=True, help="Path to save results.")
+    parser.add_argument(
+        "--global_path",
+        type=str,
+        default=None,
+        required=False,
+        help="Path to append to relative paths in preprocessed manifest",
+    )
+    parser.add_argument(
+        "--preprocessed_manifest",
+        type=str,
+        required=True,
+        help="Path to processed single cell image manifest.",
+    )
+    args = parser.parse_args()
+    main(args)
+
+    """
+    Example run: 
+
+    python src/br/data/preprocessing/pc_preprocessing/punctate_cyto.py --save_path "./make_pcs_test" --preprocessed_manifest "./subpackages/image_preprocessing/tmp_output_variance/processed/manifest.parquet" --global_path "./subpackages/image_preprocessing/"
+    """
