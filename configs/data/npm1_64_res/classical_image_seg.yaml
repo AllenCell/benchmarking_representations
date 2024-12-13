@@ -1,0 +1,28 @@
+_target_: cyto_dl.datamodules.DataframeDatamodule
+_convert_: all
+path: ./morphology_appropriate_representation_learning/preprocessed_data/npm1_64_res/manifest.csv
+split_column: split
+batch_size: 64
+num_workers: 4
+transforms:
+  - _target_: cyto_dl.dataframe.transforms.GroupCols
+    groups:
+      image: seg_path
+      cell_id: CellId
+  - _target_: cyto_dl.image.io.ReadNumpyFile
+    keys:
+      - image
+    remote: false
+    unsqueeze: True
+  - _target_: monai.transforms.SpatialPadd
+    keys:
+      - image
+    spatial_size:
+      - 67
+      - 67
+      - 67
+    value: 0
+  - _target_: monai.transforms.ToTensord
+    keys:
+      - image
+    track_meta: false

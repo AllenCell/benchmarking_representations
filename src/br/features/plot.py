@@ -162,7 +162,6 @@ def plot(
     unique_expressivity_metrics=None,
     df_non_agg=None,
 ):
-
     mpl.rcParams["pdf.fonttype"] = 42
     df = df.dropna()
     df = df.loc[df["model"].isin(models)]
@@ -179,12 +178,22 @@ def plot(
         "Rotation Invariance Error",
         "Embedding Distance",
     ]
+
     if unique_expressivity_metrics is not None:
+        unique_expressivity_metrics = [
+            i.replace("classification", "Classification") for i in unique_expressivity_metrics
+        ]
+        unique_expressivity_metrics = [
+            i.replace("regression", "Feature Regression") for i in unique_expressivity_metrics
+        ]
         expressive_metrics = unique_expressivity_metrics + base_expressive_metrics
 
     cat_order = gen_metrics + emission_metrics + expressive_metrics
     missing_cols = set(cat_order).symmetric_difference(set(df["variable"].values))
-    cat_order = [i for i in cat_order if i not in missing_cols]
+
+    if len(missing_cols) > 0:
+        print(f"missing columns {missing_cols}")
+        cat_order = [i for i in cat_order if i not in missing_cols]
 
     # cat_order = gen_metrics + expressive_metrics
     categories = [*cat_order, cat_order[0]]
@@ -207,6 +216,8 @@ def plot(
         colors = ["#9CA2D6", "#6277D1", "#CF8D84", "#CE553B"]
     elif len(models) == 2:
         colors = ["#9CA2D6", "#6277D1"]
+    elif len(models) == 10:
+        colors = sns.color_palette("cividis", 10).as_hex()
     else:
         pal = sns.color_palette("pastel")
         colors = pal.as_hex()
@@ -284,8 +295,8 @@ def plot(
 
             g.set(
                 xlim=[
-                    np.quantile(this_df["value"].values, 0.05),
-                    np.quantile(this_df["value"].values, 0.95),
+                    np.nanquantile(this_df["value"].values, 0.05),
+                    np.nanquantile(this_df["value"].values, 0.95),
                 ]
             )
 
