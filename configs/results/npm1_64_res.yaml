@@ -41,10 +41,4 @@ data_paths:
     "/data/npm1_64_res/pc.yaml",
   ]
 classification_label: ["STR_connectivity_cc_thresh"]
-regression_label:
-  [
-    "mean_surface_area",
-    "mean_volume",
-    "avg_dists",
-    "std_dists",
-  ]
+regression_label: ["mean_surface_area", "mean_volume", "avg_dists", "std_dists"]
