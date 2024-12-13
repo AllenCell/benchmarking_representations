@@ -223,16 +223,18 @@ def setup_evolve_params(run_names, data_config_list, keys):
     eval_meshed_img = [False] * len(run_names)
     eval_meshed_img_model_type = [None] * len(run_names)
     compute_evolve_dataloaders = True
+    pc_is_iae = False
     if "SDF" in "\t".join(run_names):
+        pc_is_iae = True
         eval_meshed_img = [True] * len(run_names)
         eval_meshed_img_model_type = []
         for name_ in run_names:
             if "seg" in name_:
                 model_type = "seg"
+            elif "pointcloud_SDF" in name_:
+                model_type = "iae"
             elif "SDF" in name_:
                 model_type = "sdf"
-            elif "pointcloud" in name_:
-                model_type = "iae"
             eval_meshed_img_model_type.append(model_type)
 
     evolve_params = {
@@ -245,7 +247,7 @@ def setup_evolve_params(run_names, data_config_list, keys):
         "skew_scale": 100,
         "only_embedding": False,
         "fit_pca": False,
-        "pc_is_iae": False,
+        "pc_is_iae": pc_is_iae,
     }
     return evolve_params
 
