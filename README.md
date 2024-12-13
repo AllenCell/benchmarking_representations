@@ -31,6 +31,23 @@ If you'd like to reproduce this analysis on our data, check out the following do
 
 Coming soon
 
+# Quickstart
+
+Use the cytodl api to run any given experiment. For e.g., train a rotation invariant point cloud autoencoder on the PCNA dataset
+
+```bash
+from cyto_dl.api import CytoDLModel
+from pathlib import Path
+
+model =CytoDLModel() 
+model.root= Path(os.getcwd())
+model.load_default_experiment('pcna/pc_equiv', output_dir = './')
+
+model.print_config()
+
+model.train()
+```
+
 # Contact
 
 Allen Institute for Cell Science (cells@alleninstitute.org)
