@@ -132,5 +132,5 @@ if __name__ == "__main__":
     """
     Example run:
 
-    python image_sdfs.py --save_path "./test_img/" --manifest "/allen/aics/modeling/ritvik/projects/latest_clones/benchmarking_representations/morphology_appropriate_representation_learning/preprocessed_data/npm1/manifest.csv" --vox_resolution 32 --debug True --global_path "../../../../../"
+    python image_sdfs.py --save_path "./test_img/" --manifest ""../../../../../morphology_appropriate_representation_learning/preprocessed_data/npm1/manifest.csv" --vox_resolution 32 --debug True --global_path "../../../../../"
     """

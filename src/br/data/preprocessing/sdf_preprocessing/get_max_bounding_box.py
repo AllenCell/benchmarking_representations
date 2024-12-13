@@ -89,6 +89,6 @@ if __name__ == "__main__":
 
     """
     Example run:
-    python pc_sdfs.py --save_path "./test_pcs/" --scaled_mesh_path "./test_img/outputs_mesh/" --vox_resolution 32
+    python get_max_bounding_box.py --save_path './test_img/' --manifest ""../../../../../morphology_appropriate_representation_learning/preprocessed_data/npm1/manifest.csv" --global_path "../../../../../"
     """
 
