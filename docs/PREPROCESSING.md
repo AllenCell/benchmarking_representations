@@ -59,7 +59,7 @@ src
     └── data
        └── preprocessing
            └── sdf_preprocessing
-               ├── get_max_bounding_box.py <- Get bounds of the largest mesh
                ├── image_sdfs.py <- Create scaled meshes, and 32**3 resolution SDF and seg images
+               ├── get_max_bounding_box.py <- Get bounds of the largest scaled mesh
                └── pc_sdfs.py    <- Sample point clouds from scaled meshes
 ```
