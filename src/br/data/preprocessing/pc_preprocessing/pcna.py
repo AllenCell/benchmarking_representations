@@ -131,7 +131,7 @@ if __name__ == "__main__":
     main(args)
 
     """
-    Example run: 
-    
+    Example run:
+
     python src/br/data/preprocessing/pc_preprocessing/pcna --save_path "./make_pcs_test" --preprocessed_manifest "./subpackages/image_preprocessing/tmp_output_pcna/processed/manifest.parquet" --global_path "./subpackages/image_preprocessing/"
     """

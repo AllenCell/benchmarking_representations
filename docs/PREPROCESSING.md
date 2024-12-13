@@ -52,14 +52,14 @@ src
 
 # Polymorphic structures: Generate SDFs
 
-Edit the data paths in the following files to match the location of your copy of the data, then run both.
-
+Use the segmentation data for polymorphic structures as input to the SDF generation step. 
 ```
 src
 └── br
     └── data
        └── preprocessing
            └── sdf_preprocessing
-               ├── image_sdfs.py <- Create 32**3 resolution SDF images
-               └── pc_sdfs.py    <- Sample point clouds from 32**3 resolution SDF images
+               ├── image_sdfs.py <- Create scaled meshes, and 32**3 resolution SDF and seg images
+               ├── get_max_bounding_box.py <- Get bounds of the largest scaled mesh
+               └── pc_sdfs.py    <- Sample point clouds from scaled meshes
 ```
