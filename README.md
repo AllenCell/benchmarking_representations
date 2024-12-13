@@ -39,7 +39,7 @@ Use the cytodl api to run any given experiment. For e.g., train a rotation invar
 from cyto_dl.api import CytoDLModel
 from pathlib import Path
 
-model =CytoDLModel() 
+model = CytoDLModel()
 model.root= Path(os.getcwd())
 model.load_default_experiment('pcna/pc_equiv', output_dir = './')
 
