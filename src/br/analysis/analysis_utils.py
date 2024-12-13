@@ -15,6 +15,7 @@ import torch
 import trimesh
 import yaml
 from aicsimageio import AICSImage
+from skimage import measure
 from sklearn.decomposition import PCA
 from tqdm import tqdm
 
@@ -1025,3 +1026,75 @@ def save_supplemental_figure_sdf_reconstructions(df, test_ids, reconstructions_p
         plt.tight_layout()
         plt.savefig(reconstructions_path + "sample_recons.png", dpi=300, bbox_inches="tight")
         plt.savefig(reconstructions_path + "sample_recons.pdf", dpi=300, bbox_inches="tight")
+
+
+# utility plot functions
+def plot_image(ax_array, struct, nuc, mem, vmin, vmax, num_slices=None, show_nuc_countour=True):
+    mid_z = int(struct.shape[0] / 2)
+
+    if num_slices is None:
+        num_slices = mid_z * 2
+    z_interp = np.linspace(mid_z - num_slices / 2, mid_z + num_slices / 2, num_slices + 1).astype(
+        int
+    )
+    if z_interp.max() == struct.shape[0]:
+        z_interp = z_interp[:-1]
+
+    struct = np.where(mem, struct, 0)
+    mem = mem[z_interp].max(0)
+    nuc = nuc[z_interp].max(0)
+    mem_contours = measure.find_contours(mem, 0.5)
+    nuc_contours = measure.find_contours(nuc, 0.5)
+
+    for ind, _ in enumerate(ax_array):
+        this_struct = struct
+        if ind > 0:
+            this_struct = np.zeros(struct.shape)
+        ax_array[ind].imshow(this_struct[z_interp].max(0), cmap="gray_r", vmin=vmin, vmax=vmax)
+        if ind == 0:
+            if show_nuc_countour:
+                for contour in nuc_contours:
+                    ax_array[ind].plot(contour[:, 1], contour[:, 0], linewidth=1, c="cyan")
+            for contour in mem_contours:
+                ax_array[ind].plot(contour[:, 1], contour[:, 0], linewidth=1, c="magenta")
+        ax_array[ind].axis("off")
+    return ax_array, z_interp
+
+
+def plot_pointcloud(
+    this_ax_array,
+    points_all,
+    z_interp,
+    cmap,
+    save_path=None,
+    name=None,
+    center=None,
+    save=False,
+    center_slice=False,
+):
+    this_p = points_all.loc[points_all["z"] < max(z_interp)]
+    if center_slice:
+        this_p = this_p.loc[this_p["z"] > min(z_interp)]
+        print(this_p.shape)
+    intensity = this_p.inorm.values
+    this_ax_array.scatter(
+        this_p["x"].values, this_p["y"].values, c=cmap(intensity), s=0.3, alpha=0.5
+    )
+    this_ax_array.axis("off")
+    if save:
+        z_center, y_center, x_center = center[0], center[1], center[2]
+
+        # Center and scale for viz
+        this_p["z"] = this_p["z"] - z_center
+        this_p["y"] = this_p["y"] - y_center
+        this_p["x"] = this_p["x"] - x_center
+
+        this_p["z"] = 0.1 * this_p["z"]
+        this_p["x"] = 0.1 * this_p["x"]
+        this_p["y"] = 0.1 * this_p["y"]
+        Path(save_path).mkdir(parents=True, exist_ok=True)
+        colors = cmap(this_p["inorm"].values)[:, :3]
+        np_arr = this_p[["x", "y", "z"]].values
+        np_arr2 = colors
+        np_arr = np.concatenate([np_arr, np_arr2], axis=1)
+        np.save(Path(save_path) / Path(f"{name}.npy"), np_arr)
