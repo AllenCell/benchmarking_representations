@@ -9,8 +9,10 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import mesh_to_sdf
 import numpy as np
+import pacmap
 import pandas as pd
 import pyvista as pv
+import seaborn as sns
 import torch
 import trimesh
 import yaml
@@ -630,6 +632,44 @@ def archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features)
         arch_dict["CellId"].append(closest_real_id)
     arch_dict = pd.DataFrame(arch_dict)
     arch_dict.to_csv(this_save_path / "archetypes.csv")
+
+
+def make_pacmap(this_save_path, all_ret, feats_archs):
+
+    cols = [i for i in all_ret.columns if "mu" in i]
+    feats = all_ret[cols].values
+    embedding = pacmap.PaCMAP(n_components=2, n_neighbors=10, MN_ratio=0.5, FP_ratio=2.0)
+    X_transformed = embedding.fit_transform(feats, init="pca")
+
+    archs_transform = embedding.transform(feats_archs, init="pca", basis=feats)
+    labels = all_ret["structure_name"].values
+    colors = sns.color_palette("Paired", len(np.unique(labels)))
+
+    cdict = {i: colors[j] for j, i in enumerate(np.unique(labels))}
+
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    for g in np.unique(labels):
+        ix = np.where(labels == g)
+        ax.scatter(
+            X_transformed[ix, 0],
+            X_transformed[ix, 1],
+            c=cdict[g],
+            label=g,
+            s=0.6,
+            alpha=0.6,
+        )
+    ax.legend()
+    lgnd = plt.legend(loc="upper right", numpoints=1, fontsize=10)
+
+    # change the marker size manually for both lines
+    for handle in lgnd.legend_handles:
+        handle.set_sizes([6.0])
+
+    ax.scatter(archs_transform[:, 0], archs_transform[:, 1], c="k", s=20, marker="x")
+    ax.set_xlabel("PaCMAP dim 1")
+    ax.set_ylabel("PaCMAP dim 2")
+    fig.savefig(this_save_path / "pacmap_archetypes.png", bbox_inches="tight", dpi=300)
+    fig.savefig(this_save_path / "pacmap_archetypes.pdf", bbox_inches="tight", dpi=300)
 
 
 def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, device, save_path):
