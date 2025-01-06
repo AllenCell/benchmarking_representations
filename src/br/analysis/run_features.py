@@ -1,4 +1,3 @@
-# Free up cache
 import argparse
 import os
 import sys
@@ -38,9 +37,7 @@ def main(args):
         manifest,
         keys,
         latent_dims,
-    ) = get_data_and_models(
-        args.dataset_name, batch_size, config_path + "/results/", args.debug
-    )
+    ) = get_data_and_models(args.dataset_name, batch_size, config_path + "/results/", args.debug)
     max_embed_dim = min(latent_dims)
 
     # make save path directory
@@ -170,12 +167,8 @@ if __name__ == "__main__":
         required=True,
         help="boolean indicating whether the experiments involve SDFs",
     )
-    parser.add_argument(
-        "--dataset_name", type=str, required=True, help="Name of the dataset."
-    )
-    parser.add_argument(
-        "--debug", type=str2bool, default=False, help="Enable debug mode."
-    )
+    parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
+    parser.add_argument("--debug", type=str2bool, default=False, help="Enable debug mode.")
     parser.add_argument(
         "--skip_features",
         type=str2bool,

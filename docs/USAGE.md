@@ -202,5 +202,5 @@ To compute cellprofiler features, open the [project file](../src/br/analysis/cel
 4. To combine features from different runs and compare, run
 
 ```
-python src/br/analysis/run_features_combine.py --feature_path_1 './outputs_npm1/' --feature_path_2 './outputs_npm1_64_res/' --save_path "./outputs_npm1_combine/" --dataset_name_1 "npm1" --dataset_name_2 "npm1_64_res" 
+python src/br/analysis/run_features_combine.py --feature_path_1 './outputs_npm1/' --feature_path_2 './outputs_npm1_64_res/' --save_path "./outputs_npm1_combine/" --dataset_name_1 "npm1" --dataset_name_2 "npm1_64_res"
 ```

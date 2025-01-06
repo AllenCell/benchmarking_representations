@@ -1,4 +1,3 @@
-# Free up cache
 import argparse
 import os
 import sys
@@ -12,7 +11,7 @@ from br.models.save_embeddings import save_embeddings
 def main(args):
 
     # Setup GPUs and set the device
-    # setup_gpu()
+    setup_gpu()
     device = "cuda:0"
 
     # Get config path from CYTODL_CONFIG_PATH

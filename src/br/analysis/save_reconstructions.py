@@ -1,4 +1,3 @@
-# Free up cache
 import argparse
 import os
 import sys
@@ -32,7 +31,15 @@ test_ids_per_dataset_ = {
         "50b52c3e-4756-4684-a281-0141525ded9f",
         "8713eea5-da72-4644-96fe-ba8340edb67d",
     ],
-    "other_punctate": ["721646", "873680", "994027", "490385", "451974", "811336", "835431"],
+    "other_punctate": [
+        "721646",
+        "873680",
+        "994027",
+        "490385",
+        "451974",
+        "811336",
+        "835431",
+    ],
     "npm1": ["964798", "661110", "644401", "967887", "703621"],
     "other_polymorphic": ["691110", "723687", "816468", "800894"],
 }
@@ -96,10 +103,16 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     parser.add_argument("--debug", type=str2bool, default=False, help="Enable debug mode.")
     parser.add_argument(
-        "--sdf", type=str2bool, default=True, help="Whether the experiments involve SDFs"
+        "--sdf",
+        type=str2bool,
+        default=True,
+        help="Whether the experiments involve SDFs",
     )
     parser.add_argument(
-        "--test_ids", default=False, nargs="+", help="List of test set cellids to reconstruct"
+        "--test_ids",
+        default=False,
+        nargs="+",
+        help="List of test set cellids to reconstruct",
     )
     parser.add_argument(
         "--generate_reconstructions",
