@@ -1,19 +1,18 @@
+import argparse
+from multiprocessing import Pool
+from pathlib import Path
 
 import pandas as pd
 from aicsimageio import AICSImage
 from monai.transforms import FillHoles
 from tqdm import tqdm
-from br.data.utils import (
-    get_mesh_from_image,
-)
-from multiprocessing import Pool
-from pathlib import Path
-import argparse
+
+from br.data.utils import get_mesh_from_image
 
 
 def get_bounds(r):
-    return_df = {'x_delta': [], 'y_delta': [], 'z_delta': [], 'cell_id': [], 'max_delta': []}
-    cellid = r['CellId']
+    return_df = {"x_delta": [], "y_delta": [], "z_delta": [], "cell_id": [], "max_delta": []}
+    cellid = r["CellId"]
 
     hole_fill_transform = FillHoles()
     seg = AICSImage(r["crop_seg_masked"]).data.squeeze()
@@ -26,13 +25,14 @@ def get_bounds(r):
     y_delta = bounds[3] - bounds[2]
     z_delta = bounds[5] - bounds[4]
     max_delta = max([x_delta, y_delta, z_delta])
-    return_df['x_delta'].append(x_delta)
-    return_df['y_delta'].append(y_delta)
-    return_df['z_delta'].append(z_delta)
-    return_df['cell_id'].append(cellid)
-    return_df['max_delta'].append(max_delta)
+    return_df["x_delta"].append(x_delta)
+    return_df["y_delta"].append(y_delta)
+    return_df["z_delta"].append(z_delta)
+    return_df["cell_id"].append(cellid)
+    return_df["max_delta"].append(max_delta)
 
     return return_df
+
 
 def main(args):
     # make save path directory
@@ -61,7 +61,7 @@ def main(args):
         jobs = [i for i in jobs if i is not None]
         return_df = pd.DataFrame(jobs).reset_index(drop=True)
 
-    return_df.to_csv(Path(args.save_path) / Path('bounds.csv'))
+    return_df.to_csv(Path(args.save_path) / Path("bounds.csv"))
 
 
 if __name__ == "__main__":
@@ -83,7 +83,6 @@ if __name__ == "__main__":
         help="Path to append to relative paths in preprocessed manifest",
     )
 
-
     args = parser.parse_args()
     main(args)
 
@@ -91,4 +90,3 @@ if __name__ == "__main__":
     Example run:
     python get_max_bounding_box.py --save_path './test_img/' --manifest ""../../../../../morphology_appropriate_representation_learning/preprocessed_data/npm1/manifest.csv" --global_path "../../../../../"
     """
-
