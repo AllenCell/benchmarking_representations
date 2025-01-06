@@ -20,6 +20,7 @@ from .utils import normalize_intensities_and_get_colormap
 METRIC_DICT = {
     "reconstruction": {"metric": ["loss"], "min": [True]},
     "regression": {"metric": ["test_r2"], "min": [False]},
+    "regression_dists": {"metric": ["test_r2"], "min": [False]},
     "classification": {"metric": ["top_1_acc"], "min": [False]},
     "emissions": {"metric": ["emissions", "inference_time"], "min": [True, True]},
     "evolution_energy": {
@@ -140,6 +141,7 @@ def collect_outputs(path, norm, model_order=None, metric_list=None):
     rep_dict_var = {
         "reconstruction_loss": "Reconstruction",
         "regression_test_r2": "Feature Regression",
+        "regression_dists_test_r2": "Feature Regression_dists",
         "compactness_compactness": "Compactness",
         "rotation_invariance_error_value": "Rotation Invariance Error",
         "evolution_energy_closest_embedding_distance": "Embedding Distance",
