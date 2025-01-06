@@ -46,82 +46,83 @@ def main(args):
     # make save path directory
     Path(args.save_path).mkdir(parents=True, exist_ok=True)
 
-    # Save model sizes to CSV
-    sizes_ = pd.DataFrame()
-    sizes_["model"] = run_names
-    sizes_["model_size"] = model_sizes
-    sizes_.to_csv(os.path.join(args.save_path, "model_sizes.csv"))
+    if not args.skip_features:
+        # Save model sizes to CSV
+        sizes_ = pd.DataFrame()
+        sizes_["model"] = run_names
+        sizes_["model_size"] = model_sizes
+        sizes_.to_csv(os.path.join(args.save_path, "model_sizes.csv"))
 
-    # Load evaluation params
-    (
-        eval_scaled_img,
-        eval_scaled_img_params,
-        loss_eval_list,
-        sample_points_list,
-        skew_scale,
-    ) = setup_evaluation_params(manifest, run_names)
+        # Load evaluation params
+        (
+            eval_scaled_img,
+            eval_scaled_img_params,
+            loss_eval_list,
+            sample_points_list,
+            skew_scale,
+        ) = setup_evaluation_params(manifest, run_names)
 
-    # Save emission stats for each model
-    max_batches = 40
-    save_emissions(
-        args.save_path,
-        data_list,
-        all_models,
-        run_names,
-        max_batches,
-        args.debug,
-        device,
-        loss_eval_list,
-        sample_points_list,
-        skew_scale,
-        eval_scaled_img,
-        eval_scaled_img_params,
-    )
+        # Save emission stats for each model
+        max_batches = 40
+        save_emissions(
+            args.save_path,
+            data_list,
+            all_models,
+            run_names,
+            max_batches,
+            args.debug,
+            device,
+            loss_eval_list,
+            sample_points_list,
+            skew_scale,
+            eval_scaled_img,
+            eval_scaled_img_params,
+        )
 
-    # Compute multi-metric benchmarking params
-    (
-        rot_inv_params,
-        compactness_params,
-        classification_params,
-        evolve_params,
-        regression_params,
-    ) = get_feature_params(
-        config_path + "/results/", args.dataset_name, manifest, keys, run_names
-    )
+        # Compute multi-metric benchmarking params
+        (
+            rot_inv_params,
+            compactness_params,
+            classification_params,
+            evolve_params,
+            regression_params,
+        ) = get_feature_params(
+            config_path + "/results/", args.dataset_name, manifest, keys, run_names
+        )
 
-    metric_list = [
-        "Rotation Invariance Error",
-        "Evolution Energy",
-        "Reconstruction",
-        "Classification",
-        "Compactness",
-    ]
-    if regression_params["target_cols"]:
-        metric_list.append("Regression")
+        metric_list = [
+            "Rotation Invariance Error",
+            "Evolution Energy",
+            "Reconstruction",
+            "Classification",
+            "Compactness",
+        ]
+        if regression_params["target_cols"]:
+            metric_list.append("Regression")
 
-    # Compute multi-metric benchmarking features
-    compute_features(
-        dataset=args.dataset_name,
-        results_path=config_path + "/results/",
-        embeddings_path=args.embeddings_path,
-        save_folder=args.save_path,
-        data_list=data_list,
-        all_models=all_models,
-        run_names=run_names,
-        use_sample_points_list=sample_points_list,
-        keys=keys,
-        device=device,
-        max_embed_dim=max_embed_dim,
-        splits_list=["train", "val", "test"],
-        compute_embeds=False,
-        classification_params=classification_params,
-        regression_params=regression_params,
-        metric_list=metric_list,
-        loss_eval_list=loss_eval_list,
-        evolve_params=evolve_params,
-        rot_inv_params=rot_inv_params,
-        compactness_params=compactness_params,
-    )
+        # Compute multi-metric benchmarking features
+        compute_features(
+            dataset=args.dataset_name,
+            results_path=config_path + "/results/",
+            embeddings_path=args.embeddings_path,
+            save_folder=args.save_path,
+            data_list=data_list,
+            all_models=all_models,
+            run_names=run_names,
+            use_sample_points_list=sample_points_list,
+            keys=keys,
+            device=device,
+            max_embed_dim=max_embed_dim,
+            splits_list=["train", "val", "test"],
+            compute_embeds=False,
+            classification_params=classification_params,
+            regression_params=regression_params,
+            metric_list=metric_list,
+            loss_eval_list=loss_eval_list,
+            evolve_params=evolve_params,
+            rot_inv_params=rot_inv_params,
+            compactness_params=compactness_params,
+        )
 
     # Polar plot visualization
     # Load saved csvs
@@ -174,6 +175,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--debug", type=str2bool, default=False, help="Enable debug mode."
+    )
+    parser.add_argument(
+        "--skip_features",
+        type=str2bool,
+        default=False,
+        help="Boolean indicating whether to skip feature calculation and load pre-computed csvs",
     )
 
     args = parser.parse_args()
