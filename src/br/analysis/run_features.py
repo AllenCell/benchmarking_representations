@@ -38,7 +38,9 @@ def main(args):
         manifest,
         keys,
         latent_dims,
-    ) = get_data_and_models(args.dataset_name, batch_size, config_path + "/results/", args.debug)
+    ) = get_data_and_models(
+        args.dataset_name, batch_size, config_path + "/results/", args.debug
+    )
     max_embed_dim = min(latent_dims)
 
     # make save path directory
@@ -83,7 +85,9 @@ def main(args):
         classification_params,
         evolve_params,
         regression_params,
-    ) = get_feature_params(config_path + "/results/", args.dataset_name, manifest, keys, run_names)
+    ) = get_feature_params(
+        config_path + "/results/", args.dataset_name, manifest, keys, run_names
+    )
 
     metric_list = [
         "Rotation Invariance Error",
@@ -130,7 +134,15 @@ def main(args):
     unique_metrics = [i for i in csvs if "classification" in i or "regression" in i]
     # Collect dataframe and make plots
     df, df_non_agg = collect_outputs(args.save_path, "std", run_names, csvs)
-    plot(args.save_path, df, run_names, args.dataset_name, "std", unique_metrics, df_non_agg)
+    plot(
+        args.save_path,
+        df,
+        run_names,
+        args.dataset_name,
+        "std",
+        unique_metrics,
+        df_non_agg,
+    )
 
 
 if __name__ == "__main__":
@@ -139,7 +151,10 @@ if __name__ == "__main__":
         "--save_path", type=str, required=True, help="Path to save the embeddings."
     )
     parser.add_argument(
-        "--embeddings_path", type=str, required=True, help="Path to the saved embeddings."
+        "--embeddings_path",
+        type=str,
+        required=True,
+        help="Path to the saved embeddings.",
     )
     parser.add_argument(
         "--meta_key",
@@ -154,8 +169,12 @@ if __name__ == "__main__":
         required=True,
         help="boolean indicating whether the experiments involve SDFs",
     )
-    parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
-    parser.add_argument("--debug", type=str2bool, default=False, help="Enable debug mode.")
+    parser.add_argument(
+        "--dataset_name", type=str, required=True, help="Name of the dataset."
+    )
+    parser.add_argument(
+        "--debug", type=str2bool, default=False, help="Enable debug mode."
+    )
 
     args = parser.parse_args()
 
@@ -171,4 +190,6 @@ if __name__ == "__main__":
     python src/br/analysis/run_features.py --save_path "./outputs/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --sdf False --dataset_name "pcna"
 
     python src/br/analysis/run_features.py --save_path "/outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --sdf False --dataset_name "cellpack" --debug False
+
+    python src/br/analysis/run_features.py --save_path "./outputs_npm1_64_res_remake/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_64_res" --sdf True --dataset_name "npm1_64_res" --debug False
     """
