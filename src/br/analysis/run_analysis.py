@@ -36,12 +36,8 @@ def main(args):
     checkpoints = models["model_checkpoints"]
     checkpoints = [i for i in checkpoints if run_name in i]
     assert len(checkpoints) == 1
-    all_ret, df = get_embeddings(
-        [run_name], args.dataset_name, DATASET_INFO, args.embeddings_path
-    )
-    model, x_label, latent_dim, model_size = _load_model_from_path(
-        checkpoints[0], False, device
-    )
+    all_ret, df = get_embeddings([run_name], args.dataset_name, DATASET_INFO, args.embeddings_path)
+    model, x_label, latent_dim, model_size = _load_model_from_path(checkpoints[0], False, device)
 
     all_ret, stratify_key, n_archetypes, viz_params = dataset_specific_subsetting(
         all_ret, args.dataset_name
@@ -71,16 +67,12 @@ def main(args):
         )
 
         # Save reconstruction plots
-        latent_walk_save_recons(
-            this_save_path, stratify_key, viz_params, args.dataset_name
-        )
+        latent_walk_save_recons(this_save_path, stratify_key, viz_params, args.dataset_name)
 
     # Archetype analysis
     matrix = all_ret[[i for i in all_ret.columns if "mu" in i]].values
     aa = AA_Fast(n_archetypes, max_iter=1000, tol=1e-6).fit(matrix)
-    archetypes_df = pd.DataFrame(
-        aa.Z, columns=[f"mu_{i}" for i in range(matrix.shape[1])]
-    )
+    archetypes_df = pd.DataFrame(aa.Z, columns=[f"mu_{i}" for i in range(matrix.shape[1])])
 
     this_save_path = Path(args.save_path) / Path("archetypes")
     this_save_path.mkdir(parents=True, exist_ok=True)
@@ -91,9 +83,7 @@ def main(args):
     if args.sdf:
         archetypes_polymorphic(this_save_path, archetypes_df, all_ret, matrix)
     else:
-        archetypes_save_recons(
-            model, archetypes_df, device, key, viz_params, this_save_path
-        )
+        archetypes_save_recons(model, archetypes_df, device, key, viz_params, this_save_path)
 
     # Pseudotime analysis
     if "volume_of_nucleus_um3" in all_ret.columns:
@@ -112,9 +102,7 @@ if __name__ == "__main__":
         required=True,
         help="Path to the saved embeddings.",
     )
-    parser.add_argument(
-        "--dataset_name", type=str, required=True, help="Name of the dataset."
-    )
+    parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     parser.add_argument(
         "--sdf",
         type=str2bool,
@@ -153,4 +141,5 @@ if __name__ == "__main__":
     python src/br/analysis/run_analysis.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1/" --dataset_name "npm1" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True
 
     other polymorphic dataset:
-    python src/br/analysis/run_analysis.py --save_path "./outputs_other_polymorphic/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_polymorphic/" --d
+    python src/br/analysis/run_analysis.py --save_path "./outputs_other_polymorphic/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_polymorphic/" --dataset_name "other_polymorphic" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True
+    """
