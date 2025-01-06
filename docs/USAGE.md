@@ -198,3 +198,9 @@ python src/br/analysis/run_drugdata_analysis.py --save_path "./outputs_npm1_pert
 ```
 
 To compute cellprofiler features, open the [project file](../src/br/analysis/cellprofiler/npm1_perturb_cellprofiler.cpproj) using cellprofiler, and point to the single cell images of nucleoli in the [npm1 perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/NPM1_single_cell_drug_perturbations/). This will generate a csv named `MyExpt_Image.csv` that contains mean, median, and stdev statistics per image across the different computed features.
+
+4. To combine features from different runs and compare, run
+
+```
+python src/br/analysis/run_features_combine.py --feature_path_1 './outputs_npm1/' --feature_path_2 './outputs_npm1_64_res/' --save_path "./outputs_npm1_combine/" --dataset_name_1 "npm1" --dataset_name_2 "npm1_64_res" 
+```
