@@ -57,7 +57,7 @@ def main(args):
             loss_eval_list,
             sample_points_list,
             skew_scale,
-        ) = setup_evaluation_params(manifest, run_names)
+        ) = setup_evaluation_params(manifest, run_names, args.eval_scaled_img_resolution)
 
         # Save emission stats for each model
         max_batches = 40
@@ -174,6 +174,13 @@ if __name__ == "__main__":
         type=str2bool,
         default=False,
         help="Boolean indicating whether to skip feature calculation and load pre-computed csvs",
+    )
+    parser.add_argument(
+        "--eval_scaled_img_resolution",
+        type=int,
+        default=None,
+        required=False,
+        help="Resolution for SDF reconstruction",
     )
 
     args = parser.parse_args()

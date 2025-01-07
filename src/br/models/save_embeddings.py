@@ -298,7 +298,7 @@ def save_emissions(
         loss_eval = get_pc_loss() if loss_eval_list is None else loss_eval_list[j_ind]
         with torch.no_grad():
             count = 0
-            for i in tqdm(this_data.test_dataloader()):
+            for i in tqdm(this_data.train_dataloader()):
                 if count < max_batches:
                     track_emissions = True
                 else:
