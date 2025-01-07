@@ -264,10 +264,10 @@ def plot(
     fig.write_image(path / f"{title}.pdf", scale=3)
 
     if df_non_agg is not None:
-        sns.set(font_scale=1.1)
-        sns.set_theme(style="white")
+        sns.set(style="white", font_scale=1.3)
         for var in df_non_agg["variable"].unique():
             this_df = df_non_agg.loc[df_non_agg["variable"] == var].reset_index(drop=True)
+
             g = sns.catplot(
                 data=this_df,
                 y="model",
@@ -292,15 +292,30 @@ def plot(
                 alpha=0.6,
                 ec="k",
                 linewidth=1,
-                s=1,
+                s=2,
             )
 
-            g.set(
-                xlim=[
-                    np.nanquantile(this_df["value"].values, 0.05),
-                    np.nanquantile(this_df["value"].values, 0.95),
-                ]
-            )
+            if (var != "Model Size") and (var != "Emissions"):
+                g.set(
+                    xlim=[
+                        np.nanquantile(this_df["value"].values, 0.001),
+                        np.nanquantile(this_df["value"].values, 0.999),
+                    ]
+                )
+            elif var == "Emissions":
+                g.set(
+                    xlim=[
+                        np.nanquantile(this_df["value"].values, 0.05),
+                        np.nanquantile(this_df["value"].values, 0.95),
+                    ]
+                )
+            else:
+                g.set(
+                    xlim=[
+                        this_df["value"].values.min() - 0.1 * this_df["value"].values.min(),
+                        this_df["value"].values.max() + 0.1 * this_df["value"].values.max(),
+                    ]
+                )
 
             g.set(yticklabels=[])
 
