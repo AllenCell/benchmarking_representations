@@ -68,7 +68,11 @@ export CYTODL_CONFIG_PATH=$PWD/configs/
 
 ## Steps to download pre-processed data
 
-Coming soon.
+Preprocessing the data can take several hours. To skip this step, download the preprocessed data for each dataset.
+
+```bash
+aws s3 cp --no-sign-request --recursive s3://allencell/aics/morphology_appropriate_representation_learning/preprocessed_data/
+```
 
 ## Steps to train models
 
@@ -141,13 +145,7 @@ By default, the checkpoint files are expected in `benchmarking_representations/m
 
 ## Compute embeddings
 
-To compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) to point to your pre-processed data. Alternatively, download the pre-processed data.
-
-```bash
-aws s3 cp --no-sign-request --recursive s3://allencell/aics/morphology_appropriate_representation_learning/preprocessed_data/
-```
-
-Then, run the following commands.
+To compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) to point to your pre-processed data. Then, run the following commands.
 
 | Dataset           | Embedding command                                                                                                                                                      |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
