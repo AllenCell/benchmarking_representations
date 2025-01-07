@@ -144,14 +144,15 @@ By default, the checkpoint files are expected in `benchmarking_representations/m
 To compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) to point to your pre-processed data.
 Then, run the following commands.
 
-| Dataset           | Embedding command                                                                                                                            |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| cellpack          | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name cellpack --batch_size 5 --debug False`         |
-| npm1_perturb      | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1_perturb --batch_size 5 --debug False`      |
-| npm1              | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1 --batch_size 5 --debug False`              |
-| other_polymorphic | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name other_polymorphic --batch_size 5 --debug False` |
-| other_punctate    | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name other_punctate --batch_size 5 --debug False`   |
-| pcna              | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name pcna --batch_size 5 --debug False`             |
+| Dataset           | Embedding command                                                                                                                                                      |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| cellpack          | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name cellpack --batch_size 5 --debug False`                                   |
+| npm1_perturb      | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1_perturb --batch_size 5 --debug False`                                |
+| npm1              | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1 --batch_size 5 --debug False`                                        |
+| npm1_64_res       | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1_64_res --batch_size 5 --debug False --eval_scaled_img_resolution 64` |
+| other_polymorphic | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name other_polymorphic --batch_size 5 --debug False`                           |
+| other_punctate    | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name other_punctate --batch_size 5 --debug False`                             |
+| pcna              | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name pcna --batch_size 5 --debug False`                                       |
 
 # 3. Interpretability analysis
 
@@ -172,14 +173,14 @@ You can download our pre-computed embeddings here.
 
 1. To compute benchmarking features from the embeddings and trained models, run the following commands.
 
-| Dataset           | Benchmarking features                                                                                                                                                                                                                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| cellpack          | `python src/br/analysis/run_features.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --sdf False --dataset_name "cellpack" --debug False`                           |
-| npm1              | `python src/br/analysis/run_features.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1" --sdf True --dataset_name "npm1" --debug False`                                        |
-| npm1_64_res       | `python src/br/analysis/run_features.py --save_path "./outputs_npm1_64_res/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_64_res" --sdf True --dataset_name "npm1_64_res" --debug False`                   |
-| other_polymorphic | `python src/br/analysis/run_features.py --save_path "./outputs_other_polymorphic/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_polymorphic" --sdf True --dataset_name "other_polymorphic" --debug False` |
-| other_punctate    | `python src/br/analysis/run_features.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate" --sdf False --dataset_name "other_punctate" --debug False`         |
-| pcna              | `python src/br/analysis/run_features.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --sdf False --dataset_name "pcna" --debug False`                                       |
+| Dataset           | Benchmarking features                                                                                                                                                                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| cellpack          | `python src/br/analysis/run_features.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --sdf False --dataset_name "cellpack" --debug False`                                         |
+| npm1              | `python src/br/analysis/run_features.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1" --sdf True --dataset_name "npm1" --debug False`                                                      |
+| npm1_64_res       | `python src/br/analysis/run_features.py --save_path "./outputs_npm1_64_res/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_64_res" --sdf True --dataset_name "npm1_64_res" --debug False --eval_scaled_img_resolution 64` |
+| other_polymorphic | `python src/br/analysis/run_features.py --save_path "./outputs_other_polymorphic/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_polymorphic" --sdf True --dataset_name "other_polymorphic" --debug False`               |
+| other_punctate    | `python src/br/analysis/run_features.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate" --sdf False --dataset_name "other_punctate" --debug False`                       |
+| pcna              | `python src/br/analysis/run_features.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --sdf False --dataset_name "pcna" --debug False`                                                     |
 
 2. To run analysis like latent walks and archetype analysis on the embeddings and trained models, run the following commands.
 
