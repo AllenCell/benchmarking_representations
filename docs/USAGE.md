@@ -176,7 +176,7 @@ You can download our pre-computed embeddings here.
 
 1. To compute benchmarking features from the embeddings and trained models, run the following commands.
 
-| Dataset           | Benchmarking features                                                                                                                                                                                                                                                 |
+| Dataset           | Benchmarking features command                                                                                                                                                                                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | cellpack          | `python src/br/analysis/run_features.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --sdf False --dataset_name "cellpack" --debug False`                                         |
 | npm1              | `python src/br/analysis/run_features.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1" --sdf True --dataset_name "npm1" --debug False`                                                      |
@@ -187,7 +187,7 @@ You can download our pre-computed embeddings here.
 
 2. To run analysis like latent walks and archetype analysis on the embeddings and trained models, run the following commands.
 
-| Dataset           | Benchmarking features                                                                                                                                                                                                                                                                                    |
+| Dataset           | Analysis command                                                                                                                                                                                                                                                                                         |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | cellpack          | `python src/br/analysis/run_analysis.py --save_path "./outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --dataset_name "cellpack" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False --pacmap False`                         |
 | npm1              | `python src/br/analysis/run_analysis.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1" --dataset_name "npm1" --run_name "Rotation_invariant_pointcloud_SDF" --sdf True --pacmap False`                                         |
