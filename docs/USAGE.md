@@ -130,7 +130,7 @@ $ pwd
 3. Download the 30 models. This will use almost 4GB.
 
 ```bash
-aws s3 cp --no-sign-request --recursive s3://allencell/aics/morphology_appropriate_representation_learning/model_checkpoints/ morphology_appropriate_representation_learning/model_checkpoints/
+aws s3 cp --no-sign-request --recursive s3://allencell/aics/morphology_appropriate_representation_learning/model_checkpoints/
 ```
 
 ### Option 2: Download individual checkpoints
@@ -141,7 +141,12 @@ By default, the checkpoint files are expected in `benchmarking_representations/m
 
 ## Compute embeddings
 
-To compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) to point to your pre-processed data.
+To compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) to point to your pre-processed data. Alternatively, download the pre-processed data.
+
+```bash
+aws s3 cp --no-sign-request --recursive s3://allencell/aics/morphology_appropriate_representation_learning/preprocessed_data/
+```
+
 Then, run the following commands.
 
 | Dataset           | Embedding command                                                                                                                                                      |
