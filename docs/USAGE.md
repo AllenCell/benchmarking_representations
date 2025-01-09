@@ -68,7 +68,7 @@ export CYTODL_CONFIG_PATH=$PWD/configs/
 
 ## Steps to download pre-processed data
 
-Preprocessing the data can take several hours. To skip this step, download the preprocessed data for each dataset.
+Preprocessing the data can take several hours. To skip this step, download the preprocessed data for each dataset. This will use around 740 GB.
 
 ```bash
 aws s3 cp --no-sign-request --recursive s3://allencell/aics/morphology_appropriate_representation_learning/preprocessed_data/
@@ -145,17 +145,17 @@ By default, the checkpoint files are expected in `benchmarking_representations/m
 
 ## Compute embeddings
 
-To compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) to point to your pre-processed data. Then, run the following commands.
+Skip to the [next section](#3-interpretability-analysis) if you'd like to just use our pre-computed embeddings. Otherwise, to compute embeddings from the trained models, update the data paths in the [datamodule files](../configs/data/) to point to your pre-processed data. Then, run the following commands.
 
-| Dataset           | Embedding command                                                                                                                                                      |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| cellpack          | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name cellpack --batch_size 5 --debug False`                                   |
-| npm1_perturb      | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1_perturb --batch_size 5 --debug False`                                |
-| npm1              | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1 --batch_size 5 --debug False`                                        |
-| npm1_64_res       | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name npm1_64_res --batch_size 5 --debug False --eval_scaled_img_resolution 64` |
-| other_polymorphic | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf True --dataset_name other_polymorphic --batch_size 5 --debug False`                           |
-| other_punctate    | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name other_punctate --batch_size 5 --debug False`                             |
-| pcna              | `python src/br/analysis/run_embeddings.py --save_path "./outputs/" --sdf False --dataset_name pcna --batch_size 5 --debug False`                                       |
+| Dataset           | Embedding command                                                                                                                                                                  |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| cellpack          | `python src/br/analysis/run_embeddings.py --save_path "./outputs_cellpack/" --sdf False --dataset_name cellpack --batch_size 5 --debug False`                                      |
+| npm1_perturb      | `python src/br/analysis/run_embeddings.py --save_path "./outputs_npm1_perturb/" --sdf True --dataset_name npm1_perturb --batch_size 5 --debug False`                               |
+| npm1              | `python src/br/analysis/run_embeddings.py --save_path "./outputs_npm1/" --sdf True --dataset_name npm1 --batch_size 5 --debug False`                                               |
+| npm1_64_res       | `python src/br/analysis/run_embeddings.py --save_path "./outputs_npm1_64_res/" --sdf True --dataset_name npm1_64_res --batch_size 5 --debug False --eval_scaled_img_resolution 64` |
+| other_polymorphic | `python src/br/analysis/run_embeddings.py --save_path "./outputs_other_polymorphic/" --sdf True --dataset_name other_polymorphic --batch_size 5 --debug False`                     |
+| other_punctate    | `python src/br/analysis/run_embeddings.py --save_path "./outputs_other_punctate/" --sdf False --dataset_name other_punctate --batch_size 5 --debug False`                          |
+| pcna              | `python src/br/analysis/run_embeddings.py --save_path "./outputs_pcna/" --sdf False --dataset_name pcna --batch_size 5 --debug False`                                              |
 
 # 3. Interpretability analysis
 
