@@ -16,6 +16,11 @@ from br.models.compute_features import compute_features
 from br.models.load_models import get_data_and_models
 from br.models.save_embeddings import save_emissions
 
+REMOVE_RESULT = {
+    "cellpack": "Rotation_invariant_pointcloud_jitter",
+    "pcna": "Rotation_invariant_pointcloud_jitter",
+}
+
 
 def main(args):
     # Setup GPUs and set the device
@@ -39,6 +44,14 @@ def main(args):
         latent_dims,
     ) = get_data_and_models(args.dataset_name, batch_size, config_path + "/results/", args.debug)
     max_embed_dim = min(latent_dims)
+
+    if args.dataset_name in REMOVE_RESULT.keys():
+        remove_name = REMOVE_RESULT[args.dataset_name]
+        ind = run_names.index(remove_name)
+        del data_list[ind]
+        del all_models[ind]
+        del run_names[ind]
+        del model_sizes[ind]
 
     # make save path directory
     Path(args.save_path).mkdir(parents=True, exist_ok=True)
