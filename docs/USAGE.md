@@ -161,9 +161,7 @@ Skip to the [next section](#3-interpretability-analysis) if you'd like to just u
 
 ## Steps to download pre-computed embeddings
 
-Many of the results from the paper can be reproduced just from the embeddings produced by the model. However, some results rely on statistics about the costs of running the models, which are not included with the embeddings.
-
-You can download our pre-computed embeddings here.
+Many of the results from the paper can be reproduced just from the embeddings produced by the model. You can download our pre-computed embeddings here.
 
 - [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/cellpack/)
 - [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/model_embeddings/pcna/)
