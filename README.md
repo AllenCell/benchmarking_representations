@@ -27,10 +27,6 @@ If you'd like to reproduce this analysis on our data, check out the following do
 - [Preprocessing documentation](./docs/PREPROCESSING.md) for generating pointclouds and SDFs from from our input movies (step 2).
 - [Development documentation](./docs/DEVELOPMENT.md) for guidance working on the code in this repository.
 
-# Using the models
-
-Coming soon
-
 # Quickstart
 
 Use the cytodl api to run any given experiment. For e.g., train a rotation invariant point cloud autoencoder on the PCNA dataset
