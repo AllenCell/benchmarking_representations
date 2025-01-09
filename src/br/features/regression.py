@@ -19,6 +19,15 @@ def get_regression_df(all_ret, target_cols, feature_df_path, df_feat=None):
             this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
             if df_feat is not None and target not in this_mo.columns:
                 this_mo = this_mo.merge(df_feat, on="CellId")
+
+            if "avg_dists" in target:
+                this_mo = this_mo[this_mo[target] != 0]
+                print(len(this_mo))
+            if "std_dists" in target:
+                avg_col = f"avg{target.split('std')[1]}"
+                this_mo = this_mo[this_mo[avg_col] != 0]
+                print(len(this_mo))
+
             test_r2, test_mse = get_regression(this_mo, target)
             for i in range(len(test_r2)):
                 ret_dict5["model"].append(model)

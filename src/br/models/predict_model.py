@@ -223,7 +223,9 @@ def base_forward(
         key = "image"
 
     if eval_scaled_img and eval_scaled_img_model_type == "iae":
-        uni_sample_points = get_iae_reconstruction_3d_grid()
+        uni_sample_points = get_iae_reconstruction_3d_grid(
+            bb_min=-0.5, bb_max=0.5, resolution=eval_scaled_img_resolution, padding=0.1
+        )
         uni_sample_points = uni_sample_points.unsqueeze(0).repeat(this_batch[key].shape[0], 1, 1)
         this_batch["points"] = uni_sample_points
     xhat, z, z_params = model(
@@ -317,6 +319,7 @@ def base_forward(
             )
             for cellid, recon_data in zip(cellids, recon_data_list)
         ]
+
         with Pool(processes=8) as pool:
             errs = pool.map(multi_proc_scale_img_eval, args)
 
@@ -459,7 +462,6 @@ def process_batch(
         emissions_df["inference_time"] = time
     else:
         out, z, loss, x_vis_list = [*model_outputs]
-
     all_outputs.append(out)
     all_embeds.append(z)
     all_emissions.append(emissions_df)

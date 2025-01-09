@@ -208,24 +208,27 @@ def model_pass_reconstruct(
         target_bounds_initial = get_mesh_bbox_shape(mesh_initial)
         target_bounds_final = get_mesh_bbox_shape(mesh_final)
         target_bounds = [max(i, j) for i, j in zip(target_bounds_initial, target_bounds_final)]
-        recon_int, recon_initial, recon_final = voxelize_recon_meshes(
-            [mesh, mesh_initial, mesh_final], target_bounds
-        )
-        recon_initial = np.where(recon_initial > 0.5, 1, 0)
-        recon_int = np.where(recon_int > 0.5, 1, 0)
-        recon_final = np.where(recon_final > 0.5, 1, 0)
+        try:
+            recon_int, recon_initial, recon_final = voxelize_recon_meshes(
+                [mesh, mesh_initial, mesh_final], target_bounds
+            )
+            recon_initial = np.where(recon_initial > 0.5, 1, 0)
+            recon_int = np.where(recon_int > 0.5, 1, 0)
+            recon_final = np.where(recon_final > 0.5, 1, 0)
 
-        mse_total = 1 - jaccard_similarity_score(
-            recon_final.flatten(), recon_initial.flatten(), pos_label=1
-        )
-        mse_intial = 1 - jaccard_similarity_score(
-            recon_initial.flatten(), recon_int.flatten(), pos_label=1
-        )
-        mse_final = 1 - jaccard_similarity_score(
-            recon_final.flatten(), recon_int.flatten(), pos_label=1
-        )
-        energy = (mse_intial + mse_final) / mse_total
-        return energy.item()
+            mse_total = 1 - jaccard_similarity_score(
+                recon_final.flatten(), recon_initial.flatten(), pos_label=1
+            )
+            mse_intial = 1 - jaccard_similarity_score(
+                recon_initial.flatten(), recon_int.flatten(), pos_label=1
+            )
+            mse_final = 1 - jaccard_similarity_score(
+                recon_final.flatten(), recon_int.flatten(), pos_label=1
+            )
+            energy = (mse_intial + mse_final) / mse_total
+            return energy.item()
+        except:
+            return np.NaN
     else:
         if (key == "pcloud") and (not use_sample_points) and (init_x.shape[-1] <= 4):
             init_x = init_x[:, :, :3]

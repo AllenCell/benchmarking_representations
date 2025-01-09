@@ -1,4 +1,3 @@
-# Free up cache
 import argparse
 import os
 import sys
@@ -30,7 +29,7 @@ def main(args):
         loss_eval_list,
         sample_points_list,
         skew_scale,
-    ) = setup_evaluation_params(manifest, run_names)
+    ) = setup_evaluation_params(manifest, run_names, args.eval_scaled_img_resolution)
 
     # make save path directory
     Path(args.save_path).mkdir(parents=True, exist_ok=True)
@@ -74,6 +73,13 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     parser.add_argument("--batch_size", type=int, default=2, help="Batch size for processing.")
     parser.add_argument("--debug", type=str2bool, default=True, help="Enable debug mode.")
+    parser.add_argument(
+        "--eval_scaled_img_resolution",
+        type=int,
+        default=None,
+        required=False,
+        help="Resolution for SDF reconstruction",
+    )
 
     args = parser.parse_args()
 

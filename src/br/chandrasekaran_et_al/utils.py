@@ -201,24 +201,36 @@ def _plot(all_rep, save_path, run_names):
     x_order = ordered_drugs
 
     test = all_rep.sort_values(by="q_value").reset_index(drop=True)
+    test["1/q_value"] = test["q_value"].apply(lambda x: 1 / x)
 
     g = sns.catplot(
         data=test,
         x="Drugs",
-        y="q_value",
+        y="1/q_value",
         kind="bar",
         hue="model",
         order=x_order,
         hue_order=run_names,
-        palette=["#A6ACE0", "#6277DB", "#D9978E", "#D8553B", "#2ED9FF", "#91db57", "#db57d3"],
-        aspect=2,
+        palette=[
+            "#A6ACE0",
+            "#6277DB",
+            "#D9978E",
+            "#D8553B",
+            "#2ED9FF",
+            "#91db57",
+            "#db57d3",
+        ],
+        aspect=3,
         height=5,
         dodge=True,
     )
     g.set_xticklabels(rotation=90)
-    g.set(ylim=(0, 0.1))
-    plt.axhline(y=0.05, color="black")
-    g.set(ylabel="q value")
+    # g.set(ylim=(0, 0.1))
+    g.set(ylim=(0, 100))
+    # plt.axhline(y=0.05, color="black")
+    plt.axhline(y=20, color="black", linestyle="--")
+    # g.set(ylabel="q value")
+    g.set(ylabel="1/q value")
     this_path = Path(save_path)
     Path(this_path).mkdir(parents=True, exist_ok=True)
     g.savefig(this_path / "q_values.png", dpi=300, bbox_inches="tight")

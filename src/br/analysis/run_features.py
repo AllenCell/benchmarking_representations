@@ -1,4 +1,3 @@
-# Free up cache
 import argparse
 import os
 import sys
@@ -16,6 +15,11 @@ from br.features.plot import collect_outputs, plot
 from br.models.compute_features import compute_features
 from br.models.load_models import get_data_and_models
 from br.models.save_embeddings import save_emissions
+
+REMOVE_RESULT = {
+    "cellpack": "Rotation_invariant_pointcloud_jitter",
+    "pcna": "Rotation_invariant_pointcloud_jitter",
+}
 
 
 def main(args):
@@ -41,83 +45,94 @@ def main(args):
     ) = get_data_and_models(args.dataset_name, batch_size, config_path + "/results/", args.debug)
     max_embed_dim = min(latent_dims)
 
+    if args.dataset_name in REMOVE_RESULT.keys():
+        remove_name = REMOVE_RESULT[args.dataset_name]
+        ind = run_names.index(remove_name)
+        del data_list[ind]
+        del all_models[ind]
+        del run_names[ind]
+        del model_sizes[ind]
+
     # make save path directory
     Path(args.save_path).mkdir(parents=True, exist_ok=True)
 
-    # Save model sizes to CSV
-    sizes_ = pd.DataFrame()
-    sizes_["model"] = run_names
-    sizes_["model_size"] = model_sizes
-    sizes_.to_csv(os.path.join(args.save_path, "model_sizes.csv"))
+    if not args.skip_features:
+        # Save model sizes to CSV
+        sizes_ = pd.DataFrame()
+        sizes_["model"] = run_names
+        sizes_["model_size"] = model_sizes
+        sizes_.to_csv(os.path.join(args.save_path, "model_sizes.csv"))
 
-    # Load evaluation params
-    (
-        eval_scaled_img,
-        eval_scaled_img_params,
-        loss_eval_list,
-        sample_points_list,
-        skew_scale,
-    ) = setup_evaluation_params(manifest, run_names)
+        # Load evaluation params
+        (
+            eval_scaled_img,
+            eval_scaled_img_params,
+            loss_eval_list,
+            sample_points_list,
+            skew_scale,
+        ) = setup_evaluation_params(manifest, run_names, args.eval_scaled_img_resolution)
 
-    # Save emission stats for each model
-    max_batches = 40
-    save_emissions(
-        args.save_path,
-        data_list,
-        all_models,
-        run_names,
-        max_batches,
-        args.debug,
-        device,
-        loss_eval_list,
-        sample_points_list,
-        skew_scale,
-        eval_scaled_img,
-        eval_scaled_img_params,
-    )
+        # Save emission stats for each model
+        max_batches = 40
+        save_emissions(
+            args.save_path,
+            data_list,
+            all_models,
+            run_names,
+            max_batches,
+            args.debug,
+            device,
+            loss_eval_list,
+            sample_points_list,
+            skew_scale,
+            eval_scaled_img,
+            eval_scaled_img_params,
+        )
 
-    # Compute multi-metric benchmarking params
-    (
-        rot_inv_params,
-        compactness_params,
-        classification_params,
-        evolve_params,
-        regression_params,
-    ) = get_feature_params(config_path + "/results/", args.dataset_name, manifest, keys, run_names)
+        # Compute multi-metric benchmarking params
+        (
+            rot_inv_params,
+            compactness_params,
+            classification_params,
+            evolve_params,
+            regression_params,
+        ) = get_feature_params(
+            config_path + "/results/", args.dataset_name, manifest, keys, run_names
+        )
 
-    metric_list = [
-        "Rotation Invariance Error",
-        "Evolution Energy",
-        "Reconstruction",
-        "Classification",
-        "Compactness",
-    ]
-    if regression_params["target_cols"]:
-        metric_list.append("Regression")
+        metric_list = [
+            "Rotation Invariance Error",
+            "Evolution Energy",
+            "Reconstruction",
+            "Classification",
+            "Compactness",
+        ]
+        if regression_params["target_cols"]:
+            metric_list.append("Regression")
 
-    # Compute multi-metric benchmarking features
-    compute_features(
-        dataset=args.dataset_name,
-        results_path=config_path + "/results/",
-        embeddings_path=args.embeddings_path,
-        save_folder=args.save_path,
-        data_list=data_list,
-        all_models=all_models,
-        run_names=run_names,
-        use_sample_points_list=sample_points_list,
-        keys=keys,
-        device=device,
-        max_embed_dim=max_embed_dim,
-        splits_list=["train", "val", "test"],
-        compute_embeds=False,
-        classification_params=classification_params,
-        regression_params=regression_params,
-        metric_list=metric_list,
-        loss_eval_list=loss_eval_list,
-        evolve_params=evolve_params,
-        rot_inv_params=rot_inv_params,
-        compactness_params=compactness_params,
-    )
+        # Compute multi-metric benchmarking features
+        compute_features(
+            dataset=args.dataset_name,
+            results_path=config_path + "/results/",
+            embeddings_path=args.embeddings_path,
+            save_folder=args.save_path,
+            data_list=data_list,
+            all_models=all_models,
+            run_names=run_names,
+            use_sample_points_list=sample_points_list,
+            keys=keys,
+            device=device,
+            max_embed_dim=max_embed_dim,
+            splits_list=["train", "val", "test"],
+            compute_embeds=False,
+            classification_params=classification_params,
+            regression_params=regression_params,
+            metric_list=metric_list,
+            loss_eval_list=loss_eval_list,
+            evolve_params=evolve_params,
+            rot_inv_params=rot_inv_params,
+            compactness_params=compactness_params,
+        )
 
     # Polar plot visualization
     # Load saved csvs
@@ -130,7 +145,15 @@ def main(args):
     unique_metrics = [i for i in csvs if "classification" in i or "regression" in i]
     # Collect dataframe and make plots
     df, df_non_agg = collect_outputs(args.save_path, "std", run_names, csvs)
-    plot(args.save_path, df, run_names, args.dataset_name, "std", unique_metrics, df_non_agg)
+    plot(
+        args.save_path,
+        df,
+        run_names,
+        args.dataset_name,
+        "std",
+        unique_metrics,
+        df_non_agg,
+    )
 
 
 if __name__ == "__main__":
@@ -139,7 +162,10 @@ if __name__ == "__main__":
         "--save_path", type=str, required=True, help="Path to save the embeddings."
     )
     parser.add_argument(
-        "--embeddings_path", type=str, required=True, help="Path to the saved embeddings."
+        "--embeddings_path",
+        type=str,
+        required=True,
+        help="Path to the saved embeddings.",
     )
     parser.add_argument(
         "--meta_key",
@@ -156,6 +182,19 @@ if __name__ == "__main__":
     )
     parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     parser.add_argument("--debug", type=str2bool, default=False, help="Enable debug mode.")
+    parser.add_argument(
+        "--skip_features",
+        type=str2bool,
+        default=False,
+        help="Boolean indicating whether to skip feature calculation and load pre-computed csvs",
+    )
+    parser.add_argument(
+        "--eval_scaled_img_resolution",
+        type=int,
+        default=None,
+        required=False,
+        help="Resolution for SDF reconstruction",
+    )
 
     args = parser.parse_args()
 
@@ -171,4 +210,6 @@ if __name__ == "__main__":
     python src/br/analysis/run_features.py --save_path "./outputs/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --sdf False --dataset_name "pcna"
 
     python src/br/analysis/run_features.py --save_path "/outputs_cellpack/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/cellpack" --sdf False --dataset_name "cellpack" --debug False
+
+    python src/br/analysis/run_features.py --save_path "./outputs_npm1_64_res_remake/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_64_res" --sdf True --dataset_name "npm1_64_res" --debug False
     """

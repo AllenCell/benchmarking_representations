@@ -9,8 +9,10 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import mesh_to_sdf
 import numpy as np
+import pacmap
 import pandas as pd
 import pyvista as pv
+import seaborn as sns
 import torch
 import trimesh
 import yaml
@@ -157,7 +159,7 @@ def setup_gpu():
         print("No suitable GPU or MIG ID found. Exiting...")
 
 
-def setup_evaluation_params(manifest, run_names):
+def setup_evaluation_params(manifest, run_names, eval_scaled_img_resolution=None):
     """Return evaluation params related to.
 
     1. loss_eval_list - which loss to use for each model (Defaults to Chamfer loss)
@@ -171,6 +173,7 @@ def setup_evaluation_params(manifest, run_names):
     eval_scaled_img_params = [{}] * len(run_names)
 
     if "SDF" in "\t".join(run_names):
+        eval_scaled_img = [True] * len(run_names)
         loss_eval_list = [torch.nn.MSELoss(reduction="none")] * len(run_names)
         sample_points_list = [False] * len(run_names)
         skew_scale = None
@@ -184,18 +187,21 @@ def setup_evaluation_params(manifest, run_names):
                 skew_scale,
             )
 
-        eval_scaled_img_resolution = 32
+        if not eval_scaled_img_resolution:
+            eval_scaled_img_resolution = 32
         gt_mesh_dir = manifest["mesh_folder"].iloc[0]
         gt_sampled_pts_dir = manifest["pointcloud_folder"].iloc[0]
+        if len(os.listdir(gt_sampled_pts_dir)) == 1:
+            gt_sampled_pts_dir = gt_sampled_pts_dir + "0/"
         gt_scale_factor_dict_path = manifest["scale_factor"].iloc[0]
         eval_scaled_img_params = []
         for name_ in run_names:
             if "seg" in name_:
                 model_type = "seg"
-            elif "SDF" in name_:
-                model_type = "sdf"
             elif "pointcloud" in name_:
                 model_type = "iae"
+            else:
+                model_type = "sdf"
             eval_scaled_img_params.append(
                 {
                     "eval_scaled_img_model_type": model_type,
@@ -215,7 +221,13 @@ def setup_evaluation_params(manifest, run_names):
                 sample_points_list.append(True)
             else:
                 sample_points_list.append(False)
-    return eval_scaled_img, eval_scaled_img_params, loss_eval_list, sample_points_list, skew_scale
+    return (
+        eval_scaled_img,
+        eval_scaled_img_params,
+        loss_eval_list,
+        sample_points_list,
+        skew_scale,
+    )
 
 
 def setup_evolve_params(run_names, data_config_list, keys):
@@ -231,9 +243,9 @@ def setup_evolve_params(run_names, data_config_list, keys):
         for name_ in run_names:
             if "seg" in name_:
                 model_type = "seg"
-            elif "pointcloud_SDF" in name_:
+            elif "pointcloud" in name_:
                 model_type = "iae"
-            elif "SDF" in name_:
+            else:
                 model_type = "sdf"
             eval_meshed_img_model_type.append(model_type)
 
@@ -622,6 +634,44 @@ def archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features)
     arch_dict.to_csv(this_save_path / "archetypes.csv")
 
 
+def make_pacmap(this_save_path, all_ret, feats_archs):
+
+    cols = [i for i in all_ret.columns if "mu" in i]
+    feats = all_ret[cols].values
+    embedding = pacmap.PaCMAP(n_components=2, n_neighbors=10, MN_ratio=0.5, FP_ratio=2.0)
+    X_transformed = embedding.fit_transform(feats, init="pca")
+
+    archs_transform = embedding.transform(feats_archs, init="pca", basis=feats)
+    labels = all_ret["structure_name"].values
+    colors = sns.color_palette("Paired", len(np.unique(labels)))
+
+    cdict = {i: colors[j] for j, i in enumerate(np.unique(labels))}
+
+    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+    for g in np.unique(labels):
+        ix = np.where(labels == g)
+        ax.scatter(
+            X_transformed[ix, 0],
+            X_transformed[ix, 1],
+            c=cdict[g],
+            label=g,
+            s=0.6,
+            alpha=0.6,
+        )
+    ax.legend()
+    lgnd = plt.legend(loc="upper right", numpoints=1, fontsize=10)
+
+    # change the marker size manually for both lines
+    for handle in lgnd.legend_handles:
+        handle.set_sizes([6.0])
+
+    ax.scatter(archs_transform[:, 0], archs_transform[:, 1], c="k", s=20, marker="x")
+    ax.set_xlabel("PaCMAP dim 1")
+    ax.set_ylabel("PaCMAP dim 2")
+    fig.savefig(this_save_path / "pacmap_archetypes.png", bbox_inches="tight", dpi=300)
+    fig.savefig(this_save_path / "pacmap_archetypes.pdf", bbox_inches="tight", dpi=300)
+
+
 def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, device, save_path):
     with torch.no_grad():
         for j, model in enumerate(all_models):
@@ -652,7 +702,10 @@ def generate_reconstructions(all_models, data_list, run_names, keys, test_ids, d
                         )
                         batch["points"] = uni_sample_points
                         xhat, z, z_params = model(
-                            move(batch, device), decode=True, inference=True, return_params=True
+                            move(batch, device),
+                            decode=True,
+                            inference=True,
+                            return_params=True,
                         )
                         recon = xhat[this_key].detach().cpu().numpy().squeeze()
                         recon = recon.reshape(
@@ -798,7 +851,11 @@ def save_supplemental_figure_punctate_reconstructions(
                 if (index_ == 2) and (canon_z_ind != z_ind):
                     xy_inds = [i for i in [0, 1, 2] if i != canon_z_ind]
                 axes[index_].scatter(
-                    this_p[:, xy_inds[0]], this_p[:, xy_inds[1]], c="black", s=2, alpha=0.5
+                    this_p[:, xy_inds[0]],
+                    this_p[:, xy_inds[1]],
+                    c="black",
+                    s=2,
+                    alpha=0.5,
                 )
             else:
                 if not cmap:
@@ -874,7 +931,14 @@ def save_supplemental_figure_punctate_reconstructions(
                             df=all_df_input, pcts=[5, 95]
                         )
                 fig = _plot_pc(
-                    input, recon, recon_canonical, struct, cmap, vmin, vmax, dataset_name
+                    input,
+                    recon,
+                    recon_canonical,
+                    struct,
+                    cmap,
+                    vmin,
+                    vmax,
+                    dataset_name,
                 )
 
             this_save_path_ = Path(reconstructions_path) / Path(m)
@@ -957,7 +1021,9 @@ def save_supplemental_figure_sdf_reconstructions(df, test_ids, reconstructions_p
             gt_seg = gt_segs[i]
             gt_sdf = np.clip(gt_sdfs[i], -2, 2)
             gt_sdf_i = gt_test_i_sdfs[i].reshape(
-                eval_scaled_img_resolution, eval_scaled_img_resolution, eval_scaled_img_resolution
+                eval_scaled_img_resolution,
+                eval_scaled_img_resolution,
+                eval_scaled_img_resolution,
             )
             row_index = i
             recons = []
@@ -1003,7 +1069,11 @@ def save_supplemental_figure_sdf_reconstructions(df, test_ids, reconstructions_p
                 axs[row_index, i + 2].set_title("")  # run_to_displ_name[model_order[i]])
 
             axs[row_index, 4].imshow(
-                gt_sdf[:, :, mid_slice_].T, cmap="seismic", origin="lower", vmin=-2, vmax=2
+                gt_sdf[:, :, mid_slice_].T,
+                cmap="seismic",
+                origin="lower",
+                vmin=-2,
+                vmax=2,
             )
             axs[row_index, 4].axis("off")
             axs[row_index, 4].set_title("")  # (f'GT SDF CellId {c}')
@@ -1014,7 +1084,9 @@ def save_supplemental_figure_sdf_reconstructions(df, test_ids, reconstructions_p
                 axs[row_index, i + 5].set_title("")  # run_to_displ_name[model_order[i]])
 
             axs[row_index, 7].imshow(
-                gt_sdf_i[:, :, mid_slice_].T.clip(-0.5, 0.5), cmap="seismic", origin="lower"
+                gt_sdf_i[:, :, mid_slice_].T.clip(-0.5, 0.5),
+                cmap="seismic",
+                origin="lower",
             )
             axs[row_index, 7].axis("off")
             axs[row_index, 7].set_title("")  # (f'GT SDF CellId {c}')

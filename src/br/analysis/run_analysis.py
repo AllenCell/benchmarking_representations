@@ -11,6 +11,7 @@ from br.analysis.analysis_utils import (
     dataset_specific_subsetting,
     latent_walk_polymorphic,
     latent_walk_save_recons,
+    make_pacmap,
     pseudo_time_analysis,
     setup_gpu,
     str2bool,
@@ -76,6 +77,9 @@ def main(args):
     this_save_path = Path(args.save_path) / Path("archetypes")
     this_save_path.mkdir(parents=True, exist_ok=True)
 
+    if args.pacmap:
+        make_pacmap(this_save_path, all_ret, archetypes_df)
+
     if args.sdf:
         archetypes_polymorphic(this_save_path, archetypes_df, all_ret, matrix)
     else:
@@ -93,7 +97,10 @@ if __name__ == "__main__":
     )
     parser.add_argument("--run_name", type=str, required=True, help="Name of model")
     parser.add_argument(
-        "--embeddings_path", type=str, required=True, help="Path to the saved embeddings."
+        "--embeddings_path",
+        type=str,
+        required=True,
+        help="Path to the saved embeddings.",
     )
     parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     parser.add_argument(
@@ -101,6 +108,13 @@ if __name__ == "__main__":
         type=str2bool,
         required=True,
         help="boolean indicating whether the model involves SDFs",
+    )
+    parser.add_argument(
+        "--pacmap",
+        type=str2bool,
+        required=False,
+        default=False,
+        help="boolean indicating whether to plot a pacmap projection of the representations and archetypes",
     )
     args = parser.parse_args()
 

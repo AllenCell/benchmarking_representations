@@ -19,15 +19,16 @@ benchmarking_representations
 │   │   ├── cellpack
 │   │   ├── chandrasekaran_et_al
 │   │   ├── data
+│   │   │   ├── cellpack     <- Config files associated with cellpack simulations
 │   │   │   ├── get_datamodules.py     <- Get final list of datamodules per dataset
 │   │   │   └── preprocessing          <- Preprocessing scripts to generate point clouds and SDFs
-│   │   ├── features
 │   │   ├── features                   <- Metrics for benchmarking each model
 │   │   │   ├── archetype.py           <- Archetype analysis functions
 │   │   │   ├── classification.py      <- Test set classification accuracies using logistic regression classifiers
 │   │   │   ├── outlier_compactness.py <- Intrinsic dimensionality calculation and outlier classification
 │   │   │   ├── reconstruction.py      <- Functions for reconstruction viz across models
 │   │   │   ├── regression.py          <- Linear regression test set r^2
+│   │   │   ├── evolve.py          <- Evolution energy and interpolation distance metrics
 │   │   │   ├── rotation_invariance.py <- Sensitivity to four 90 degree rotations in embedding space
 │   │   │   └── plot.py                <- Polar plot viz across metrics
 │   │   ├── models                     <- Training and inference scripts
@@ -36,8 +37,9 @@ benchmarking_representations
 │   │   │   ├── save_embeddings.py     <- Save embeddings using inference functions
 │   │   │   ├── load_models.py         <- Load trained models based on checkpoint paths
 │   │   │   └── compute_features.py    <- Compute multi-metric features for each model based on saved embeddings
-│   │   ├── notebooks           <- Jupyter notebooks
 │   │   └── visualization
+│   │   │   ├── mitsuba_render_image.py               <- Mitsuba rendering for image segmentations
+│   │   │   ├── mitsuba_render_pc.py               <- Mitsuba rendering for pointclouds
 │   └── pointcloudutils
 │       ├── datamodules         <- Custom datamodules
 │       │   └── cellpack.py     <- CellPACK data specific datamodule

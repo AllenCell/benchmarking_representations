@@ -3,27 +3,27 @@ image_path: ./morphology_appropriate_representation_learning/preprocessed_data/o
 pc_path: ./morphology_appropriate_representation_learning/preprocessed_data/other_polymorphic/manifest.csv
 model_checkpoints:
   [
-    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_pointcloud_SDF.ckpt",
-    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_image_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Classical_image_seg.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_image_seg.ckpt",
     "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Classical_image_SDF.ckpt",
-    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Classical_image_seg.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_image_SDF.ckpt",
+    "./morphology_appropriate_representation_learning/model_checkpoints/other_polymorphic/Rotation_invariant_pointcloud_SDF.ckpt",
   ]
 names:
   [
-    "Rotation_invariant_pointcloud_SDF",
-    "Rotation_invariant_image_SDF",
+    "Classical_image_seg",
     "Rotation_invariant_image_seg",
     "Classical_image_SDF",
-    "Classical_image_seg",
+    "Rotation_invariant_image_SDF",
+    "Rotation_invariant_pointcloud_SDF",
   ]
 data_paths:
   [
-    "/data/other_polymorphic/pc.yaml",
-    "/data/other_polymorphic/so3_image_sdf.yaml",
+    "/data/other_polymorphic/classical_image_seg.yaml",
     "/data/other_polymorphic/so3_image_seg.yaml",
     "/data/other_polymorphic/classical_image_sdf.yaml",
-    "/data/other_polymorphic/classical_image_seg.yaml",
+    "/data/other_polymorphic/so3_image_sdf.yaml",
+    "/data/other_polymorphic/pc.yaml",
   ]
 classification_label: ["structure_name"]
 regression_label:

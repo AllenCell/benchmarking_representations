@@ -52,7 +52,8 @@ src
 
 # Polymorphic structures: Generate SDFs
 
-Use the segmentation data for polymorphic structures as input to the SDF generation step. 
+Use the segmentation data for polymorphic structures as input to the SDF generation step.
+
 ```
 src
 └── br
