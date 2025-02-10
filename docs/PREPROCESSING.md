@@ -33,7 +33,7 @@ Preprocessing is divided into three steps that use two different virtual environ
 # Switch to main virtual environment
 
 1. Deactivate the `image_preprocessing` virtual environment (if applicable).
-2. Follow the [installation instructions](./USAGE.md) (everything before "Usage") for the main virtual environment.
+2. Follow the [installation instructions](./USAGE.md) (everything before "1. Model training") for the main virtual environment.
 
 # Punctate structures: Generate pointclouds
 
