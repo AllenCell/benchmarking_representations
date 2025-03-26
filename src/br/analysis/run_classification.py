@@ -11,6 +11,7 @@ from skimage import morphology as skmorpho
 from tqdm import tqdm
 from br.features.classification import get_classification_df
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def get_surface_area(input_img):
