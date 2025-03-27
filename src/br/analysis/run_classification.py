@@ -220,8 +220,7 @@ if __name__ == "__main__":
     main(args)
 
     """
-    Example runs for each dataset:
-
-    cellpack dataset
+    Example run:
+    
     python src/br/analysis/run_classification.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1/" --dataset_name "npm1"
     """

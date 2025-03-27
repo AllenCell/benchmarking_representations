@@ -403,8 +403,7 @@ if __name__ == "__main__":
     main(args)
 
     """
-    Example runs for each dataset:
+    Example run:
 
-    cellpack dataset
     python src/br/analysis/run_drugdata_analysis.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb" --raw_path "./NPM1_single_cell_drug_perturbations/"
     """
