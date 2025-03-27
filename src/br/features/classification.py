@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
 
-def get_classification_df(all_ret, target_col, df_feat=None):
+def get_classification_df(all_ret, target_col, df_feat=None, cols=None):
     ret_dict5 = {
         "model": [],
         "top_1_acc": [],
@@ -21,7 +21,7 @@ def get_classification_df(all_ret, target_col, df_feat=None):
         this_mo = all_ret.loc[all_ret["model"] == model].reset_index(drop=True)
         if df_feat is not None and target_col not in this_mo.columns:
             this_mo = this_mo.merge(df_feat, on="CellId")
-        k1, k2, k3 = get_classification(this_mo, target_col)
+        k1, k2, k3 = get_classification(this_mo, target_col, cols)
         for i in range(len(k1)):
             ret_dict5["model"].append(model)
             ret_dict5["top_1_acc"].append(k1[i])
@@ -90,6 +90,8 @@ def get_classification(this_mo, target_col, cols=None):
         multi_class = "ovr"
     if cols is None:
         cols = [i for i in this_mo.columns if "mu" in i]
+
+
 
     clf = proba_logreg(
         random_state=20,
