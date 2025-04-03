@@ -19,7 +19,7 @@ Preprocessing is divided into three steps that use two different virtual environ
 
 - [cellPACK synthetic dataset](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/cellPACK_single_cell_punctate_structure/)
 - [DNA replication foci dataset](https://open.quiltdata.com/b/allencell/packages/aics/nuclear_project_dataset_4)
-- [WTC-11 hIPSc single cell image dataset v1](https://staging.allencellquilt.org/b/allencell/tree/aics/hipsc_single_cell_image_dataset/)
+- [WTC-11 hIPSc single cell image dataset v1](https://open.quiltdata.com/b/allencell/tree/aics/hipsc_single_cell_image_dataset/)
 - [Nucleolar drug perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/NPM1_single_cell_drug_perturbations/)
 
 > [!NOTE]
