@@ -79,7 +79,7 @@ aws s3 cp --no-sign-request --recursive s3://allencell/aics/morphology_appropria
 Training these models can take days. We've published our trained models so you don't have to. Skip to the [next section](#2-model-inference) if you'd like to just use our models.
 
 1. Create a single cell manifest (e.g. csv, parquet) for each dataset with a column corresponding to final processed paths, and create a split column corresponding to train/test/validation split.
-2. Update the final single cell dataset path (`SINGLE_CELL_DATASET_PATH`) and the column in the manifest for appropriate input modality (`SDF_COLUMN`/`SEG_COLUMN`/`POINTCLOUD_COLUMN`/`IMAGE_COLUMN`) in each [datamodule file](../configs/data/). e.g. for PCNA data these yaml files are located here -
+2. Update the [datamodule config file](../configs/data/) with the path to this single cell manifest. For example, update the `path` key in the [pcna config](../configs/data/pcna/image.yaml) to be the path to the processed single cell manifest. Additionally, update the `image` and `cell_id` keys under `transforms/groups` to point to their corresponding column names in the single cell manifest. Similarly, update all other image and pointcloud datamodule files for the PCNA dataset here -
 
 ```
 configs
