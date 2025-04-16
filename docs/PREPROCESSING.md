@@ -52,7 +52,7 @@ src
 
 # Polymorphic structures: Generate SDFs
 
-Use the segmentation data for polymorphic structures as input to the SDF generation step.
+Use the segmentation data for polymorphic structures as input to the SDF generation step. 
 
 ```
 src
@@ -64,3 +64,9 @@ src
                ├── get_max_bounding_box.py <- Get bounds of the largest scaled mesh
                └── pc_sdfs.py    <- Sample point clouds from scaled meshes
 ```
+
+The scale factors can be computed using the `get_max_bounding_box` script. Alternatively, the pre-computed scale factors can be downloaded along with the rest of the preprocessed data. The following scale factors are available for download 
+
+1. [WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1)](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/preprocessed_data/npm1/scale_factor.npz)
+2. [WTC-11 hIPSc single cell image dataset v1 nucleolus (NPM1) 64 resolution](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/preprocessed_data/npm1_64_res/scale_factor.npz)
+3. [WTC-11 hIPSc single cell image dataset v1 polymorphic structures](https://open.quiltdata.com/b/allencell/tree/aics/morphology_appropriate_representation_learning/preprocessed_data/other_polymorphic/scale_factor.npz)

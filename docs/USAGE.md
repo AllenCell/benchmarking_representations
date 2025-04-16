@@ -79,7 +79,7 @@ aws s3 cp --no-sign-request --recursive s3://allencell/aics/morphology_appropria
 Training these models can take days. We've published our trained models so you don't have to. Skip to the [next section](#2-model-inference) if you'd like to just use our models.
 
 1. Create a single cell manifest (e.g. csv, parquet) for each dataset with a column corresponding to final processed paths, and create a split column corresponding to train/test/validation split.
-2. Update the final single cell dataset path (`SINGLE_CELL_DATASET_PATH`) and the column in the manifest for appropriate input modality (`SDF_COLUMN`/`SEG_COLUMN`/`POINTCLOUD_COLUMN`/`IMAGE_COLUMN`) in each [datamodule file](../configs/data/). e.g. for PCNA data these yaml files are located here -
+2. Update the [datamodule config file](../configs/data/) with the path to this single cell manifest. For example, update the `path` key in the [pcna config](../configs/data/pcna/image.yaml) to be the path to the processed single cell manifest. Additionally, update the `image` and `cell_id` keys under `transforms/groups` to point to their corresponding column names in the single cell manifest. Similarly, update all other image and pointcloud datamodule files for the PCNA dataset here -
 
 ```
 configs
@@ -199,10 +199,31 @@ python src/br/analysis/run_features_combine.py --feature_path_1 './outputs_npm1/
 | other_punctate    | `python src/br/analysis/run_analysis.py --save_path "./outputs_other_punctate/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/other_punctate" --dataset_name "other_punctate" --run_name "Rotation_invariant_pointcloud_structurenorm" --sdf False --pacmap True` |
 | pcna              | `python src/br/analysis/run_analysis.py --save_path "./outputs_pcna/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/pcna" --dataset_name "pcna" --run_name "Rotation_invariant_pointcloud_jitter" --sdf False --pacmap False`                                     |
 
-3. To run drug perturbation analysis using the pre-computed features, run
+## Steps to run analysis for the nucleolar drug perturbation dataset
+
+1. To compute q-values for the mean average precision scores associated with perturbation retrieval using the pre-computed features, run
 
 ```
 python src/br/analysis/run_drugdata_analysis.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb"
 ```
 
-To compute cellprofiler features, open the [project file](../src/br/analysis/cellprofiler/npm1_perturb_cellprofiler.cpproj) using cellprofiler, and point to the single cell images of nucleoli in the [npm1 perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/NPM1_single_cell_drug_perturbations/). This will generate a csv named `MyExpt_Image.csv` that contains mean, median, and stdev statistics per image across the different computed features.
+2. To compute cellprofiler features, open the [project file](../src/br/analysis/cellprofiler/npm1_perturb_cellprofiler.cpproj) using cellprofiler, and point to the single cell images of nucleoli in the [npm1 perturbation dataset](https://open.quiltdata.com/b/allencell/tree/aics/NPM1_single_cell_drug_perturbations/). This will generate a csv named `MyExpt_Image.csv` that contains mean, median, and stdev statistics per image across the different computed features.
+
+3. To compute classification scores for the number of pieces of nucleoli using the pre-computed features and cellprofiler features, run
+
+```
+python src/br/analysis/run_classification.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1/" --dataset_name "npm1"
+```
+
+4. To run LDA analysis on the drug perturbation dataset, run
+
+```
+python src/br/analysis/run_drugdata_LDA.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb" --raw_path "./NPM1_single_cell_drug_perturbations/"
+```
+
+To run a baseline LDA on the DMSO subset of the drug perturbation dataset, run
+
+```
+python src/br/analysis/run_drugdata_LDA.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb" --raw_path "./NPM1_single_cell_drug_perturbations/" --baseline True
+```
+
