@@ -10,6 +10,7 @@ from skimage.io import imread
 import matplotlib.pyplot as plt
 import pandas as pd
 from br.models.compute_features import get_embeddings
+from br.analysis.analysis_utils import str2bool
 from br.models.utils import get_all_configs_per_dataset
 from skimage import measure
 import seaborn as sns
@@ -162,6 +163,7 @@ def main(args):
         "Brefeldin 5uM": "Brefeldin",
     }
     all_ret["condition"] = all_ret["condition"].replace(map_)
+    all_ret = all_ret.merge(raw_df[['CellId', 'plate_id']], on='CellId')
     cols = [i for i in all_ret.columns if "mu" in i]
 
     hits = [
@@ -174,7 +176,6 @@ def main(args):
         "Roscovitine 10uM",
     ]
 
-    res = {}
     scale_lows = [0.3, 0.3, 0.3, 0.3, 0.4, 0.25, 0.3, 0.3, 0.3, 0.3]
     scale_highs = [0.3, 0.3, 0.3, 0.3, 0.4, 0.25, 0.3, 0.3, 0.3, 0.3]
     scale_lows = [i * 0.1 for i in scale_lows]
@@ -194,12 +195,23 @@ def main(args):
     merge_thresh[6] = 7
     sns.set_context("talk")
 
+    if args.baseline:
+        all_ret = all_ret.loc[all_ret['condition'] == 'DMSO (control)']
+        hits = [[215, 214, 231, 213, 232, 230, 233, 216]] # random sample of plates
+        merge_thresh = [11]
+        scale_lows = [i*2 for i in scale_lows]
+        scale_highs = [i*3 for i in scale_highs]
+
     for j, hit in enumerate(hits):
         print("Analysis for", hit)
         scale_low = scale_lows[j]
         scale_high = scale_highs[j]
-        tmp1 = all_ret.loc[all_ret["condition"] == "DMSO (control)"]
-        tmp2 = all_ret.loc[all_ret["condition"] == hit]
+        if not args.baseline:
+            tmp1 = all_ret.loc[all_ret["condition"] == "DMSO (control)"]
+            tmp2 = all_ret.loc[all_ret["condition"] == hit]
+        else:
+            tmp1 = all_ret.loc[all_ret['plate_id'].isin(hit[:4])]
+            tmp2 = all_ret.loc[all_ret['plate_id'].isin(hit[4:])]
         tmp1["class"] = 0
         tmp2["class"] = 1
         tmp = pd.concat([tmp1, tmp2], axis=0).reset_index(drop=True)
@@ -210,8 +222,6 @@ def main(args):
         preds = clf.fit_transform(X, y)
         lda_direction = clf.coef_[0]
         lda_line = np.array([-lda_direction * scale_low, lda_direction * scale_high])
-        res[hit] = preds
-
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
         colors = plt.cm.Set2(np.linspace(0, 1, 8))
         # PCA Projection plot
@@ -393,6 +403,7 @@ if __name__ == "__main__":
         "--dataset_name", type=str, required=True, help="Name of the dataset."
     )
     parser.add_argument("--raw_path", type=str, required=True, help="Path to raw data")
+    parser.add_argument("--baseline", type=str2bool, default=False, help="Perform LDA baseline only")
     args = parser.parse_args()
 
     # Validate that required paths are provided
@@ -405,5 +416,9 @@ if __name__ == "__main__":
     """
     Example run:
 
-    python src/br/analysis/run_drugdata_analysis.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb" --raw_path "./NPM1_single_cell_drug_perturbations/"
+    For all drugs:
+    python src/br/analysis/run_drugdata_LDA.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb" --raw_path "./NPM1_single_cell_drug_perturbations/"
+
+    For baseline (DMSO subset 1 -> DMSO subset 2): 
+    python src/br/analysis/run_drugdata_LDA.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb" --raw_path "./NPM1_single_cell_drug_perturbations/" --baseline True
     """
