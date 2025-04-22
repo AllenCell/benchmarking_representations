@@ -226,4 +226,3 @@ To run a baseline LDA on the DMSO subset of the drug perturbation dataset, run
 ```
 python src/br/analysis/run_drugdata_LDA.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb" --raw_path "./NPM1_single_cell_drug_perturbations/" --baseline True
 ```
-

@@ -2,16 +2,18 @@ import argparse
 import os
 import sys
 from pathlib import Path
-import pandas as pd
+
+import matplotlib.pyplot as plt
 import numpy as np
-from br.models.compute_features import get_embeddings
-from br.models.utils import get_all_configs_per_dataset
+import pandas as pd
+import seaborn as sns
 from skimage import measure as skmeasure
 from skimage import morphology as skmorpho
 from tqdm import tqdm
+
 from br.features.classification import get_classification_df
-import matplotlib.pyplot as plt
-import seaborn as sns
+from br.models.compute_features import get_embeddings
+from br.models.utils import get_all_configs_per_dataset
 
 
 def get_surface_area(input_img):
@@ -20,9 +22,9 @@ def get_surface_area(input_img):
     input_img[:, :, [0, -1]] = 0
     input_img[:, [0, -1], :] = 0
     input_img[[0, -1], :, :] = 0
-    input_img_surface = np.logical_xor(
-        input_img, skmorpho.binary_erosion(input_img)
-    ).astype(np.uint8)
+    input_img_surface = np.logical_xor(input_img, skmorpho.binary_erosion(input_img)).astype(
+        np.uint8
+    )
     # Loop through the boundary voxels to calculate the number of
     # boundary faces. Using 6-neighborhod.
     pxl_z, pxl_y, pxl_x = np.nonzero(input_img_surface)
@@ -113,20 +115,14 @@ def main(args):
         feats["CellId"] = row["CellId"]
         all_feats.append(pd.DataFrame(feats, index=[0]))
     all_feats = pd.concat(all_feats, axis=0)
-    all_feats = all_feats.merge(
-        orig_df[["CellId", "vol_bins", "vol_bins_inds"]], on="CellId"
-    )
+    all_feats = all_feats.merge(orig_df[["CellId", "vol_bins", "vol_bins_inds"]], on="CellId")
     all_feats["mean_volume"] = all_feats["shape_volume"] / all_feats["connectivity_cc"]
     all_feats["mean_surface_area"] = (
         all_feats["roundness_surface_area"] / all_feats["connectivity_cc"]
     )
 
-    all_feats = all_feats.merge(
-        orig_df[["CellId", "STR_connectivity_cc_thresh"]], on="CellId"
-    )
-    all_feats = all_feats.loc[all_feats["CellId"] != 724520].reset_index(
-        drop=True
-    )  # nan row
+    all_feats = all_feats.merge(orig_df[["CellId", "STR_connectivity_cc_thresh"]], on="CellId")
+    all_feats = all_feats.loc[all_feats["CellId"] != 724520].reset_index(drop=True)  # nan row
     all_ret = all_ret.loc[all_ret["CellId"] != 724520].reset_index(drop=True)  # nan row
     assert not all_feats["mean_surface_area"].isna().any()
 
@@ -134,7 +130,6 @@ def main(args):
         orig_df[["CellId", "vol_bins", "vol_bins_inds"]],
         on="CellId",
     )
-    from br.features.classification import get_classification_df
 
     all_baseline = []
     all_feats["model"] = "baseline"
@@ -175,9 +170,7 @@ def main(args):
         "(676.015, 818.646)",
         "(818.646, 961.277)",
     ]
-    g = sns.boxplot(
-        ax=ax, data=plot, x="vol_bin", y="top_1_acc", hue="features", order=x_order
-    )
+    g = sns.boxplot(ax=ax, data=plot, x="vol_bin", y="top_1_acc", hue="features", order=x_order)
     plt.xticks(rotation=30)
     ax.set_xticklabels(
         ["0", "1", "2", "3", "4"], rotation=0
@@ -191,6 +184,7 @@ def main(args):
         bbox_inches="tight",
         dpi=300,
     )
+    plot.to_csv(args.save_path + "classification_number_pieces.csv")
     # fig.savefig("classification_number_pieces_nogrouping.png", bbox_inches="tight", dpi=300)
 
 
@@ -198,18 +192,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Script for computing perturbation detection metrics"
     )
-    parser.add_argument(
-        "--save_path", type=str, required=True, help="Path to save the results."
-    )
+    parser.add_argument("--save_path", type=str, required=True, help="Path to save the results.")
     parser.add_argument(
         "--embeddings_path",
         type=str,
         required=True,
         help="Path to the saved embeddings.",
     )
-    parser.add_argument(
-        "--dataset_name", type=str, required=True, help="Name of the dataset."
-    )
+    parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     args = parser.parse_args()
 
     # Validate that required paths are provided
@@ -221,6 +211,6 @@ if __name__ == "__main__":
 
     """
     Example run:
-    
+
     python src/br/analysis/run_classification.py --save_path "./outputs_npm1/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1/" --dataset_name "npm1"
     """

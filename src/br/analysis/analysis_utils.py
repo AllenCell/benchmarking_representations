@@ -634,6 +634,56 @@ def archetypes_polymorphic(this_save_path, archetypes_df, all_ret, all_features)
     arch_dict.to_csv(this_save_path / "archetypes.csv")
 
 
+def make_pca_score_plot(this_save_path, all_ret, stratify_key, dataset_name):
+    cols = [i for i in all_ret.columns if "mu" in i]
+    feats = all_ret[cols].values
+
+    pca = PCA()
+    pca_feats = pca.fit_transform(feats)
+    pca_feats = pd.DataFrame(pca_feats, columns=[f"PC_{i+1}" for i in range(len(cols))])
+    pca_feats = pd.concat([pca_feats, all_ret], axis=1)
+
+    n_colors = len(all_ret[stratify_key].unique())
+    colors = sns.color_palette("Paired", n_colors)
+
+    hue_order = None
+    if dataset_name == "pcna":
+        hue_order = [
+            "G1",
+            "earlyS",
+            "earlyS-midS",
+            "midS",
+            "midS-lateS",
+            "lateS",
+            "lateS-G2",
+            "G2",
+        ]
+        colors = (
+            sns.color_palette("Greens", 2)
+            + sns.color_palette("Reds", 4)
+            + sns.color_palette("Purples", 2)
+        )
+    elif dataset_name == "other_polymorphic":
+        hue_order = ["1.0", "2.0", "3.0", "4.0", ">=5"]
+
+    fig, ax = plt.subplots(1, 1, figsize=(5, 5))
+    g = sns.scatterplot(
+        ax=ax,
+        data=pca_feats,
+        x="PC_1",
+        y="PC_2",
+        hue=stratify_key,
+        hue_order=hue_order,
+        palette=colors,
+    )
+    g.legend(loc="center left", bbox_to_anchor=(1, 0.5), ncol=1)
+
+    fig.savefig(this_save_path / f"pcs_{dataset_name}.png", bbox_inches="tight", dpi=300)
+    fig.savefig(this_save_path / f"pcs_{dataset_name}.pdf", bbox_inches="tight", dpi=300)
+
+    pca_feats.to_csv(this_save_path / f"pcs_{dataset_name}.csv")
+
+
 def make_pacmap(this_save_path, all_ret, feats_archs):
 
     cols = [i for i in all_ret.columns if "mu" in i]
@@ -642,8 +692,36 @@ def make_pacmap(this_save_path, all_ret, feats_archs):
     X_transformed = embedding.fit_transform(feats, init="pca")
 
     archs_transform = embedding.transform(feats_archs, init="pca", basis=feats)
+
+    gene_to_struct = {
+        "NUP153": "Nuclear Pores",
+        "FBL": "Nucleoli (DFC)",
+        "LAMP1": "Lysosomes",
+        "ST6GAL1": "Golgi",
+        "SON": "Nuclear Speckles",
+        "HIST1H2BJ": "Histones",
+        "SMC1A": "Cohesins",
+        "CETN2": "Centrioles",
+        "SLC25A17": "Peroxisomes",
+        "RAB5A": "Endosomes",
+        "NPM1": "Nucleoli (GC)",
+    }
+    all_ret["structure_name"] = all_ret["structure_name"].apply(lambda x: gene_to_struct[x])
+
     labels = all_ret["structure_name"].values
-    colors = sns.color_palette("Paired", len(np.unique(labels)))
+    if "Golgi" in labels:
+        colors = sns.color_palette("Set2", len(np.unique(labels)))
+    else:
+        colors = sns.color_palette("Paired", len(np.unique(labels)))
+
+    tmp = pd.DataFrame(
+        X_transformed, columns=[f"PACMAP_{i}" for i in range(X_transformed.shape[1])]
+    )
+    tmp2 = pd.DataFrame(
+        archs_transform, columns=[f"Archetype_{i}" for i in range(archs_transform.shape[1])]
+    )
+    tmp = pd.concat([tmp, tmp2, all_ret[["structure_name"]]], axis=1)
+    tmp.to_csv(this_save_path / "pacmap_archetypes.csv")
 
     cdict = {i: colors[j] for j, i in enumerate(np.unique(labels))}
 
@@ -659,7 +737,10 @@ def make_pacmap(this_save_path, all_ret, feats_archs):
             alpha=0.6,
         )
     ax.legend()
-    lgnd = plt.legend(loc="upper right", numpoints=1, fontsize=10)
+    if "Golgi" in labels:
+        lgnd = plt.legend(loc="upper left", numpoints=1, fontsize=10)
+    else:
+        lgnd = plt.legend(loc="upper right", numpoints=1, fontsize=10)
 
     # change the marker size manually for both lines
     for handle in lgnd.legend_handles:
