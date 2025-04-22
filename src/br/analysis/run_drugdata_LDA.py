@@ -2,18 +2,21 @@ import argparse
 import os
 import sys
 from pathlib import Path
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from sklearn.decomposition import PCA
-from tqdm import tqdm
-import numpy as np
-from skimage.io import imread
+
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from br.models.compute_features import get_embeddings
-from br.analysis.analysis_utils import str2bool
-from br.models.utils import get_all_configs_per_dataset
-from skimage import measure
 import seaborn as sns
+from skimage import measure
+from skimage.io import imread
+from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from tqdm import tqdm
+
+from br.analysis.analysis_utils import str2bool
+from br.models.compute_features import get_embeddings
+from br.models.utils import get_all_configs_per_dataset
 
 
 def pad_to_size(array, target_shape, padding_value=0):
@@ -39,9 +42,7 @@ def pad_to_size(array, target_shape, padding_value=0):
 
     padding = [(padding_before[i], padding_after[i]) for i in range(len(target_shape))]
 
-    padded_array = np.pad(
-        array, pad_width=padding, mode="constant", constant_values=padding_value
-    )
+    padded_array = np.pad(array, pad_width=padding, mode="constant", constant_values=padding_value)
     return padded_array
 
 
@@ -53,9 +54,8 @@ def get_image(cell_id, raw_df):
 
 
 def sort_by_second_element_with_index(data):
-    """
-    Sorts a list of lists based on the second element of each sublist
-    and returns a list of original indices in the sorted order.
+    """Sorts a list of lists based on the second element of each sublist and returns a list of
+    original indices in the sorted order.
 
     Args:
         data: A list of lists.
@@ -92,10 +92,8 @@ def merge_contours(contours, distance_threshold):
 
                 # Calculate distances between all pairs of points
                 distances = np.sqrt(
-                    (
-                        (contour1[:, 0, None] - contour2[:, 0]) ** 2
-                        + (contour1[:, 1, None] - contour2[:, 1]) ** 2
-                    )
+                    (contour1[:, 0, None] - contour2[:, 0]) ** 2
+                    + (contour1[:, 1, None] - contour2[:, 1]) ** 2
                 )
 
                 # Find the minimum distance
@@ -136,12 +134,8 @@ def main(args):
         args.embeddings_path,
     )
     raw_df = pd.read_csv(Path(args.raw_path) / "manifest.csv")
-    raw_df["crop_raw"] = raw_df["crop_raw"].apply(
-        lambda x: Path(args.raw_path) / Path(x)
-    )
-    raw_df["crop_seg_nuc"] = raw_df["crop_seg_nuc"].apply(
-        lambda x: Path(args.raw_path) / Path(x)
-    )
+    raw_df["crop_raw"] = raw_df["crop_raw"].apply(lambda x: Path(args.raw_path) / Path(x))
+    raw_df["crop_seg_nuc"] = raw_df["crop_seg_nuc"].apply(lambda x: Path(args.raw_path) / Path(x))
 
     map_ = {
         "Actinomyocin D 0.5ug per mL": "Actinomyocin D",
@@ -163,7 +157,7 @@ def main(args):
         "Brefeldin 5uM": "Brefeldin",
     }
     all_ret["condition"] = all_ret["condition"].replace(map_)
-    all_ret = all_ret.merge(raw_df[['CellId', 'plate_id']], on='CellId')
+    all_ret = all_ret.merge(raw_df[["CellId", "plate_id"]], on="CellId")
     cols = [i for i in all_ret.columns if "mu" in i]
 
     hits = [
@@ -196,11 +190,11 @@ def main(args):
     sns.set_context("talk")
 
     if args.baseline:
-        all_ret = all_ret.loc[all_ret['condition'] == 'DMSO (control)']
-        hits = [[215, 214, 231, 213, 232, 230, 233, 216]] # random sample of plates
+        all_ret = all_ret.loc[all_ret["condition"] == "DMSO (control)"]
+        hits = [[215, 214, 231, 213, 232, 230, 233, 216]]  # random sample of plates
         merge_thresh = [11]
-        scale_lows = [i*2 for i in scale_lows]
-        scale_highs = [i*3 for i in scale_highs]
+        scale_lows = [i * 2 for i in scale_lows]
+        scale_highs = [i * 3 for i in scale_highs]
 
     for j, hit in enumerate(hits):
         print("Analysis for", hit)
@@ -210,8 +204,8 @@ def main(args):
             tmp1 = all_ret.loc[all_ret["condition"] == "DMSO (control)"]
             tmp2 = all_ret.loc[all_ret["condition"] == hit]
         else:
-            tmp1 = all_ret.loc[all_ret['plate_id'].isin(hit[:4])]
-            tmp2 = all_ret.loc[all_ret['plate_id'].isin(hit[4:])]
+            tmp1 = all_ret.loc[all_ret["plate_id"].isin(hit[:4])]
+            tmp2 = all_ret.loc[all_ret["plate_id"].isin(hit[4:])]
         tmp1["class"] = 0
         tmp2["class"] = 1
         tmp = pd.concat([tmp1, tmp2], axis=0).reset_index(drop=True)
@@ -222,6 +216,8 @@ def main(args):
         preds = clf.fit_transform(X, y)
         lda_direction = clf.coef_[0]
         lda_line = np.array([-lda_direction * scale_low, lda_direction * scale_high])
+
+        mpl.rcParams["font.size"] = 17
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
         colors = plt.cm.Set2(np.linspace(0, 1, 8))
         # PCA Projection plot
@@ -296,6 +292,8 @@ def main(args):
         count = 0
         max_x, max_y = 0, 0
         seen = set()
+        tmp["LDA_line"] = np.NaN
+
         for w in tqdm(walk, desc="Traversing PC-LDA line"):
             dist = np.linalg.norm(X - w, axis=1)
             dist_argsort = np.argsort(dist)
@@ -318,7 +316,7 @@ def main(args):
         classes = []
         from scipy import ndimage
 
-        for w in tqdm(walk, desc="Traversing PC-LDA line"):
+        for j_index, w in enumerate(tqdm(walk, desc="Traversing PC-LDA line")):
             dist = np.linalg.norm(X - w, axis=1)
             dist_argsort = np.argsort(dist)
             examples = []
@@ -337,6 +335,7 @@ def main(args):
 
             this_class = tmp.iloc[idx]["class"]
             classes.append(this_class)
+            tmp.loc[tmp["CellId"] == this_id, "LDA_line"] = j_index
 
             ax1.scatter(
                 tmp.iloc[idx]["pc_0"],
@@ -362,6 +361,7 @@ def main(args):
             count += 1
         movie = np.hstack(movie)
         movie2 = np.hstack(movie2)
+        tmp.to_csv(save_path + f"LDA_{hit}.csv")
 
         contours = measure.find_contours(movie2, 0.5)
 
@@ -390,20 +390,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Script for computing perturbation detection metrics"
     )
-    parser.add_argument(
-        "--save_path", type=str, required=True, help="Path to save the results."
-    )
+    parser.add_argument("--save_path", type=str, required=True, help="Path to save the results.")
     parser.add_argument(
         "--embeddings_path",
         type=str,
         required=True,
         help="Path to the saved embeddings.",
     )
-    parser.add_argument(
-        "--dataset_name", type=str, required=True, help="Name of the dataset."
-    )
+    parser.add_argument("--dataset_name", type=str, required=True, help="Name of the dataset.")
     parser.add_argument("--raw_path", type=str, required=True, help="Path to raw data")
-    parser.add_argument("--baseline", type=str2bool, default=False, help="Perform LDA baseline only")
+    parser.add_argument(
+        "--baseline", type=str2bool, default=False, help="Perform LDA baseline only"
+    )
     args = parser.parse_args()
 
     # Validate that required paths are provided
@@ -419,6 +417,6 @@ if __name__ == "__main__":
     For all drugs:
     python src/br/analysis/run_drugdata_LDA.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb" --raw_path "./NPM1_single_cell_drug_perturbations/"
 
-    For baseline (DMSO subset 1 -> DMSO subset 2): 
+    For baseline (DMSO subset 1 -> DMSO subset 2):
     python src/br/analysis/run_drugdata_LDA.py --save_path "./outputs_npm1_perturb/" --embeddings_path "./morphology_appropriate_representation_learning/model_embeddings/npm1_perturb/" --dataset_name "npm1_perturb" --raw_path "./NPM1_single_cell_drug_perturbations/" --baseline True
     """

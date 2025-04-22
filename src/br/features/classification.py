@@ -91,8 +91,6 @@ def get_classification(this_mo, target_col, cols=None):
     if cols is None:
         cols = [i for i in this_mo.columns if "mu" in i]
 
-
-
     clf = proba_logreg(
         random_state=20,
         class_weight=class_weight,
