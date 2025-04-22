@@ -12,6 +12,7 @@ from br.analysis.analysis_utils import (
     latent_walk_polymorphic,
     latent_walk_save_recons,
     make_pacmap,
+    make_pca_score_plot,
     pseudo_time_analysis,
     setup_gpu,
     str2bool,
@@ -47,6 +48,8 @@ def main(args):
     key = "pcloud"  # all analysis on pointcloud models
     this_save_path = Path(args.save_path) / Path("latent_walks")
     this_save_path.mkdir(parents=True, exist_ok=True)
+
+    make_pca_score_plot(this_save_path, all_ret, stratify_key, args.dataset_name)
 
     if args.sdf:
         latent_walk_polymorphic(stratify_key, all_ret, this_save_path, latent_dim)
