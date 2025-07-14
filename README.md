@@ -4,9 +4,9 @@ Code for training and benchmarking morphology appropriate representation learnin
 
 > **Interpretable representation learning for 3D multi-piece intracellular structures using point clouds**
 >
-> Ritvik Vasan, Alexandra J. Ferrante, Antoine Borensztejn, Christopher L. Frick, Nathalie Gaudreault, Saurabh S. Mogre, Benjamin Morris, Guilherme G. Pires, Susanne M. Rafelski, Julie A. Theriot, Matheus P. Viana
+> Ritvik Vasan, Alexandra J. Ferrante, Antoine Borensztejn, Christopher L. Frick, Philip Garrison, Nathalie Gaudreault, Saurabh S. Mogre, Fatwir S. Mohammed, Benjamin Morris, Guilherme G. Pires, Daniel Saelid, Susanne M. Rafelski, Julie A. Theriot, Matheus P. Viana
 >
-> bioRxiv 2024.07.25.605164; doi: https://doi.org/10.1101/2024.07.25.605164
+> https://www.nature.com/articles/s41592-025-02729-9
 
 Our analysis is organized as follows.
 
